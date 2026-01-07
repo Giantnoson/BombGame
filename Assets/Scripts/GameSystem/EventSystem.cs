@@ -12,11 +12,11 @@ namespace GameSystem
 
         private void Awake()
         {
-            print("EventSystem Awake");
+            print("唤醒EventSystem");
             // 单例模式
             if (Instance == null)
             {
-                print("Setting EventSystem Instance");
+                print("设置EventSystem Instance");
                 Instance = this;
                 DontDestroyOnLoad(gameObject);
             }
@@ -45,6 +45,7 @@ namespace GameSystem
         /// <param name="evt">事件处理方法</param>
         public static void AddListener<T>(Action<T> evt) where T : GameEvent
         {
+            print("尝试添加事件监听器" + evt.GetType().Name);
             // 检查是否已存在该监听器，避免重复添加
             if (!SEventLookups.ContainsKey(evt))
             {
@@ -60,6 +61,10 @@ namespace GameSystem
                 else
                     // 如果事件类型不存在，则创建新的事件条目
                     SEvents[typeof(T)] = newAction;
+            }
+            else
+            {
+                print("该事件已订阅");
             }
         }
 
@@ -99,7 +104,10 @@ namespace GameSystem
         {
             // 查找事件类型对应的处理方法并调用
             if (SEvents.TryGetValue(evt.GetType(), out var action))
+            {
+                print("广播事件对象: " + evt.GetType().Name);
                 action.Invoke(evt);
+            }
         }
 
         /// <summary>
