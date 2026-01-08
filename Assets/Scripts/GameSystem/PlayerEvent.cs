@@ -26,4 +26,9 @@ namespace GameSystem
         public int Exp; // 获得的经验值
     }
     
+    public class LeaveUpEvent : GameEvent
+    {
+        public int PlayerId; // 玩家ID
+    }
+    
 }

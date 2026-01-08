@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using GameSystem;
 using player;
-using UnityEditor;
+// UnityEditor命名空间只能在编辑器脚本中使用，已移除
 using UnityEngine;
 
 namespace Game_props
@@ -35,10 +35,7 @@ namespace Game_props
             else
             {
                 print("explosionEffect加载成功");
-                if (!PrefabUtility.IsPartOfAnyPrefab(explosionEffect))
-                {
-                    Debug.LogWarning("explosionEffect字段不是预制体引用，请检查设置");
-                }
+                // 在运行时无法检查预制体状态，此检查已移至编辑器脚本
             }
             print("炸弹创建成功，创建者Id：" + ownerId + "，爆炸时间：" + bombFuseTime);
             Invoke("Explode", bombFuseTime);
@@ -78,6 +75,7 @@ namespace Game_props
                             HitId = hitCollider.gameObject.GetComponent<PlayerController>().playerId,
                             Damage = bombDamage
                         });
+                        hitPlayers.Add(playerController.playerId);
                     }else if (hitCollider.CompareTag("Destructible"))
                     {
                         EventSystem.Broadcast(new ExpAddEvent()
@@ -133,6 +131,7 @@ namespace Game_props
                         HitId = hitCollider.gameObject.GetComponent<PlayerController>().playerId,
                         Damage = bombDamage
                     });
+                    hitPlayers.Add(playerController.playerId);
                 }
                 else if (hitCollider.CompareTag("Destructible"))
                 {

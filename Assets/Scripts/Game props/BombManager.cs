@@ -40,6 +40,9 @@ namespace Game_props
             {
                 bombComponent.ownerId = evt.ownerId;
                 bombComponent.putPosition = evt.position;
+                bombComponent.bombFuseTime = evt.bombFuseTime;
+                bombComponent.bombRadius = evt.bombRadius;
+                bombComponent.bombDamage = evt.bombDamage;
             }
             else
             {
