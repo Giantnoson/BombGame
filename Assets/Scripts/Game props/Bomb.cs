@@ -19,33 +19,24 @@ namespace Game_props
         public float bombDamage = 20; //爆炸伤害
         [Tooltip("炸弹爆炸范围")]
         public float bombRadius = 5f;
-        [Tooltip("爆炸效果")]
-        public GameObject explosionEffect;
         
         
         private HashSet<int> hitPlayers = new HashSet<int>();// 用于记录已经爆炸伤害过的玩家
 
-
-        private void Start()
+        
+        private void OnEnable()
         {
-            if (explosionEffect == null)
-            {
-                Debug.LogError("explosionEffect为空，请添加explosionEffect");
-            }
-            else
-            {
-                print("explosionEffect加载成功");
-                // 在运行时无法检查预制体状态，此检查已移至编辑器脚本
-            }
             print("炸弹创建成功，创建者Id：" + ownerId + "，爆炸时间：" + bombFuseTime);
             Invoke("Explode", bombFuseTime);
         }
 
         private void OnTriggerExit(Collider other)
         {
+            
             if (other.CompareTag("Player") && other.gameObject.GetComponent<PlayerController>().playerId == ownerId)
             {
-                GetComponentInChildren<Collider>().isTrigger = false;
+                print("玩家离开炸弹范围，取消触发");
+                GetComponent<Collider>().isTrigger = false;
             }
                 
         }
@@ -94,6 +85,7 @@ namespace Game_props
                     {
                         if (hitCollider.gameObject != gameObject)
                         {
+                            print("碰撞到其他炸弹，触发其他炸弹爆炸");
                             hitCollider.gameObject.GetComponent<Bomb>().Explode();
                         }
                     }
@@ -101,12 +93,15 @@ namespace Game_props
                 }
                 Vector3 explosionPos = basePos;
                 explosionPos.y = 0f;
-                Instantiate(explosionEffect, explosionPos, Quaternion.identity);
+                GameObject explosionInstance = ExplodePool.Instance.GetExplode();
+                explosionInstance.transform.position = explosionPos;
+                explosionInstance.transform.rotation = Quaternion.identity;
             }
         }
 
         public void Explode()
-        {   
+        {
+            CancelInvoke("Explode");
             GetComponent<Collider>().enabled = false;//关闭碰撞体，防止重复调用
             // TODO： 添加爆炸逻辑
             Vector3 bombPos = transform.position;
@@ -160,17 +155,19 @@ namespace Game_props
             
             Vector3 explosionPos = bombPos;
             explosionPos.y = 0f;
-            Instantiate(explosionEffect, explosionPos, Quaternion.identity);
+            GameObject explosionInstance = ExplodePool.Instance.GetExplode();
+            explosionInstance.transform.position = explosionPos;
+            explosionInstance.transform.rotation = Quaternion.identity;
             CreateExplosion(bombPos, Vector3.forward);
             CreateExplosion(bombPos, Vector3.back);
             CreateExplosion(bombPos, Vector3.left);
             CreateExplosion(bombPos, Vector3.right);
+            BombPool.Instance.ReturnBomb(transform.gameObject);
             EventSystem.Broadcast(new BombDestroyEvent
             {
-                position = putPosition,
-                ownerId = ownerId
+                Position = putPosition,
+                OwnerId = ownerId
             });//通知爆炸事件，用于销毁爆炸
-            Destroy(gameObject);
         }
         
         

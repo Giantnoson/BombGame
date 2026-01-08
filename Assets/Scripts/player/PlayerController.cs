@@ -21,10 +21,6 @@ namespace player
         public PlayerProper playerProper;
         [Header("全局属性")]
         public GlobalProper globalProper;
-        [Tooltip("炸弹模块")]
-        public Bomb bomb;
-        [Tooltip("炸弹预制体")]
-        public GameObject bombPrefab;
         [Tooltip("玩家ID")]
         public int playerId;
 
@@ -117,7 +113,7 @@ namespace player
         }
         #endregion
 
-        #region 初始化
+        #region 初始化函数
         private void Awake()
         {
             moveController = GetComponent<PlayerMoveController>();
@@ -129,21 +125,7 @@ namespace player
 
         private void Start()
         {
-            if (bombPrefab == null)
-            {
-                Debug.LogError("bomb为空");
-            }
-            else
-            {
-                print("bomb加载成功");
-                // 在运行时无法检查预制体状态，此检查已移至编辑器脚本
 
-                bomb = bombPrefab.GetComponent<Bomb>();
-                if (bomb == null)
-                {
-                    Debug.LogError("bomb预制体上没有Bomb组件"); 
-                }
-            }
             //严格按照此顺序初始化
             InitProper();
             LoadProper();
@@ -296,18 +278,17 @@ namespace player
             print("炸弹放置位置:" + bombPos);
             EventSystem.Broadcast(new BombPlaceRequestEvent 
             { 
-                position = bombPos, 
-                bombPrefab = bombPrefab,
-                ownerId = playerId,
-                bombFuseTime = bombFuseTime,
-                bombRadius = bombRadius,
-                bombDamage = bombDamage 
+                Position = bombPos, 
+                OwnerId = playerId,
+                BombFuseTime = bombFuseTime,
+                BombRadius = bombRadius,
+                BombDamage = bombDamage 
             });
         }
 
         
         
-        #region 事件监听函数
+        #region 事件监听
         private void OnLeaveUp(LeaveUpEvent evt)
         {
             if (evt.PlayerId == playerId)
@@ -378,14 +359,14 @@ namespace player
             if (evt.PlayerId == playerId)
             {
                 exp += evt.Exp;
-                print( evt.PlayerId + "玩家经验值增加" + evt.Exp + "当前经验值" + exp);
+                print( $"{evt.PlayerId} 玩家经验值增加 {evt.Exp} ,当前经验值 {exp}");
                 
                 if (level < playerProper.maxLevel && exp >= globalProper.maxExpToLevelUp)
                 {
                     EventSystem.Broadcast(new LeaveUpEvent() { PlayerId = evt.PlayerId });
                 }else if (level >= playerProper.maxLevel)
                 {
-                    print("玩家等级已满，无法升级");
+                    print($"玩家{playerId}等级已满，无法升级");
                     exp = Mathf.Min(exp, globalProper.maxExpToLevelUp);
                     OnExpAddUIUpdate();
                 }
@@ -429,7 +410,7 @@ namespace player
             {
 
                 hp -= evt.Damage;
-                print(evt.HitId+" 玩家受到来自 " + evt.OwnerId +" 伤害" + evt.Damage + " 剩余血量为: " + hp);
+                print($"{evt.HitId} 玩家受到来自 {evt.OwnerId}的 {evt.Damage} 伤害。剩余血量为: {hp}");//性能貌似没有之前print(evt.HitId+" 玩家受到来自 " + evt.OwnerId +" 伤害" + evt.Damage + " 剩余血量为: " + hp);高
                 if (hp <= 0)//当玩家死亡时
                 {
                     hp = 0;
