@@ -1,6 +1,7 @@
 ﻿using System;
 using Game_props; // 引入System命名空间，提供基础类和基类
 using GameSystem;
+using GameSystem.EventSystem;
 using TMPro;
 // 引入GameSystem命名空间，可能包含游戏相关的系统类
 using UnityEngine;                        // 引入Unity引擎的核心命名空间
@@ -70,25 +71,45 @@ namespace player
         public float maxStamina = 100f; //体力上限
         [Tooltip("最大炸弹数")]
         public int maxBombCount = 5; //最大炸弹数量
+        public float maxBombRecoveryTime = 2f;
+        public float maxBombCooldown = 0.8f; //放置炸弹冷却时间
+
         
+        [Header("角色状态")]
+        public bool isDead = false;
+
+        public bool isStaminaEmpty = false;
 
         [Header("控制器")]
         public PlayerMoveController moveController;
 
 
         [Header("UI显示")]
+        [Tooltip("生命值文本")]
         public TextMeshProUGUI hpText;
+        [Tooltip("生命值条")]
         public Image hpBar;
+        [Tooltip("体力文本")]
         public TextMeshProUGUI staminaText;
+        [Tooltip("体力条")]
         public Image staminaBar;
+        [Tooltip("经验值文本")]
         public TextMeshProUGUI expText;
+        [Tooltip("经验值条")]
         public Image expBar;
+        [Tooltip("炸弹数量文本")]
         public TextMeshProUGUI bombCountText;
+        [Tooltip("炸弹伤害文本")]
         public TextMeshProUGUI bombDamageText;
+        [Tooltip("炸弹爆炸范围文本")]
         public TextMeshProUGUI bombRadiusText;
+        [Tooltip("等级文本")]
         public TextMeshProUGUI leaveText;
+        [Tooltip("移动速度文本")]
         public TextMeshProUGUI moveSpeedText;
-        public TextMeshProUGUI cooldownText;
+        [Tooltip("炸弹放置冷却文本")]
+        public TextMeshProUGUI bombCooldownText;
+        [Tooltip("炸弹爆炸时间文本")]
         public TextMeshProUGUI bombFuseTimeText;
             
         #endregion
@@ -151,21 +172,23 @@ namespace player
             print("成功加载玩家属性");
     
             // 注意：不再直接修改预制体上的Bomb组件属性
-            // 属性将在创建炸弹实例时通过BombPlaceRequestEvent传递
             bombDamage = playerProper.bombDamage;
             bombRadius = playerProper.bombRadius;
             bombFuseTime = playerProper.bombFuseTime;
+            bombCooldown = playerProper.bombCooldown;
+            bombRecoveryTime = playerProper.bombRecoveryTime;
             print("成功加载炸弹属性");
     
             // ========== 最大值设置 ==========
             maxHp = playerProper.maxHp;
             maxStamina = playerProper.maxStamina;
             maxBombCount = playerProper.maxBombCount;
+            maxBombCooldown = playerProper.bombCooldown;
+            maxBombRecoveryTime = playerProper.bombRecoveryTime;
             print("成功加载成长值");
     
             // ========== 自动恢复属性设置 ==========
-            bombCooldown = playerProper.bombCooldown;
-            bombRecoveryTime = playerProper.bombRecoveryTime;
+
             staminaDrainRate = playerProper.staminaDrainRate;
             staminaRegenRate = playerProper.staminaRegenRate;
             speedMultiplier = playerProper.speedMultiplier;
@@ -213,7 +236,7 @@ namespace player
             ValidateReference(bombRadiusText, "bombRadiusText");
             ValidateReference(leaveText, "leaveText");
             ValidateReference(moveSpeedText, "moveSpeedText");
-            ValidateReference(cooldownText, "cooldownText");
+            ValidateReference(bombCooldownText, "bombCooldownText");
             ValidateReference(bombFuseTimeText, "bombFuseTimeText");
             // 初始化HP相关
             hpText.text = $"{hp}/{playerProper.maxHp}";
@@ -228,7 +251,7 @@ namespace player
             expBar.fillAmount = (float)exp / globalProper.maxExpToLevelUp;
     
             // 初始化炸弹相关
-            bombCountText.text = bombCount.ToString();
+            bombCountText.text = $"{globalProper.initBombCount.ToString()}/{playerProper.maxBombCount.ToString()}({playerProper.bombRecoveryTime.ToString("F2")})";
             bombDamageText.text = playerProper.bombDamage.ToString();
             bombRadiusText.text = playerProper.bombRadius.ToString();
             bombFuseTimeText.text = playerProper.bombFuseTime.ToString("F2");
@@ -236,7 +259,7 @@ namespace player
             // 初始化其他属性
             leaveText.text = level.ToString();
             moveSpeedText.text = baseSpeed.ToString();
-            cooldownText.text = playerProper.bombCooldown.ToString("F2");
+            bombCooldownText.text = playerProper.bombCooldown.ToString("F2");
         }
         
         private void ValidateReference(object obj, string name)
@@ -247,6 +270,7 @@ namespace player
         #endregion
         
 
+        
 
         private void Update()
         { 
@@ -254,9 +278,82 @@ namespace player
             {
                 PutBomb();
             }
+            StaminaUpdate();
+            BombUpdate();
+
         }
+
+        private void StaminaUpdate()
+        {
+            if (Input.GetKey(KeyCode.LeftShift) && stamina > 0 && !isStaminaEmpty){
+                currentSpeed = baseSpeed * speedMultiplier;
+                stamina = Mathf.Max(0f, stamina - staminaDrainRate * Time.deltaTime); //体力减少
+                if (stamina == 0)
+                {
+                    isStaminaEmpty = true;
+                    print("体力耗尽，停止冲刺"); 
+                }
+            }
+            else
+            {
+                currentSpeed = baseSpeed;
+                stamina = Mathf.Min(maxStamina, stamina + staminaRegenRate * Time.deltaTime);
+                moveController.MoveSpeed = baseSpeed;
+                if (isStaminaEmpty && stamina > 20)
+                {
+                    isStaminaEmpty = false;
+                    print("体力恢复，开始冲刺"); 
+                }
+                
+            }
+            staminaText.text = $"{stamina.ToString("F2")}/{maxStamina}";
+            staminaBar.fillAmount = stamina / maxStamina;
+            moveController.MoveSpeed = currentSpeed;
+            moveSpeedText.text = currentSpeed.ToString("F2");
+        }
+
+        //采用倒数计数
+        private void BombUpdate()
+        {
+            //炸弹放置冷却
+            if (bombCooldown > 0)
+            {
+                bombCooldown = Mathf.Max(0f, bombCooldown - Time.deltaTime);
+            }
+            
+            
+            //炸弹恢复时间
+            if (bombRecoveryTime > 0 && bombCount != maxBombCount)
+            {
+                bombRecoveryTime = Mathf.Max(0f, bombRecoveryTime - Time.deltaTime);
+            }
+            
+            //炸弹数量恢复
+            if (bombCount < maxBombCount && bombRecoveryTime == 0)
+            {
+               bombCount++;
+               bombRecoveryTime = maxBombRecoveryTime; 
+            }
+            
+            //更新UI
+            bombCooldownText.text = bombCooldown.ToString("F2");
+            bombCountText.text =$"{bombCount.ToString()}/{maxBombCount.ToString()}({bombRecoveryTime.ToString("F2")})";
+            
+            
+            
+        }
+        
+        
         private void PutBomb()
         {
+            if (bombCooldown > 0 || bombCount == 0)
+            {
+                print("炸弹冷却或数量为0，放置失败");
+                return;
+            }
+
+            bombCooldown = maxBombCooldown;
+            bombCount--;
             Vector3 bombPos = transform.position;
             bombPos.x = Mathf.Ceil(bombPos.x) - 0.5f;
             bombPos.z = Mathf.Ceil(bombPos.z) - 0.5f;
@@ -303,14 +400,14 @@ namespace player
                 moveController.MoveSpeed = baseSpeed; //更新速度
                 
                 //炸弹数值更新
-                bombFuseTime = Mathf.Max(0.1f , playerProper.bombFuseTime - playerProper.bombFuseTimeGrowth * level); // 修改：减少爆炸时间
+                bombFuseTime = Mathf.Max(0.1f , bombFuseTime - playerProper.bombFuseTimeGrowth); // 修改：减少爆炸时间
                 bombRadius += playerProper.bombRadiusGrowth; // 增加爆炸范围
                 bombDamage += playerProper.bombDamageGrowth; // 增加炸弹伤害
                 //更新炸弹冷却时间
-                bombCooldown = Mathf.Max(0.1f, playerProper.bombCooldown - playerProper.bombCooldownGrowth * level);
+                maxBombCooldown = Mathf.Max(0.1f, maxBombCooldown - playerProper.bombCooldownGrowth);
         
                 //更新炸弹恢复时间
-                bombRecoveryTime = Mathf.Max(0.5f, playerProper.bombRecoveryTime - playerProper.bombRecoveryTimeGrowth * level);
+                maxBombRecoveryTime = Mathf.Max(0.5f, maxBombRecoveryTime - playerProper.bombRecoveryTimeGrowth);
 
                 //最大值更新
                 maxBombCount += playerProper.maxBombCountGrowth; // 炸弹数量
@@ -346,11 +443,10 @@ namespace player
             moveSpeedText.text = baseSpeed.ToString();
     
             // ========== 炸弹属性更新 ==========
-            bombCountText.text = bombCount.ToString();
+            bombCountText.text =$"{bombCount.ToString()}/{maxBombCount.ToString()}({bombRecoveryTime.ToString("F2")})";
             bombDamageText.text = bombDamage.ToString();
             bombRadiusText.text = bombRadius.ToString();
             bombFuseTimeText.text = bombFuseTime.ToString("F2"); // 保留两位小数
-            cooldownText.text = bombCooldown.ToString("F2"); // 保留两位小数
         }
 
         private void OnExpAdd(ExpAddEvent evt) //经验值增加事件
@@ -400,6 +496,7 @@ namespace player
         {
             if (evt.DieId == playerId)
             {
+                isDead = true;
                 Destroy(gameObject);//销毁玩家
             }
         }

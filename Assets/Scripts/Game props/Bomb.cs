@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using GameSystem;
+using GameSystem.EventSystem;
 using player;
 // UnityEditor命名空间只能在编辑器脚本中使用，已移除
 using UnityEngine;

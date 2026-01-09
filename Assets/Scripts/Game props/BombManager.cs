@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using GameSystem;
+using GameSystem.EventSystem;
 
 namespace Game_props
 {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace GameSystem
+namespace GameSystem.EventSystem
 {
     public class GameEvent { }
     public class EventSystem : MonoBehaviour

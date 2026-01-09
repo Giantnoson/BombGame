@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace GameSystem
+namespace GameSystem.EventSystem
 {
     public class BombEvents : MonoBehaviour
     {
