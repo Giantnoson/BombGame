@@ -61,7 +61,7 @@ namespace Game_props
                            print("玩家已经受到伤害，跳过");
                             continue;
                         }
-                        EventSystem.Broadcast(new PlayerTakeDamageEvent()
+                        GameEventSystem.Broadcast(new PlayerTakeDamageEvent()
                         {
                             OwnerId = ownerId,
                             HitId = hitCollider.gameObject.GetComponent<PlayerController>().playerId,
@@ -70,7 +70,7 @@ namespace Game_props
                         hitPlayers.Add(playerController.playerId);
                     }else if (hitCollider.CompareTag("Destructible"))
                     {
-                        EventSystem.Broadcast(new ExpAddEvent()
+                        GameEventSystem.Broadcast(new ExpAddEvent()
                         {
                             PlayerId = ownerId,
                             Exp = 10
@@ -94,9 +94,7 @@ namespace Game_props
                 }
                 Vector3 explosionPos = basePos;
                 explosionPos.y = 0f;
-                GameObject explosionInstance = ExplodePool.Instance.GetExplode();
-                explosionInstance.transform.position = explosionPos;
-                explosionInstance.transform.rotation = Quaternion.identity;
+                ExplodePool.Instance.GetExplode(explosionPos, Quaternion.identity);
             }
         }
 
@@ -121,7 +119,7 @@ namespace Game_props
                         print("玩家已经受到伤害，跳过");
                         continue;
                     }
-                    EventSystem.Broadcast(new PlayerTakeDamageEvent()
+                    GameEventSystem.Broadcast(new PlayerTakeDamageEvent()
                     {
                         OwnerId = ownerId,
                         HitId = hitCollider.gameObject.GetComponent<PlayerController>().playerId,
@@ -131,7 +129,7 @@ namespace Game_props
                 }
                 else if (hitCollider.CompareTag("Destructible"))
                 {
-                    EventSystem.Broadcast(new ExpAddEvent()
+                    GameEventSystem.Broadcast(new ExpAddEvent()
                     {
                         PlayerId = ownerId,
                         Exp = 10
@@ -156,15 +154,13 @@ namespace Game_props
             
             Vector3 explosionPos = bombPos;
             explosionPos.y = 0f;
-            GameObject explosionInstance = ExplodePool.Instance.GetExplode();
-            explosionInstance.transform.position = explosionPos;
-            explosionInstance.transform.rotation = Quaternion.identity;
+            ExplodePool.Instance.GetExplode(explosionPos, Quaternion.identity);
             CreateExplosion(bombPos, Vector3.forward);
             CreateExplosion(bombPos, Vector3.back);
             CreateExplosion(bombPos, Vector3.left);
             CreateExplosion(bombPos, Vector3.right);
-            BombPool.Instance.ReturnBomb(transform.gameObject);
-            EventSystem.Broadcast(new BombDestroyEvent
+            BombPool.Instance.ReturnBomb(gameObject);
+            GameEventSystem.Broadcast(new BombDestroyEvent
             {
                 Position = putPosition,
                 OwnerId = ownerId

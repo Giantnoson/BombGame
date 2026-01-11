@@ -5,9 +5,9 @@ using UnityEngine;
 namespace GameSystem.EventSystem
 {
     public class GameEvent { }
-    public class EventSystem : MonoBehaviour
+    public class GameEventSystem : MonoBehaviour
     {
-        public static EventSystem Instance { get; private set; }
+        public static GameEventSystem Instance { get; private set; }
 
 
         private void Awake()

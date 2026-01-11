@@ -1,7 +1,9 @@
 ﻿using System;
+using System.IO.Enumeration;
 using Game_props; // 引入System命名空间，提供基础类和基类
 using GameSystem;
 using GameSystem.EventSystem;
+using GameSystem.GameScene.GameRuntimeScene;
 using TMPro;
 // 引入GameSystem命名空间，可能包含游戏相关的系统类
 using UnityEngine;                        // 引入Unity引擎的核心命名空间
@@ -24,6 +26,8 @@ namespace player
         public GlobalProper globalProper;
         [Tooltip("玩家ID")]
         public int playerId;
+        [Tooltip("HUD模板（测试用)")] 
+        public GameObject HUD;
 
 
         [Header("属性设置")]
@@ -77,71 +81,58 @@ namespace player
         
         [Header("角色状态")]
         public bool isDead = false;
-
         public bool isStaminaEmpty = false;
 
         [Header("控制器")]
         public PlayerMoveController moveController;
-
-
-        [Header("UI显示")]
-        [Tooltip("生命值文本")]
-        public TextMeshProUGUI hpText;
-        [Tooltip("生命值条")]
-        public Image hpBar;
-        [Tooltip("体力文本")]
-        public TextMeshProUGUI staminaText;
-        [Tooltip("体力条")]
-        public Image staminaBar;
-        [Tooltip("经验值文本")]
-        public TextMeshProUGUI expText;
-        [Tooltip("经验值条")]
-        public Image expBar;
-        [Tooltip("炸弹数量文本")]
-        public TextMeshProUGUI bombCountText;
-        [Tooltip("炸弹伤害文本")]
-        public TextMeshProUGUI bombDamageText;
-        [Tooltip("炸弹爆炸范围文本")]
-        public TextMeshProUGUI bombRadiusText;
-        [Tooltip("等级文本")]
-        public TextMeshProUGUI leaveText;
-        [Tooltip("移动速度文本")]
-        public TextMeshProUGUI moveSpeedText;
-        [Tooltip("炸弹放置冷却文本")]
-        public TextMeshProUGUI bombCooldownText;
-        [Tooltip("炸弹爆炸时间文本")]
-        public TextMeshProUGUI bombFuseTimeText;
+        public PlayerStateHUD playerStateHUD;
             
         #endregion
         
         # region 事件监听设置
         private void OnEnable()
         {
-            EventSystem.AddListener<PlayerTakeDamageEvent>(OnTakeDamage);
-            EventSystem.AddListener<PlayerDieEvent>(OnPlayerDie);
-            EventSystem.AddListener<PlayerDieEvent>(OnKillPlayer);
-            EventSystem.AddListener<ExpAddEvent>(OnExpAdd);
-            EventSystem.AddListener<LeaveUpEvent>(OnLeaveUp);
+            GameEventSystem.AddListener<PlayerTakeDamageEvent>(OnTakeDamage);
+            GameEventSystem.AddListener<PlayerDieEvent>(OnPlayerDie);
+            GameEventSystem.AddListener<PlayerDieEvent>(OnKillPlayer);
+            GameEventSystem.AddListener<ExpAddEvent>(OnExpAdd);
+            GameEventSystem.AddListener<LeaveUpEvent>(OnLeaveUp);
         }
 
         private void OnDisable()
         {
-            EventSystem.RemoveListener<PlayerTakeDamageEvent>(OnTakeDamage);
-            EventSystem.RemoveListener<PlayerDieEvent>(OnPlayerDie);
-            EventSystem.RemoveListener<PlayerDieEvent>(OnKillPlayer);
-            EventSystem.RemoveListener<ExpAddEvent>(OnExpAdd);
-            EventSystem.RemoveListener<LeaveUpEvent>(OnLeaveUp);
+            GameEventSystem.RemoveListener<PlayerTakeDamageEvent>(OnTakeDamage);
+            GameEventSystem.RemoveListener<PlayerDieEvent>(OnPlayerDie);
+            GameEventSystem.RemoveListener<PlayerDieEvent>(OnKillPlayer);
+            GameEventSystem.RemoveListener<ExpAddEvent>(OnExpAdd);
+            GameEventSystem.RemoveListener<LeaveUpEvent>(OnLeaveUp);
         }
         #endregion
 
         #region 初始化函数
         private void Awake()
         {
+            
             moveController = GetComponent<PlayerMoveController>();
+            if (HUD == null)
+            {
+                Debug.LogError("HUD为空");
+            }
+            else
+            {
+                playerStateHUD = HUD.GetComponent<PlayerStateHUD>();
+            }
+            if (playerStateHUD == null)
+            {
+                Debug.LogError("playerStateHUD为空");
+            }
             if (moveController == null)
             {
                 Debug.LogError("moveController为空");
             }
+            
+            
+            
         }
 
         private void Start()
@@ -150,10 +141,44 @@ namespace player
             //严格按照此顺序初始化
             InitProper();
             LoadProper();
-            InitUI();
             print("玩家初始化成功");
+            InitHUD();
+            print("HUD初始化成功");
+        }  
+
+
+        private void InitHUD()
+        {
+            playerStateHUD.PlayerController = this;
+            playerStateHUD.ownerId = playerId;
+            playerStateHUD.LoadHUD();
         }
-        
+        private void InitProper()
+                {
+                    switch (playerType) {
+                        case PlayType.Balance:
+                            playerProper = Resources.Load<PlayerProper>(nameof(PlayType.Balance));
+                            break;
+                        case PlayType.Speed:
+                            playerProper = Resources.Load<PlayerProper>(nameof(PlayType.Speed));
+                            break;
+                        case PlayType.BombTruck:
+                            playerProper = Resources.Load<PlayerProper>(nameof(PlayType.BombTruck));
+                            break;
+                        case PlayType.Tank:
+                            playerProper = Resources.Load<PlayerProper>(nameof(PlayType.Tank));
+                            break;
+                        default:
+                            Debug.LogError("未知的角色类型");
+                            break;
+                    }
+                    if (playerProper == null)
+                        Debug.LogError("在Resources中无法找到对应的PlayerProper");
+                    print("成功加载PlayerProper");
+                    globalProper = Resources.Load<GlobalProper>("GlobalProper");
+                    if (globalProper == null)
+                        Debug.LogError("在Resources中无法找到GlobalProper");
+                }
         private void LoadProper()
         {
             // ========== 初始值设定 ==========
@@ -195,92 +220,19 @@ namespace player
             print("成功加载自动恢复属性");
         }
 
-        private void InitProper()
-        {
-            switch (playerType) {
-                case PlayType.Balance:
-                    playerProper = Resources.Load<PlayerProper>(nameof(PlayType.Balance));
-                    break;
-                case PlayType.Speed:
-                    playerProper = Resources.Load<PlayerProper>(nameof(PlayType.Speed));
-                    break;
-                case PlayType.BombTruck:
-                    playerProper = Resources.Load<PlayerProper>(nameof(PlayType.BombTruck));
-                    break;
-                case PlayType.Tank:
-                    playerProper = Resources.Load<PlayerProper>(nameof(PlayType.Tank));
-                    break;
-                default:
-                    Debug.LogError("未知的角色类型");
-                    break;
-            }
-            if (playerProper == null)
-                Debug.LogError("在Resources中无法找到对应的PlayerProper");
-            print("成功加载PlayerProper");
-            globalProper = Resources.Load<GlobalProper>("GlobalProper");
-            if (globalProper == null)
-                Debug.LogError("在Resources中无法找到GlobalProper");
-        }
 
-        private void InitUI()
-        {
-            // 验证UI引用
-            ValidateReference(hpText, "hpText");
-            ValidateReference(hpBar, "hpBar");
-            ValidateReference(staminaText, "staminaText");
-            ValidateReference(staminaBar, "staminaBar");
-            ValidateReference(expText, "expText");
-            ValidateReference(expBar, "expBar");
-            ValidateReference(bombCountText, "bombCountText");
-            ValidateReference(bombDamageText, "bombDamageText");
-            ValidateReference(bombRadiusText, "bombRadiusText");
-            ValidateReference(leaveText, "leaveText");
-            ValidateReference(moveSpeedText, "moveSpeedText");
-            ValidateReference(bombCooldownText, "bombCooldownText");
-            ValidateReference(bombFuseTimeText, "bombFuseTimeText");
-            // 初始化HP相关
-            hpText.text = $"{hp}/{playerProper.maxHp}";
-            hpBar.fillAmount = hp / playerProper.maxHp;
-    
-            // 初始化体力相关
-            staminaText.text = $"{stamina}/{playerProper.maxStamina}";
-            staminaBar.fillAmount = stamina / playerProper.maxStamina;
-    
-            // 初始化经验值相关
-            expText.text = $"{exp}/{globalProper.maxExpToLevelUp}";
-            expBar.fillAmount = (float)exp / globalProper.maxExpToLevelUp;
-    
-            // 初始化炸弹相关
-            bombCountText.text = $"{globalProper.initBombCount.ToString()}/{playerProper.maxBombCount.ToString()}({playerProper.bombRecoveryTime.ToString("F2")})";
-            bombDamageText.text = playerProper.bombDamage.ToString();
-            bombRadiusText.text = playerProper.bombRadius.ToString();
-            bombFuseTimeText.text = playerProper.bombFuseTime.ToString("F2");
-    
-            // 初始化其他属性
-            leaveText.text = level.ToString();
-            moveSpeedText.text = baseSpeed.ToString();
-            bombCooldownText.text = playerProper.bombCooldown.ToString("F2");
-        }
-        
-        private void ValidateReference(object obj, string name)
-        {
-            if (obj == null) Debug.LogError($"{name}为空");
-        }
-        
         #endregion
         
-
         
-
         private void Update()
         { 
+            if(isDead) return;//如果玩家死亡，则不执行以下代码
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 PutBomb();
             }
             StaminaUpdate();
             BombUpdate();
-
         }
 
         private void StaminaUpdate()
@@ -306,10 +258,8 @@ namespace player
                 }
                 
             }
-            staminaText.text = $"{stamina.ToString("F2")}/{maxStamina}";
-            staminaBar.fillAmount = stamina / maxStamina;
             moveController.MoveSpeed = currentSpeed;
-            moveSpeedText.text = currentSpeed.ToString("F2");
+            playerStateHUD.UpdateStamina(stamina, maxStamina, currentSpeed);
         }
 
         //采用倒数计数
@@ -334,13 +284,7 @@ namespace player
                bombCount++;
                bombRecoveryTime = maxBombRecoveryTime; 
             }
-            
-            //更新UI
-            bombCooldownText.text = bombCooldown.ToString("F2");
-            bombCountText.text =$"{bombCount.ToString()}/{maxBombCount.ToString()}({bombRecoveryTime.ToString("F2")})";
-            
-            
-            
+            playerStateHUD.UpdateBomb(bombCooldown, bombCount,maxBombCount , bombRecoveryTime);
         }
         
         
@@ -361,9 +305,9 @@ namespace player
             Collider[] hitColliders = Physics.OverlapBox(bombPos, new Vector3(0.4f, 0.4f, 0.4f), Quaternion.identity);
             if (hitColliders.Length > 0)
             {
-                foreach (var variablCollider in hitColliders)
+                foreach (var collider1 in hitColliders)
                 {
-                    if (!variablCollider.gameObject.CompareTag("Player"))
+                    if (!collider1.gameObject.CompareTag("Player"))
                     {
                         print("炸弹放置失败，位置有障碍物");
                         return;
@@ -373,7 +317,7 @@ namespace player
             }
             bombPos.y = 0f;
             print("炸弹放置位置:" + bombPos);
-            EventSystem.Broadcast(new BombPlaceRequestEvent 
+            GameEventSystem.Broadcast(new BombPlaceRequestEvent 
             { 
                 Position = bombPos, 
                 OwnerId = playerId,
@@ -414,39 +358,12 @@ namespace player
                 maxStamina += playerProper.staminaGrowth; // 更新最大体力
                 maxHp += playerProper.maxHpGrowth; // 最大生命值
                 //更新UI
-                OnLeaveUpUIUpdate();
+                playerStateHUD.OnLeaveUpUIUpdate(hp,maxHp,stamina,maxStamina,exp,level,globalProper.maxExpToLevelUp,currentSpeed,bombCount,maxBombCount,bombRecoveryTime,bombDamage,bombRadius,bombFuseTime);
             }
             else
             {
                 //TODO 其他玩家升级时界面更新
             }
-        }
-
-        private void OnLeaveUpUIUpdate()
-        {
-            // ========== 生命值更新 ==========
-            hpText.text = $"{hp}/{maxHp}";
-            hpBar.fillAmount = hp / maxHp;
-    
-            // ========== 体力值更新 ==========
-            staminaText.text = $"{stamina}/{maxStamina}";
-            staminaBar.fillAmount = stamina / maxStamina;
-    
-            // ========== 经验值更新 ==========
-            expText.text = $"{exp}/{globalProper.maxExpToLevelUp}";
-            expBar.fillAmount = (float)exp / globalProper.maxExpToLevelUp;
-    
-            // ========== 等级更新 ==========
-            leaveText.text = level.ToString();
-    
-            // ========== 速度更新 ==========
-            moveSpeedText.text = baseSpeed.ToString();
-    
-            // ========== 炸弹属性更新 ==========
-            bombCountText.text =$"{bombCount.ToString()}/{maxBombCount.ToString()}({bombRecoveryTime.ToString("F2")})";
-            bombDamageText.text = bombDamage.ToString();
-            bombRadiusText.text = bombRadius.ToString();
-            bombFuseTimeText.text = bombFuseTime.ToString("F2"); // 保留两位小数
         }
 
         private void OnExpAdd(ExpAddEvent evt) //经验值增加事件
@@ -459,32 +376,27 @@ namespace player
                 
                 if (level < playerProper.maxLevel && exp >= globalProper.maxExpToLevelUp)
                 {
-                    EventSystem.Broadcast(new LeaveUpEvent() { PlayerId = evt.PlayerId });
+                    GameEventSystem.Broadcast(new LeaveUpEvent() { PlayerId = evt.PlayerId });
                 }else if (level >= playerProper.maxLevel)
                 {
                     print($"玩家{playerId}等级已满，无法升级");
                     exp = Mathf.Min(exp, globalProper.maxExpToLevelUp);
-                    OnExpAddUIUpdate();
+                    playerStateHUD.OnExpAddUIUpdate(exp, globalProper.maxExpToLevelUp);
                 }
                 else
                 {
-                    OnExpAddUIUpdate();
+                    playerStateHUD.OnExpAddUIUpdate(exp, globalProper.maxExpToLevelUp);
                 }
                 
             }
         }
-
-        private void OnExpAddUIUpdate()
-        {
-            expText.text = $"{exp}/{globalProper.maxExpToLevelUp}";
-            expBar.fillAmount = (float)exp / globalProper.maxExpToLevelUp;
-        }
+        
         
         private void OnKillPlayer(PlayerDieEvent evt) // 玩家死亡事件 击杀
         {
             if (evt.DieId != playerId && evt.AttackerID == playerId)
             {
-                EventSystem.Broadcast(new ExpAddEvent()
+                GameEventSystem.Broadcast(new ExpAddEvent()
                 {
                     PlayerId = evt.AttackerID,
                     Exp = evt.Exp
@@ -497,7 +409,9 @@ namespace player
             if (evt.DieId == playerId)
             {
                 isDead = true;
-                Destroy(gameObject);//销毁玩家
+                Die();
+                playerId = -10;
+                Destroy(moveController);
             }
         }
 
@@ -505,15 +419,14 @@ namespace player
         {
             if (evt.HitId == playerId)
             {
-
                 hp -= evt.Damage;
                 print($"{evt.HitId} 玩家受到来自 {evt.OwnerId}的 {evt.Damage} 伤害。剩余血量为: {hp}");//性能貌似没有之前print(evt.HitId+" 玩家受到来自 " + evt.OwnerId +" 伤害" + evt.Damage + " 剩余血量为: " + hp);高
                 if (hp <= 0)//当玩家死亡时
                 {
                     hp = 0;
-                    OnTakeDamageUIUpdate();
+                    playerStateHUD.OnTakeDamageUIUpdate(hp ,maxHp);
                     print( playerId+"玩家死亡");
-                    EventSystem.Broadcast(new PlayerDieEvent()
+                    GameEventSystem.Broadcast(new PlayerDieEvent()
                     {
                         AttackerID = evt.OwnerId,
                         DieId = playerId,
@@ -521,16 +434,19 @@ namespace player
                     });
                 }
                 else
-                    OnTakeDamageUIUpdate();
+                    playerStateHUD.OnTakeDamageUIUpdate(hp ,maxHp);
             }
         }
 
-        private void OnTakeDamageUIUpdate()
+        private void Die()
         {
-            hpText.text = $"{hp}/{maxHp}";
-            hpBar.fillAmount = hp / maxHp;
+            GameEventSystem.RemoveListener<PlayerTakeDamageEvent>(OnTakeDamage);
+            GameEventSystem.RemoveListener<PlayerDieEvent>(OnPlayerDie);
+            GameEventSystem.RemoveListener<PlayerDieEvent>(OnKillPlayer);
+            GameEventSystem.RemoveListener<ExpAddEvent>(OnExpAdd);
+            GameEventSystem.RemoveListener<LeaveUpEvent>(OnLeaveUp);
         }
-        #endregion
         
+        #endregion
     }
 }

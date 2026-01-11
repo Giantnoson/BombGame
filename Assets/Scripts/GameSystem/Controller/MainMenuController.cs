@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace GameSystem
+namespace GameSystem.Controller
 {
-    public class MenuManager : MonoBehaviour
+    public class MainMenuController : MonoBehaviour
     {
         public Button pvp;
         public Button pve;

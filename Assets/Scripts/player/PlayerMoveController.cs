@@ -6,9 +6,13 @@ namespace player
 {
     public class PlayerMoveController : MonoBehaviour
     {
+        [Tooltip("角色移动速度")]
         public float MoveSpeed { get; set; } // SimpleMove 的速度单位是 米/秒
+        [Tooltip("鼠标灵敏度")]
         public float mouseSensitivity = 2.0f;
+        [Tooltip("水平视角限制角度")]
         public float verticalRotationMaxLimit = 90.0f; // 垂直视角限制角度
+        [Tooltip("垂直视角限制角度")]
         public float verticalRotationMinLimit = 25f; // 垂直视角限制角度
 
         private CharacterController controller;

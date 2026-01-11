@@ -13,7 +13,6 @@ namespace Game_props
 
         private void ReturnToPool()
         {
-            print("回收进池子");
             ExplodePool.Instance.ReturnExplode(gameObject);
         }
     }

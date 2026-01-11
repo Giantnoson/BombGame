@@ -12,15 +12,15 @@ namespace Game_props
         private void OnEnable()
         {
             Debug.Log("BombManager启用，开始监听事件");
-            EventSystem.AddListener<BombPlaceRequestEvent>(OnPlaceRequest);
-            EventSystem.AddListener<BombDestroyEvent>(OnBombExplode);
+            GameEventSystem.AddListener<BombPlaceRequestEvent>(OnPlaceRequest);
+            GameEventSystem.AddListener<BombDestroyEvent>(OnBombExplode);
         }
 
         private void OnDisable()
         {
             Debug.Log("BombManager销毁，停止监听事件");
-            EventSystem.RemoveListener<BombPlaceRequestEvent>(OnPlaceRequest);
-            EventSystem.RemoveListener<BombDestroyEvent>(OnBombExplode);
+            GameEventSystem.RemoveListener<BombPlaceRequestEvent>(OnPlaceRequest);
+            GameEventSystem.RemoveListener<BombDestroyEvent>(OnBombExplode);
         }
 
         private void OnPlaceRequest(BombPlaceRequestEvent evt)
