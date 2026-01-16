@@ -12,6 +12,10 @@ namespace GameSystem.GameScene.GameRuntimeScene
         public int ownerId;
         
         [Header("UI显示")]
+        [Tooltip("玩家名称文本")]
+        public TextMeshProUGUI playerNameText;
+        [Tooltip("角色类型")]
+        public TextMeshProUGUI playerTypeText;
         [Tooltip("生命值文本")]
         public TextMeshProUGUI hpText;
         [Tooltip("生命值条")]
@@ -51,6 +55,8 @@ namespace GameSystem.GameScene.GameRuntimeScene
         private void InitUI()
         {
             // 验证UI引用
+            ValidateReference(playerNameText, "playerNameText");
+            ValidateReference(playerTypeText, "playerTypeText");
             ValidateReference(hpText, "hpText");
             ValidateReference(hpBar, "hpBar");
             ValidateReference(staminaText, "staminaText");
@@ -71,30 +77,33 @@ namespace GameSystem.GameScene.GameRuntimeScene
             if (obj == null) Debug.LogError($"{name}为空");
         }
         
-        public void LoadHUD()
+        public void LoadHUD(string playerName,PlayType playType , PlayerProper playerProper, GlobalProper globalProper ,float hp, float stamina, int exp, int level, float currentSpeed)
         {
+            // 初始化玩家名称
+            playerNameText.text = playerName;
+            playerTypeText.text = playType.ToString();
             // 初始化HP相关
-            hpText.text = $"{PlayerController.hp}/{PlayerController.playerProper.maxHp}";
-            hpBar.fillAmount = PlayerController.hp / PlayerController.playerProper.maxHp;
+            hpText.text = $"{hp}/{playerProper.maxHp}";
+            hpBar.fillAmount = hp / playerProper.maxHp;
     
             // 初始化体力相关
-            staminaText.text = $"{PlayerController.stamina}/{PlayerController.playerProper.maxStamina}";
-            staminaBar.fillAmount = PlayerController.stamina / PlayerController.playerProper.maxStamina;
+            staminaText.text = $"{stamina}/{playerProper.maxStamina}";
+            staminaBar.fillAmount = stamina / playerProper.maxStamina;
     
             // 初始化经验值相关
-            expText.text = $"{PlayerController.exp}/{PlayerController.globalProper.maxExpToLevelUp}";
-            expBar.fillAmount = (float)PlayerController.exp / PlayerController.globalProper.maxExpToLevelUp;
+            expText.text = $"{exp}/{globalProper.maxExpToLevelUp}";
+            expBar.fillAmount = (float)exp / globalProper.maxExpToLevelUp;
     
             // 初始化炸弹相关
-            bombCountText.text = $"{PlayerController.globalProper.initBombCount.ToString()}/{PlayerController.playerProper.maxBombCount.ToString()}({PlayerController.playerProper.bombRecoveryTime.ToString("F2")})";
-            bombDamageText.text = PlayerController.playerProper.bombDamage.ToString();
-            bombRadiusText.text = PlayerController.playerProper.bombRadius.ToString();
-            bombFuseTimeText.text = PlayerController.playerProper.bombFuseTime.ToString("F2");
+            bombCountText.text = $"{globalProper.initBombCount.ToString()}/{playerProper.maxBombCount.ToString()}({playerProper.bombRecoveryTime.ToString("F2")})";
+            bombDamageText.text = playerProper.bombDamage.ToString();
+            bombRadiusText.text = playerProper.bombRadius.ToString();
+            bombFuseTimeText.text = playerProper.bombFuseTime.ToString("F2");
     
             // 初始化其他属性
-            leaveText.text = PlayerController.level.ToString();
-            moveSpeedText.text = PlayerController.baseSpeed.ToString();
-            bombCooldownText.text = PlayerController.playerProper.bombCooldown.ToString("F2");
+            leaveText.text = level.ToString();
+            moveSpeedText.text = currentSpeed.ToString();
+            bombCooldownText.text = playerProper.bombCooldown.ToString("F2");
         }
 
         public void UpdateStamina(float stamina, float maxStamina, float currentSpeed)

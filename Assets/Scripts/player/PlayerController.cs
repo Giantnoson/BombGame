@@ -18,6 +18,7 @@ namespace player
         
         # region 变量定义
         [Header("基础模型")]
+        public string playerName;
         [Tooltip("角色类型")]
         public PlayType playerType;
         [Tooltip("角色基础属性配置")]
@@ -26,8 +27,7 @@ namespace player
         public GlobalProper globalProper;
         [Tooltip("玩家ID")]
         public int playerId;
-        [Tooltip("HUD模板（测试用)")] 
-        public GameObject HUD;
+
 
 
         [Header("属性设置")]
@@ -80,7 +80,7 @@ namespace player
 
         
         [Header("角色状态")]
-        public bool isDead = false;
+        public bool isDie = false;
         public bool isStaminaEmpty = false;
 
         [Header("控制器")]
@@ -97,6 +97,7 @@ namespace player
             GameEventSystem.AddListener<PlayerDieEvent>(OnKillPlayer);
             GameEventSystem.AddListener<ExpAddEvent>(OnExpAdd);
             GameEventSystem.AddListener<LeaveUpEvent>(OnLeaveUp);
+            GameEventSystem.AddListener<GameOverEvent>(OnGameOver);
         }
 
         private void OnDisable()
@@ -110,33 +111,22 @@ namespace player
         #endregion
 
         #region 初始化函数
-        private void Awake()
+
+        public void PlayerControllerInit(string name, int id, PlayType type, PlayerStateHUD hud)
         {
-            
-            moveController = GetComponent<PlayerMoveController>();
-            if (HUD == null)
-            {
-                Debug.LogError("HUD为空");
-            }
-            else
-            {
-                playerStateHUD = HUD.GetComponent<PlayerStateHUD>();
-            }
+            playerName = name;
+            playerId = id;
+            playerType = type;
+            playerStateHUD = hud;
             if (playerStateHUD == null)
             {
                 Debug.LogError("playerStateHUD为空");
             }
+            moveController = GetComponent<PlayerMoveController>();
             if (moveController == null)
             {
                 Debug.LogError("moveController为空");
             }
-            
-            
-            
-        }
-
-        private void Start()
-        {
 
             //严格按照此顺序初始化
             InitProper();
@@ -144,41 +134,43 @@ namespace player
             print("玩家初始化成功");
             InitHUD();
             print("HUD初始化成功");
-        }  
+            print("初始化完成");
+        }
+        
 
 
         private void InitHUD()
         {
             playerStateHUD.PlayerController = this;
             playerStateHUD.ownerId = playerId;
-            playerStateHUD.LoadHUD();
+            playerStateHUD.LoadHUD(playerName, playerType, playerProper, globalProper, hp, stamina, exp, level, currentSpeed);
         }
-        private void InitProper()
-                {
-                    switch (playerType) {
-                        case PlayType.Balance:
-                            playerProper = Resources.Load<PlayerProper>(nameof(PlayType.Balance));
-                            break;
-                        case PlayType.Speed:
-                            playerProper = Resources.Load<PlayerProper>(nameof(PlayType.Speed));
-                            break;
-                        case PlayType.BombTruck:
-                            playerProper = Resources.Load<PlayerProper>(nameof(PlayType.BombTruck));
-                            break;
-                        case PlayType.Tank:
-                            playerProper = Resources.Load<PlayerProper>(nameof(PlayType.Tank));
-                            break;
-                        default:
-                            Debug.LogError("未知的角色类型");
-                            break;
-                    }
-                    if (playerProper == null)
-                        Debug.LogError("在Resources中无法找到对应的PlayerProper");
-                    print("成功加载PlayerProper");
-                    globalProper = Resources.Load<GlobalProper>("GlobalProper");
-                    if (globalProper == null)
-                        Debug.LogError("在Resources中无法找到GlobalProper");
-                }
+        private void InitProper() 
+        {
+            switch (playerType) {
+                case PlayType.Balance: 
+                    playerProper = Resources.Load<PlayerProper>(nameof(PlayType.Balance));
+                    break;
+                case PlayType.Speed:
+                    playerProper = Resources.Load<PlayerProper>(nameof(PlayType.Speed));
+                    break;
+                case PlayType.BombTruck:
+                    playerProper = Resources.Load<PlayerProper>(nameof(PlayType.BombTruck));
+                    break;
+                case PlayType.Tank:
+                    playerProper = Resources.Load<PlayerProper>(nameof(PlayType.Tank));
+                    break;
+                default:
+                    Debug.LogError("未知的角色类型");
+                    break;
+            }
+            if (playerProper == null)
+                Debug.LogError("在Resources中无法找到对应的PlayerProper");
+            print("成功加载PlayerProper");
+            globalProper = Resources.Load<GlobalProper>("GlobalProper");
+            if (globalProper == null)
+                Debug.LogError("在Resources中无法找到GlobalProper");
+        }
         private void LoadProper()
         {
             // ========== 初始值设定 ==========
@@ -226,7 +218,7 @@ namespace player
         
         private void Update()
         { 
-            if(isDead) return;//如果玩家死亡，则不执行以下代码
+            if(isDie) return;//如果玩家死亡，则不执行以下代码
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 PutBomb();
@@ -372,14 +364,14 @@ namespace player
             if (evt.PlayerId == playerId)
             {
                 exp += evt.Exp;
-                print( $"{evt.PlayerId} 玩家经验值增加 {evt.Exp} ,当前经验值 {exp}");
+                print( $"{evt.PlayerId} 经验值增加 {evt.Exp} ,当前经验值 {exp}");
                 
                 if (level < playerProper.maxLevel && exp >= globalProper.maxExpToLevelUp)
                 {
                     GameEventSystem.Broadcast(new LeaveUpEvent() { PlayerId = evt.PlayerId });
                 }else if (level >= playerProper.maxLevel)
                 {
-                    print($"玩家{playerId}等级已满，无法升级");
+                    print($"{playerId}等级已满，无法升级");
                     exp = Mathf.Min(exp, globalProper.maxExpToLevelUp);
                     playerStateHUD.OnExpAddUIUpdate(exp, globalProper.maxExpToLevelUp);
                 }
@@ -408,9 +400,10 @@ namespace player
         {
             if (evt.DieId == playerId)
             {
-                isDead = true;
-                Die();
+                isDie = true;
                 playerId = -10;
+                Die();
+                GetComponent<Collider>().enabled = false;
                 Destroy(moveController);
             }
         }
@@ -420,7 +413,7 @@ namespace player
             if (evt.HitId == playerId)
             {
                 hp -= evt.Damage;
-                print($"{evt.HitId} 玩家受到来自 {evt.OwnerId}的 {evt.Damage} 伤害。剩余血量为: {hp}");//性能貌似没有之前print(evt.HitId+" 玩家受到来自 " + evt.OwnerId +" 伤害" + evt.Damage + " 剩余血量为: " + hp);高
+                print($"{evt.HitId} 受到来自 {evt.OwnerId}的 {evt.Damage} 伤害。剩余血量为: {hp}");//性能貌似没有之前print(evt.HitId+" 玩家受到来自 " + evt.OwnerId +" 伤害" + evt.Damage + " 剩余血量为: " + hp);高
                 if (hp <= 0)//当玩家死亡时
                 {
                     hp = 0;
@@ -445,6 +438,32 @@ namespace player
             GameEventSystem.RemoveListener<PlayerDieEvent>(OnKillPlayer);
             GameEventSystem.RemoveListener<ExpAddEvent>(OnExpAdd);
             GameEventSystem.RemoveListener<LeaveUpEvent>(OnLeaveUp);
+            //TODO : 显示面板
+            
+        }
+
+        private void OnGameOver(GameOverEvent evt)
+        {
+            //TODO 处理游戏结算
+            if (GameModeSelect.IsEnableNPC)
+            {
+                if (isDie && evt.isWin)
+                {
+                    print("游戏结束，玩家失败");
+                }
+                if (!isDie && evt.isWin)
+                {
+                    print("游戏结束，玩家胜利");
+                }
+            }
+            else
+            {
+                if (isDie)
+                {
+                    //游戏结束，输了
+                }
+            }
+
         }
         
         #endregion

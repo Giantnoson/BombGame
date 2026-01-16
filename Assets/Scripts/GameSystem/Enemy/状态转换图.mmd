@@ -1,0 +1,31 @@
+﻿stateDiagram-v2
+    [*] --> Idle : 游戏启动
+
+    Idle --> Search : 搜索附近Destructible物体
+    Search --> PlaceBomb : 移动到目标位置
+    PlaceBomb --> AvoidExplosion : 炸弹放置完成
+    AvoidExplosion --> Idle : 躲避成功/到达安全区域
+
+    Search --> PathWait : 途径爆炸范围
+    PathWait --> Search : 爆炸结束/等待超时
+
+    Idle --> ChasePlayer : 检测到玩家/有可行路径
+    ChasePlayer --> PathWait : 途径爆炸范围
+    ChasePlayer --> Attack : 到达玩家身边
+    PathWait --> ChasePlayer : 爆炸结束/等待超时
+
+    Attack --> AvoidExplosion : 攻击完成/炸弹放置
+    AvoidExplosion --> ChasePlayer : 躲避成功且仍在追击范围
+
+    Idle --> Search : 继续搜索Destructible物体
+    Idle --> ChasePlayer : 优先检测玩家
+
+    note right of AvoidExplosion
+        实时检测爆炸范围
+        计算安全路径
+    end note
+
+    note left of ChasePlayer
+        持续检测玩家位置
+        验证路径可达性
+    end note

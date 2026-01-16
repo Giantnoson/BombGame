@@ -5,11 +5,7 @@ namespace GameSystem
 {
     public class GameModeSelector : MonoBehaviour
     {
-        public enum GameMode
-        {
-            PVP,
-            PVE
-        }
+
 
         public static GameMode CurrentMode { get; private set; }
 
@@ -27,7 +23,7 @@ namespace GameSystem
 
         private void LoadGameScene()
         {
-            SceneManager.LoadScene("GameSence"); 
+            SceneManager.LoadScene("GameScene"); 
         }
     }
 }

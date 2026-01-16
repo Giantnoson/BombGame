@@ -10,7 +10,6 @@ namespace GameSystem.EventSystem
     public class BombPlaceRequestEvent : GameEvent
     {
         public Vector3 Position; // 请求放置的位置
-        public GameObject BombPrefab; // 炸弹预制体
         public int OwnerId; // 放置者（玩家）
         public float BombFuseTime; // 炸弹爆炸时间
         public float BombRadius; // 炸弹爆炸范围

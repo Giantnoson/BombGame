@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using GameSystem;
+using GameSystem.Enemy;
 using GameSystem.EventSystem;
 using player;
 // UnityEditor命名空间只能在编辑器脚本中使用，已移除
@@ -34,9 +35,9 @@ namespace Game_props
         private void OnTriggerExit(Collider other)
         {
             
-            if (other.CompareTag("Player") && other.gameObject.GetComponent<PlayerController>().playerId == ownerId)
+            if (other.CompareTag("Player") && other.gameObject.GetComponent<PlayerController>()?.playerId == ownerId)
             {
-                print("玩家离开炸弹范围，取消触发");
+                //print("玩家离开炸弹范围，取消触发");
                 GetComponent<Collider>().isTrigger = false;
             }
                 
@@ -52,8 +53,8 @@ namespace Game_props
                 Collider[] hitColliders = Physics.OverlapBox(basePos, new Vector3(0.4f, 0.4f, 0.4f), Quaternion.identity);
                 foreach (var hitCollider in hitColliders)
                 {
-                    print("碰撞到 tag = " + hitCollider.tag + " name = " + hitCollider.name + " pos= " + hitCollider.transform.position);
-                    if (hitCollider.CompareTag("Player"))
+                    //print("碰撞到 tag = " + hitCollider.tag + " name = " + hitCollider.name + " pos= " + hitCollider.transform.position);
+                    if (hitCollider.CompareTag(ObjectType.Player.ToString()))
                     {
                         PlayerController playerController = hitCollider.gameObject.GetComponent<PlayerController>();
                         if (hitPlayers.Contains(playerController.playerId))
@@ -68,7 +69,24 @@ namespace Game_props
                             Damage = bombDamage
                         });
                         hitPlayers.Add(playerController.playerId);
-                    }else if (hitCollider.CompareTag("Destructible"))
+                    }
+                    else if(hitCollider.CompareTag(ObjectType.Enemy.ToString()))
+                    {
+                        EnemyAIController enemyAIController = hitCollider.gameObject.GetComponent<EnemyAIController>();
+                        if (hitPlayers.Contains(enemyAIController.EnemyId))
+                        {
+                            print("敌人已经受到伤害，跳过");
+                            continue;
+                        }
+                        GameEventSystem.Broadcast(new PlayerTakeDamageEvent()
+                        {
+                            OwnerId = ownerId,
+                            HitId = enemyAIController.EnemyId,
+                            Damage = bombDamage
+                        });
+                        hitPlayers.Add(enemyAIController.EnemyId);
+                    }
+                    else if (hitCollider.CompareTag(ObjectType.Destructible.ToString()))
                     {
                         GameEventSystem.Broadcast(new ExpAddEvent()
                         {
@@ -76,13 +94,13 @@ namespace Game_props
                             Exp = 10
                         });
                         Destroy(hitCollider.gameObject);
-                    }else if (hitCollider.CompareTag("Wall"))
+                    }else if (hitCollider.CompareTag(ObjectType.Wall.ToString()))
                     {
 
                         print("碰撞到墙体，退出");
                         return;
                     }
-                    else if (hitCollider.CompareTag("Bomb"))
+                    else if (hitCollider.CompareTag(ObjectType.Bomb.ToString()))
                     {
                         if (hitCollider.gameObject != gameObject)
                         {
@@ -110,8 +128,8 @@ namespace Game_props
             Collider[] hitColliders = Physics.OverlapBox(bombPos, new Vector3(0.4f, 0.4f, 0.4f), Quaternion.identity);
             foreach (var hitCollider in hitColliders)
             {
-                print("碰撞到 tag = " + hitCollider.tag + " name = " + hitCollider.name + " pos= " + hitCollider.transform.position);
-                if (hitCollider.CompareTag("Player"))
+                //print("碰撞到 tag = " + hitCollider.tag + " name = " + hitCollider.name + " pos= " + hitCollider.transform.position);
+                if (hitCollider.CompareTag(ObjectType.Player.ToString()))
                 {
                     PlayerController playerController = hitCollider.gameObject.GetComponent<PlayerController>();
                     if (hitPlayers.Contains(playerController.playerId))
@@ -127,7 +145,23 @@ namespace Game_props
                     });
                     hitPlayers.Add(playerController.playerId);
                 }
-                else if (hitCollider.CompareTag("Destructible"))
+                else if(hitCollider.CompareTag(ObjectType.Enemy.ToString()))
+                {
+                    EnemyAIController enemyAIController = hitCollider.gameObject.GetComponent<EnemyAIController>();
+                    if (hitPlayers.Contains(enemyAIController.EnemyId))
+                    {
+                        print("敌人已经受到伤害，跳过");
+                        continue;
+                    }
+                    GameEventSystem.Broadcast(new PlayerTakeDamageEvent()
+                    {
+                        OwnerId = ownerId,
+                        HitId = enemyAIController.EnemyId,
+                        Damage = bombDamage
+                    });
+                    hitPlayers.Add(enemyAIController.EnemyId);
+                }
+                else if (hitCollider.CompareTag(ObjectType.Destructible.ToString()))
                 {
                     GameEventSystem.Broadcast(new ExpAddEvent()
                     {
@@ -136,13 +170,13 @@ namespace Game_props
                     });
                     Destroy(hitCollider.gameObject);
                 }
-                else if (hitCollider.CompareTag("Wall"))
+                else if (hitCollider.CompareTag(ObjectType.Wall.ToString()))
                 {
 
                     print("碰撞到墙体，退出");
                     return;
                 }
-                else if (hitCollider.CompareTag("Bomb"))
+                else if (hitCollider.CompareTag(ObjectType.Bomb.ToString()))
                 {
                     if (hitCollider.gameObject != gameObject)
                     {

@@ -1,15 +1,11 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using player;
+using UnityEngine;
 
 namespace GameSystem
 {
     //游戏状态
-    [System.Serializable]
-    public enum GameState
-    {
-        MainMenu,//主菜单
-        InGame,//游戏中
-        GameOver//游戏结束
-    }
+
 
     //游戏类型
     [System.Serializable]
@@ -19,25 +15,38 @@ namespace GameSystem
         Offline//离线
     }
     
+    public enum GameMode
+    {
+        PVP,
+        PVE
+    }
+    
     
     
     
     
     public class GameModeSelect : MonoBehaviour
     {
+        public static GameModeSelect Instance { get;  set; }
+
         [Tooltip("游戏状态")]
-        public static GameState CurrentState { get; private set; }
+        public static GameState CurrentState { get; set; }
         [Tooltip("游戏类型")]
-        public static GameType CurrentType { get; private set; }
+        public static GameType CurrentType { get;set; }
         [Tooltip("是否启用NPC")]
-        public static bool IsEnableNPC { get; private set; }
+        public static bool IsEnableNPC { get; set; }
         [Tooltip("玩家数量")]
-        public static int PlayerCount { get; private set; }
+        public static int PlayerCount { get; set; }
         [Tooltip("NPC数量")]
-        public static int NPCCount { get; private set; }
+        public static int NPCCount { get; set; }
+        [Tooltip("玩家类型")]
+        public static List<PlayType> playTypes;
+        [Tooltip("玩家名称")] 
+        public static List<string> playerNames;
+        [Tooltip("玩家ID")]
+        public static List<int> playerIds;
         
         
-        public static GameModeSelect Instance { get; private set; }
 
         private void Awake()
         {
