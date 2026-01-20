@@ -1,4 +1,5 @@
 
+using GameSystem.Map;
 using UnityEngine;
 
 namespace GameSystem.Enemy
@@ -16,7 +17,6 @@ namespace GameSystem.Enemy
         private float targetCheckInterval = 0.2f;
         // 上次检查时间
         private float lastCheckTime;
-
         /// <summary>
         /// 进入状态时的回调函数
         /// </summary>
@@ -24,7 +24,11 @@ namespace GameSystem.Enemy
         protected internal override void OnEnter(IFsm<EnemyAIController> fsm)
         {
             Debug.Log("进入搜索状态");
+            Owner.StatusLog.Add(EnemyAIStates.Search);
+            Owner.StatusQueue.Enqueue(EnemyAIStates.Search);
+            Owner.StatusQueue.Dequeue();
             hasTarget = false;
+            Owner.isMoving = false;
             FindNewTarget();
         }
         /// <summary>
@@ -44,7 +48,7 @@ namespace GameSystem.Enemy
             }
 
             // 移动向目标
-            if (hasTarget)
+            if (hasTarget && !Owner.isMoving)
             {
                 MoveToTarget();
             }
@@ -58,7 +62,7 @@ namespace GameSystem.Enemy
         {
 
             Debug.Log("离开搜索状态");
-            Owner.StopMove();
+            //Owner.isMoving = false;
         }
 
         /// <summary>
@@ -67,6 +71,9 @@ namespace GameSystem.Enemy
         ///<param name="fsm">有限状态机引用</param>
         private void CheckState(IFsm<EnemyAIController> fsm)
         {
+            // 先扫描周围区域，确保地图数据是最新的
+            Owner.mapScan.ScanArea(Owner.transform.position, Mathf.CeilToInt(Owner.detectionRange));
+
             // 1. 检测爆炸威胁（最高优先级）
 
             if (Owner.IsInExplosionRange(Owner.transform.position))
@@ -75,20 +82,25 @@ namespace GameSystem.Enemy
                 return;
             }
 
-            // 2. 检测玩家（高优先级）
+            // 2. 检测玩家
             Transform nearestPlayer = Owner.GetNearestPlayer();
             if (nearestPlayer != null)
             {
+
                 float distance = Vector3.Distance(Owner.transform.position, nearestPlayer.position);
                 if (distance <= Owner.chaseRange)
                 {
-                    ChangeState<ChasePlayerState>(fsm);
-                    return;
+                    var pointStepTracker = Owner.mapScan.ExistPathForFindPlayer(Owner.transform.position, nearestPlayer.position);
+                    if (pointStepTracker != null)
+                    {
+                        ChangeState<ChasePlayerState>(fsm);
+                        return;
+                    }
                 }
             }
 
             // 3. 检查是否到达目标
-            if (hasTarget && Vector3.Distance(Owner.transform.position, targetPosition) < 0.5f)
+            if (hasTarget && Vector3.Distance(Owner.transform.position, targetPosition) < Owner.stoppingDistance + 0.1f)
             {
                 ChangeState<PlaceBombState>(fsm);
                 return;
@@ -100,6 +112,11 @@ namespace GameSystem.Enemy
                 ChangeState<PathWaitState>(fsm);
                 return;
             }
+
+            if (!hasTarget)
+            {
+                FindNewTarget();
+            }
         }
 
         /// <summary>
@@ -107,11 +124,78 @@ namespace GameSystem.Enemy
         /// </summary>
         private void FindNewTarget()
         {
-            // TODO: 实现寻找最近可破坏方块的逻辑
-            // 临时：随机选择一个位置
-            targetPosition = Owner.transform.position + Random.insideUnitSphere * 5f;
-            targetPosition.y = Owner.transform.position.y;
-            hasTarget = true;
+            Owner.isMoving = false;
+            Owner.mapScan.ScanArea(Owner.transform.position,Mathf.CeilToInt(Owner.detectionRange));
+            var pointStepTracker = Owner.mapScan.SearchTagWithBFS(Owner.transform.position,ObjectType.Destructible,Mathf.CeilToInt(Owner.detectionRange));
+            if (pointStepTracker != null)
+            {
+                Debug.Log("存在可破坏的方块");
+                foreach (var stepTracker in pointStepTracker)
+                {
+                    if (!IsInExplosionRange(Owner.mapScan.GetRealCoord(stepTracker.Point)))
+                    {
+                        targetPosition = Owner.mapScan.GetRealCoord(stepTracker.Point);
+                        hasTarget = true;
+                        return;
+                    }
+                }
+  
+            }
+            Debug.Log("找不到可破坏的方块，进行全局扫描");
+            hasTarget = HasDestructible();
+        }
+        
+        
+        private bool HasDestructible()
+        {
+            Owner.mapScan.ScanAllMap();
+            Debug.Log("找不到可破坏的方块，进行全局扫描");
+            var pointStepTracker = Owner.mapScan.SearchTagWithBFS(Owner.transform.position,ObjectType.Destructible);
+            if (pointStepTracker != null)
+            {
+                bool ishasDestructibleBlockInExplosionRange = false;
+                Debug.Log("存在可破坏的方块");
+                foreach (var stepTracker in pointStepTracker)
+                {
+                    if (!IsInExplosionRange(Owner.mapScan.GetRealCoord(stepTracker.Point)))
+                    {
+                        Debug.Log("存在不在爆炸范围的可破坏方块");
+                        ishasDestructibleBlockInExplosionRange = true;
+                        break;
+
+                    }
+                }
+
+                if (ishasDestructibleBlockInExplosionRange)
+                {
+                    PointStepTracker selectedBlock;
+                    while (true)
+                    {
+                        int randomIndex = Random.Range(0, pointStepTracker.Count);
+                        selectedBlock = pointStepTracker[randomIndex];
+                        if (!IsInExplosionRange(Owner.mapScan.GetRealCoord(selectedBlock.Point)))
+                        {
+                            break;
+                        }
+                    }
+
+                    targetPosition = Owner.mapScan.GetRealCoord(selectedBlock.Point);
+                    Owner.MoveTo(targetPosition);
+                    return true;
+                }
+            }
+            Debug.Log("全局不存在不在爆炸范围的可破坏方块,采取随机移动策略");
+            //采取随机移动的策略;
+            var pointInArea =Owner.mapScan.GetRandomPointInArea(Owner.ToBombPutPos(Owner.transform.position),
+                Mathf.CeilToInt(Owner.detectionRange));
+            if (pointInArea != null)
+            {
+                targetPosition = Owner.mapScan.GetRealCoord(pointInArea.Point);
+                var ans =  Owner.MoveTo(Owner.mapScan.GetRealCoord(pointInArea.Point));
+                Owner.isMoving = ans;
+                return ans;
+            }
+            return false;
         }
 
         /// <summary>
@@ -119,7 +203,13 @@ namespace GameSystem.Enemy
         /// </summary>
         private void MoveToTarget()
         {
-            Owner.MoveTo(targetPosition);
+            
+            Debug.Log("移动到目标：" + targetPosition + " vPos:" + Owner.mapScan.GetVirtualCoord(targetPosition));
+            Owner.isMoving = Owner.MoveTo(targetPosition);
+            if (!Owner.isMoving)
+            {
+                hasTarget = false;
+            }
         }
 
         /// <summary>
@@ -127,7 +217,10 @@ namespace GameSystem.Enemy
         /// </summary>
         private bool IsPathBlockedByExplosion()
         {
-            // TODO: 实现路径爆炸检测
+            if (Owner.IsInExplosionRange(Owner.transform.position))
+            {
+                return true;
+            }
             return false;
         }
     }

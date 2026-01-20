@@ -15,6 +15,10 @@ namespace GameSystem.Enemy
         protected internal override void OnEnter(IFsm<EnemyAIController> fsm)
         {
             Debug.Log("进入路径等待状态");
+            Owner.StatusLog.Add(EnemyAIStates.PathWait);
+            Owner.StatusQueue.Enqueue(EnemyAIStates.PathWait);
+            Owner.StatusQueue.Dequeue();
+            //Owner.isMoving = false;
             Owner.StopMove();
             currentWaitTime = 0f;
             isWaitingForExplosion = true;
@@ -22,6 +26,9 @@ namespace GameSystem.Enemy
 
         protected internal override void OnUpdate(IFsm<EnemyAIController> fsm, float elapseSeconds, float realElapseSeconds)
         {
+            // 先扫描周围区域，确保地图数据是最新的
+            Owner.mapScan.ScanArea(Owner.transform.position, Mathf.CeilToInt(Owner.detectionRange));
+
             currentWaitTime += elapseSeconds;
 
             // 1. 检测爆炸威胁
@@ -73,8 +80,19 @@ namespace GameSystem.Enemy
         private void ReturnToPreviousState(IFsm<EnemyAIController> fsm)
         {
             // TODO: 根据上下文决定返回SearchState还是ChasePlayerState
-            // 临时：默认返回SearchState
-            ChangeState<SearchState>(fsm);
+            EnemyAIStates states = Owner.StatusQueue.Peek();
+            switch (states)
+            {
+                case EnemyAIStates.Search:
+                    ChangeState<SearchState>(fsm);
+                    break;
+                case EnemyAIStates.ChasePlayer:
+                    ChangeState<ChasePlayerState>(fsm);
+                    break;
+                default:
+                    ChangeState<SearchState>(fsm);
+                    break;
+            }
         }
 
         /// <summary>

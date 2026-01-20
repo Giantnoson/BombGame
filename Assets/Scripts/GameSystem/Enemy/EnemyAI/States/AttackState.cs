@@ -21,7 +21,11 @@ namespace GameSystem.Enemy
         /// <param name="fsm">有限状态机接口</param>
         protected internal override void OnEnter(IFsm<EnemyAIController> fsm)
         {
-            Debug.Log("进入攻击状态"); // 输出日志，表示进入攻击状态
+            Debug.Log("进入攻击状态");
+            Owner.StatusLog.Add(EnemyAIStates.Attack);
+            Owner.StatusQueue.Enqueue(EnemyAIStates.Attack);
+            Owner.StatusQueue.Dequeue();
+            //Owner.isMoving = false;
             Owner.StopMove(); // 停止移动
             targetPlayer = Owner.GetNearestPlayer(); // 获取最近的玩家目标
             lastAttackTime = Time.time - attackInterval; // 允许立即攻击
@@ -41,6 +45,8 @@ namespace GameSystem.Enemy
 
         protected internal override void OnLeave(IFsm<EnemyAIController> fsm, bool isShutdown)
         {
+            //Owner.isMoving = false;
+            Owner.StopMove();
             Debug.Log("离开攻击状态");
         }
 
@@ -49,6 +55,9 @@ namespace GameSystem.Enemy
         /// </summary>
         private void CheckState(IFsm<EnemyAIController> fsm)
         {
+            // 先扫描周围区域，确保地图数据是最新的
+            Owner.mapScan.ScanArea(Owner.transform.position, Mathf.CeilToInt(Owner.detectionRange));
+
             // 1. 检测爆炸威胁（最高优先级）
             if (Owner.IsInExplosionRange(Owner.transform.position))
             {

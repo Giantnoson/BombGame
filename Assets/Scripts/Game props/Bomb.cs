@@ -34,10 +34,14 @@ namespace Game_props
 
         private void OnTriggerExit(Collider other)
         {
-            
-            if (other.CompareTag("Player") && other.gameObject.GetComponent<PlayerController>()?.playerId == ownerId)
+            if (other.CompareTag(nameof(ObjectType.Player)) &&
+                other.gameObject.GetComponent<PlayerController>()?.playerId == ownerId)
             {
                 //print("玩家离开炸弹范围，取消触发");
+                GetComponent<Collider>().isTrigger = false;
+            } else if (other.CompareTag(nameof(ObjectType.Enemy)) && other.gameObject.GetComponent<EnemyAIController>()?.EnemyId == ownerId)
+            {
+                print("敌人离开炸弹范围，取消触发");
                 GetComponent<Collider>().isTrigger = false;
             }
                 

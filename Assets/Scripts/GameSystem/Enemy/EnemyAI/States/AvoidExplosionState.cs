@@ -17,6 +17,11 @@ namespace GameSystem.Enemy
         protected internal override void OnEnter(IFsm<EnemyAIController> fsm)
         {
             Debug.Log("进入躲避爆炸状态");
+            //Owner.isMoving = false;
+            Owner.StopMove();
+            Owner.StatusLog.Add(EnemyAIStates.AvoidExplosion);
+            Owner.StatusQueue.Enqueue(EnemyAIStates.AvoidExplosion);
+            Owner.StatusQueue.Dequeue();
             hasSafePosition = false;
             FindSafePosition();
 
@@ -31,20 +36,39 @@ namespace GameSystem.Enemy
             // 定期检查安全状态
             if (Time.time - lastCheckTime >= safetyCheckInterval)
             {
+                Debug.Log("确认是否安全");
                 lastCheckTime = Time.time;
                 CheckSafety(fsm);
             }
 
             // 移动向安全位置
-            if (hasSafePosition)
+            if (hasSafePosition && !Owner.isMoving)
             {
+                Debug.Log("存在安全的地方，移动到安全的地点:" + safePosition);
                 MoveToSafePosition();
+            }
+            else if(!hasSafePosition)
+            {
+                Debug.Log("没有安全的地方，随机移动");
+                var pointInArea =Owner.mapScan.GetRandomPointInArea(Owner.ToBombPutPos(Owner.transform.position),
+                    Mathf.CeilToInt(Owner.detectionRange));
+                if (pointInArea != null)
+                {
+                    hasSafePosition = true;
+                    safePosition = Owner.mapScan.GetRealCoord(pointInArea.Point);
+                    
+                }
+                else
+                {
+                    Debug.Log("没有找到安全的地方，随机移动失败");
+                }
             }
         }
 
         protected internal override void OnLeave(IFsm<EnemyAIController> fsm, bool isShutdown)
         {
             Debug.Log("离开躲避爆炸状态");
+            //Owner.isMoving = false;
             Owner.StopMove();
         }
 
@@ -53,10 +77,14 @@ namespace GameSystem.Enemy
         /// </summary>
         private void CheckSafety(IFsm<EnemyAIController> fsm)
         {
+            // 先扫描周围区域，确保地图数据是最新的
+            Owner.mapScan.ScanArea(Owner.transform.position, Mathf.CeilToInt(Owner.detectionRange));
+
             // 1. 检查当前位置是否安全
             if (!Owner.IsInExplosionRange(Owner.transform.position))
             {
                 // 当前位置安全
+                Debug.Log("当前位置安全");
                 if (wasChasingPlayer)
                 {
                     // 之前在追击玩家，检查玩家是否还在追击范围内
@@ -66,9 +94,12 @@ namespace GameSystem.Enemy
                         float distance = Vector3.Distance(Owner.transform.position, nearestPlayer.position);
                         if (distance <= Owner.chaseRange)
                         {
-                            // 玩家仍在追击范围内，继续追击
-                            ChangeState<ChasePlayerState>(fsm);
-                            return;
+                            var pointStepTracker = Owner.mapScan.ExistPathForFindPlayer(Owner.transform.position, nearestPlayer.position);
+                            if (pointStepTracker != null)
+                            {
+                                ChangeState<ChasePlayerState>(fsm);
+                                return;
+                            }
                         }
                     }
                 }
@@ -81,7 +112,10 @@ namespace GameSystem.Enemy
             // 2. 检查安全位置是否仍然安全
             if (hasSafePosition && Owner.IsInExplosionRange(safePosition))
             {
+                Debug.Log("当前位置不安全");
                 // 安全位置不再安全，重新寻找
+                Owner.isMoving = false;
+                //hasSafePosition = false;//下面方法已经设置了
                 FindSafePosition();
             }
         }
@@ -91,31 +125,18 @@ namespace GameSystem.Enemy
         /// </summary>
         private void FindSafePosition()
         {
-            // TODO: 实现更智能的安全位置查找算法
-            // 临时：在当前位置周围随机查找安全位置
-            Vector3[] possiblePositions = new Vector3[8];
-            possiblePositions[0] = Owner.transform.position + Vector3.forward * 2f;
-            possiblePositions[1] = Owner.transform.position + Vector3.back * 2f;
-            possiblePositions[2] = Owner.transform.position + Vector3.left * 2f;
-            possiblePositions[3] = Owner.transform.position + Vector3.right * 2f;
-            possiblePositions[4] = Owner.transform.position + new Vector3(2f, 0, 2f);
-            possiblePositions[5] = Owner.transform.position + new Vector3(-2f, 0, 2f);
-            possiblePositions[6] = Owner.transform.position + new Vector3(2f, 0, -2f);
-            possiblePositions[7] = Owner.transform.position + new Vector3(-2f, 0, -2f);
-
-            foreach (var pos in possiblePositions)
+            Vector3 safePosition = Owner.findSafePosition(Owner.transform.position);
+            if (safePosition == Vector3.down)
             {
-                if (!Owner.IsInExplosionRange(pos))
-                {
-                    safePosition = pos;
-                    safePosition.y = Owner.transform.position.y;
-                    hasSafePosition = true;
-                    return;
-                }
+                // 没有找到安全位置
+                hasSafePosition = false;
             }
-
-            // 没有找到安全位置
-            hasSafePosition = false;
+            else
+            {
+                // 找到安全位置
+                this.safePosition = safePosition;
+                hasSafePosition = true;
+            }
         }
 
         /// <summary>
@@ -123,9 +144,9 @@ namespace GameSystem.Enemy
         /// </summary>
         private void MoveToSafePosition()
         {
-            if (!hasSafePosition) return;
-
-            Owner.MoveTo(safePosition);
+            if (hasSafePosition && !Owner.isMoving)
+                Owner.MoveTo(safePosition);
+            //Owner.isMoving = true;
         }
     }
 }
