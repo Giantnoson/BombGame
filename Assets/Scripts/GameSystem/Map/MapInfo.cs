@@ -16,7 +16,12 @@ namespace GameSystem.Map
         public int offsetDistance = 15;                // 扫描偏移距离，决定扫描范围
         [Tooltip("地图数据")]
         public Dictionary<Vector2Int, MapNode> _mapData = new Dictionary<Vector2Int, MapNode>();
-        public Dictionary<Vector2Int,MapNode> MapData { get; private set; }          // 地图数据属性
+
+        public Dictionary<Vector2Int, MapNode> MapData
+        {
+            get => _mapData;
+            private set => _mapData = value;
+        }         // 地图数据属性
 
         private List<TagType> TagList = new List<TagType>();
         private Dictionary<string,TagType> TagMap = new Dictionary<string,TagType>();
@@ -29,9 +34,19 @@ namespace GameSystem.Map
         [Tooltip("局部扫描的半径")]
         public int referenceOffset = 5;               // 局部扫描的半径
 
-        [Header("打印调试")]
+        [Header("调试信息")]
+        [Tooltip("打印调试")]
         public bool isPrint = true;                   // 是否打印调试信息
 
+
+        [Tooltip("调试起点")]
+        [SerializeField]
+        public Vector2Int TStart;
+        [Tooltip("调试终点")]
+        [SerializeField]
+        public Vector2Int TEnd;
+        
+        
         //用于存放碰撞器
         private Collider[] _hitColliders = new Collider[20];
 
@@ -41,6 +56,38 @@ namespace GameSystem.Map
         private Vector2Int[] _direction = new []{Vector2Int.up,Vector2Int.down,Vector2Int.left,Vector2Int.right};
 
         private Vector3[] _v3direction = new []{Vector3.forward,Vector3.back,Vector3.left,Vector3.right};
+
+
+        public void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.T))
+            {
+                PrintMap();
+            }
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                ScanAllMap();
+            }
+
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+                var info = SearchPath(TStart, TEnd);
+                Debug.Log(info);
+            }
+        }
+
+        private void PrintMap()
+        {
+            foreach (var mapNode in MapData)
+            {
+                if (mapNode.Value != null)
+                {
+                    Debug.Log(mapNode.Key + " : " + mapNode.Value);
+                }
+            }
+        }
+
+
         private void Awake()
         {
             // 获取或创建对象池
@@ -96,9 +143,9 @@ namespace GameSystem.Map
                     pos.x = i - offsetDistance + 0.5f;
                     pos.z = j - offsetDistance + 0.5f;
                     ScanCollider(pos, i, j);
-                    InitNeighbor();
                 }
             }
+            InitNeighbor();
         }
 
         private void ScanCollider(Vector3 v3Pos, int i, int j)
@@ -145,8 +192,9 @@ namespace GameSystem.Map
                     }
                 }
             }
-
         }
+        
+        
         /// <summary>
         /// 更新所有地图数据
         /// </summary>
@@ -331,7 +379,7 @@ namespace GameSystem.Map
 
         //预计使用AStar算法进行实现
 
-        public List<PathInfo> SearchPath(Vector3 v3StartPos, Vector3 v3EndPos)
+        public PathInfo SearchPath(Vector3 v3StartPos, Vector3 v3EndPos)
         {
             return SearchPath(GetVirtualCoord(v3StartPos), GetVirtualCoord(v3EndPos));
         }
@@ -342,7 +390,7 @@ namespace GameSystem.Map
         /// <param name="startPos">起始位置</param>
         /// <param name="endPos">目标位置</param>
         /// <returns>路径信息列表，如果找不到路径则返回null</returns>
-        public List<PathInfo> SearchPath(Vector2Int startPos, Vector2Int endPos)
+        public PathInfo SearchPath(Vector2Int startPos, Vector2Int endPos)
         {
             // 检查起点和终点是否在地图数据中
             if (!MapData.ContainsKey(startPos) || !MapData.ContainsKey(endPos))
@@ -360,52 +408,39 @@ namespace GameSystem.Map
             var cameFrom = new Dictionary<MapNode, MapNode>(); 
             //从起点到当前节点的实际代价
             var gScore = new Dictionary<MapNode, float>();
-            
             // 获取起点和终点节点
             var startNode = MapData[startPos];
             var endNode = MapData[endPos];
-            
             // 初始化起点的g值和f值
             gScore[startNode] = 0;
             startNode.F = Heuristic(startNode, endNode);
-            
             // 将起点加入开放列表
             openList.Add(startNode);
-            
             while (openList.Count > 0)
             {
                 // 获取f值最小的节点
                 var currentNode = openList.Pop();
-                
                 // 如果到达目标节点，构建并返回路径
                 if (currentNode == endNode)
-                {
                     return ReconstructPath(cameFrom, currentNode, startPos, endPos);
-                }
-                
                 // 将当前节点加入关闭列表
                 closeList.Add(currentNode);
-                
                 // 遍历当前节点的所有邻居
                 foreach (var neighbor in currentNode.MapNodes)
                 {
                     // 如果邻居在关闭列表中，跳过
                     if (closeList.Contains(neighbor))
                         continue;
-                    
                     // 计算从起点经过当前节点到邻居的代价
                     var neighborGScore = gScore[currentNode] + DistanceBetween(currentNode, neighbor);
-                    
                     // 如果邻居不在开放列表中，或者找到更好的路径
                     if (!openList.Contains(neighbor) || neighborGScore < gScore[neighbor])
                     {
                         // 记录路径
                         cameFrom[neighbor] = currentNode;
-                        
                         // 更新g值和f值
                         gScore[neighbor] = neighborGScore;
                         neighbor.F = gScore[neighbor] + Heuristic(neighbor, endNode);
-                        
                         // 如果邻居不在开放列表中，加入开放列表
                         if (!openList.Contains(neighbor))
                         {
@@ -414,7 +449,6 @@ namespace GameSystem.Map
                     }
                 }
             }
-            
             // 无法找到路径
             return null;
         }
@@ -422,38 +456,27 @@ namespace GameSystem.Map
         /// <summary>
         /// 路径回溯，构建完整路径
         /// </summary>
-        private List<PathInfo> ReconstructPath(Dictionary<MapNode, MapNode> cameFrom, MapNode current, Vector2Int startPos, Vector2Int endPos)
+        private PathInfo ReconstructPath(Dictionary<MapNode, MapNode> cameFrom, MapNode current, Vector2Int startPos, Vector2Int endPos)
         {
             var totalPath = new List<MapNode> { current };
-            
             // 从终点回溯到起点
             while (cameFrom.ContainsKey(current))
             {
                 current = cameFrom[current];
                 totalPath.Add(current);
             }
-            
             // 反转路径，使其从起点到终点
             totalPath.Reverse();
-            
             // 转换为PathInfo列表
-            var result = new List<PathInfo>();
             var path = new List<Vector2Int>();
-            
             foreach (var node in totalPath)
-            {
                 path.Add(node.CurrentPos);
-            }
-            
             var targetInfo = new TargetInfo
             {
                 Pos = endPos,
                 Type = MapData[endPos].CurrentTag.Count > 0 ? MapData[endPos].CurrentTag.First() : TagType.Nothing
             };
-            
-            result.Add(new PathInfo(startPos, targetInfo, path));
-            
-            return result;
+            return new PathInfo(startPos, targetInfo, path);
         }
 
         /// <summary>

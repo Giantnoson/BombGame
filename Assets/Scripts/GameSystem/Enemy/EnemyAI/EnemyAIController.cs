@@ -93,6 +93,9 @@ namespace GameSystem.Enemy
         public NavMeshAgent enemyAgent;
 
         public BombPos bombPos;
+
+        //地图信息组件
+        public MapInfo MapInfo;
         
         
         
