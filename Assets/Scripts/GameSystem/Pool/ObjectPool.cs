@@ -1,22 +1,27 @@
-
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Game_props
+namespace GameSystem.Pool
 {
     /// <summary>
-    /// 对象池基类，提供通用的对象池功能
+    /// 通用对象池基类，提供基本的对象池功能
     /// </summary>
+    /// <typeparam name="T">对象类型，必须继承自MonoBehaviour</typeparam>
     public abstract class ObjectPool<T> : MonoBehaviour where T : MonoBehaviour
     {
         [Header("对象池设置")]
-        [Tooltip("预制体")]
+        [Tooltip("对象预制体")]
         public GameObject prefab;
+        
         [Tooltip("初始池大小")]
-        public int initialPoolSize = 20;
+        [SerializeField] protected int initialPoolSize = 20;
+        
         [Tooltip("池扩展大小")]
-        public int poolExpandSize = 10;
+        [SerializeField] protected int poolExpandSize = 10;
+        
+        [Tooltip("最大池大小")]
+        [SerializeField] protected int maxPoolSize = 100;
 
         protected Queue<GameObject> objectPool = new Queue<GameObject>();
         protected Transform poolContainer;
@@ -44,8 +49,6 @@ namespace Game_props
                 Debug.LogError($"{typeof(T).Name}预制体为空");
                 return;
             }
-
-            Debug.Log($"{typeof(T).Name}预制体加载成功");
 
             T component = prefab.GetComponent<T>();
             if (component == null)
@@ -98,8 +101,16 @@ namespace Game_props
             }
             else
             {
+                // 检查是否达到最大池大小
+                if (objectPool.Count >= maxPoolSize)
+                {
+                    Debug.LogWarning($"{typeof(T).Name}对象池已达到最大大小 {maxPoolSize}，无法扩展");
+                    return null;
+                }
+
                 // 扩展对象池
-                for (int i = 0; i < poolExpandSize - 1; i++)
+                int expandCount = Mathf.Min(poolExpandSize, maxPoolSize - objectPool.Count);
+                for (int i = 0; i < expandCount - 1; i++)
                 {
                     GameObject newObj = CreateNewObject();
                     newObj.SetActive(false);
@@ -119,7 +130,16 @@ namespace Game_props
             ResetObject(obj);
             obj.SetActive(false);
             obj.transform.SetParent(poolContainer);
-            objectPool.Enqueue(obj);
+            
+            // 检查是否超过最大池大小
+            if (objectPool.Count < maxPoolSize)
+            {
+                objectPool.Enqueue(obj);
+            }
+            else
+            {
+                Destroy(obj);
+            }
         }
 
         /// <summary>
@@ -128,6 +148,29 @@ namespace Game_props
         protected virtual void ResetObject(GameObject obj)
         {
             // 子类可以重写此方法以实现特定的重置逻辑
+        }
+
+        /// <summary>
+        /// 获取对象池中当前可用的对象数量
+        /// </summary>
+        public int AvailableCount()
+        {
+            return objectPool.Count;
+        }
+
+        /// <summary>
+        /// 清空对象池
+        /// </summary>
+        public void ClearPool()
+        {
+            while (objectPool.Count > 0)
+            {
+                GameObject obj = objectPool.Dequeue();
+                if (obj != null)
+                {
+                    Destroy(obj);
+                }
+            }
         }
     }
 }

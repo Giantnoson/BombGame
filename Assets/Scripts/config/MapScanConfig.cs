@@ -32,4 +32,6 @@ public enum ObjectType
     Enemy,
     Bomb,
     Nothing
+    
+    
 }
