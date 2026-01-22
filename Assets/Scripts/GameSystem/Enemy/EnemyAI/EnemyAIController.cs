@@ -92,12 +92,15 @@ namespace GameSystem.Enemy
         // 敌人寻路组件
         public NavMeshAgent enemyAgent;
 
+        //炸弹位置组件
         public BombPos bombPos;
-
+        
         //地图信息组件
         public MapInfo MapInfo;
+
+        private EnemyMoveController _moveController;
         
-        
+        public EnemyMoveController MoveController => _moveController;
         
         GameObject[] players;
         
@@ -114,6 +117,8 @@ namespace GameSystem.Enemy
             mapScan = FindAnyObjectByType<MapScan>();
             enemyAgent = GetComponent<NavMeshAgent>();
             bombPos = FindAnyObjectByType<BombPos>();
+            MapInfo = FindAnyObjectByType<MapInfo>();
+            _moveController = GetComponent<EnemyMoveController>();
             if (mapScan == null)
             {
                 Debug.LogError("无法找到地图扫描组件");
@@ -128,6 +133,19 @@ namespace GameSystem.Enemy
             {
                 Debug.LogError("无法找到BombPos组件");
             }
+
+            if (MapInfo == null)
+            {
+                Debug.LogError("无法找到MapInfo组件");
+            }
+            
+            if (_moveController == null)
+            {
+                Debug.LogError("无法找到EnemyMoveController组件");
+            }
+            
+            _moveController.Init(this,characterController);
+            
             enemyAgent.stoppingDistance = 0f;
         }
 
@@ -243,68 +261,6 @@ namespace GameSystem.Enemy
         {
             return bombPos.BombExportArea.ContainsKey(ToBombPutPos(position));
         }
-
-        /*public bool CheckBombCanAttack(BombPlaceRequestEvent bombInfo)
-        {
-            Vector2Int enemyVirtualCoord = mapScan.GetVirtualCoord(transform.position);//获取NPC虚拟坐标
-            Vector2Int bombVirtualCoord = mapScan.GetVirtualCoord(bombInfo.Position);//获取炸弹虚拟坐标
-            if (enemyVirtualCoord.x != bombVirtualCoord.x && enemyVirtualCoord.y != bombVirtualCoord.y) //如果NPC坐标与炸弹坐标没有一个重合
-                return false;
-            char wall = mapScan.TagPointPairsMap[ObjectType.Wall.ToString()];// 获取墙壁标签
-            int radius = Mathf.CeilToInt(bombInfo.BombRadius);//获取炸弹半径
-            int offsetDistance = mapScan.offsetDistance; //获取地图偏移距离
-            if (enemyVirtualCoord.x == bombVirtualCoord.x)//如果NPC坐标与炸弹坐标x重合，则对Y进行爆炸检测
-            {
-                for (int i = bombVirtualCoord.y + 1; i < bombVirtualCoord.y + radius - 1 && i < offsetDistance * 2; i++)
-                {
-                    if (enemyVirtualCoord.y == i)
-                    {
-                        return true;
-                    }
-                    if (mapScan.MapData.Map[bombVirtualCoord.x, i] == wall)
-                    {
-                        break;
-                    }
-                }
-                for (int i = bombVirtualCoord.y - 1; i > bombVirtualCoord.y - radius + 1 && i >= 0; i--)
-                {
-                    if (enemyVirtualCoord.y == i)
-                    {
-                        return true;
-                    }
-                    if (mapScan.MapData.Map[bombVirtualCoord.x, i] == wall)
-                    {
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                for (int i = bombVirtualCoord.x + 1; i < bombVirtualCoord.x + radius - 1 && i < offsetDistance * 2; i++)
-                {
-                    if (enemyVirtualCoord.x == i)
-                    {
-                        return true;
-                    }
-                    if (mapScan.MapData.Map[i, bombVirtualCoord.y] == wall)
-                    {
-                        break;
-                    }
-                }
-                for (int i = bombVirtualCoord.x - 1; i > bombVirtualCoord.x - radius + 1 && i >= 0; i--)
-                {
-                    if (enemyVirtualCoord.x == i)
-                    {
-                        return true;
-                    }
-                    if (mapScan.MapData.Map[i, bombVirtualCoord.y] == wall)
-                    {
-                        break;
-                    }
-                }
-            }
-            return false;
-        }*/
 
         public Vector3 findSafePosition(Vector3 pos)
         {
