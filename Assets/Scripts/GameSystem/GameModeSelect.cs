@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using config;
 using player;
 using UnityEngine;
 
@@ -40,7 +41,7 @@ namespace GameSystem
         [Tooltip("NPC数量")]
         public static int NPCCount { get; set; }
         [Tooltip("玩家类型")]
-        public static List<PlayType> playTypes;
+        public static List<CharacterType> playTypes;
         [Tooltip("玩家名称")] 
         public static List<string> playerNames;
         [Tooltip("玩家ID")]

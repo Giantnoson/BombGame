@@ -1,8 +1,9 @@
 using System.Collections.Generic;
+using GameSystem.GameProps;
 using GameSystem.Pool;
 using UnityEngine;
 
-namespace Game_props
+namespace GameSystem.Pool
 {
     public class ExplodePool : ObjectPool<Explode>
     {

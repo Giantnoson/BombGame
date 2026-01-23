@@ -1,4 +1,7 @@
 ﻿using System.Collections.Generic;
+using config;
+using GameSystem.Character;
+using GameSystem.Character.Player;
 using GameSystem.EventSystem;
 using player;
 using UnityEngine;
@@ -18,11 +21,11 @@ namespace GameSystem.GameScene.GameRuntimeScene
         [Tooltip("NPC数量")]
         public int npcCount;
         [Tooltip("玩家类型")]
-        public List<PlayType> playTypes;
+        public List<CharacterType> playTypes;
         [Tooltip("玩家名称")] 
         public List<string> playerNames;
         [Tooltip("玩家ID")]
-        public List<int> playerIds;
+        public List<string> playerIds;
         [Tooltip("NPC预制体")]
         public List<GameObject> npcs;
         [Tooltip("玩家出生点")]
@@ -105,17 +108,25 @@ namespace GameSystem.GameScene.GameRuntimeScene
         private void LoadPlayer(int index)
         {
             //实例化游戏对象
-            GameObject player = Instantiate(Instance.players, Instance.spawns[index].position, Instance.spawns[index].rotation);
+            var player = Instantiate(Instance.players, Instance.spawns[index].position, Instance.spawns[index].rotation);
             //创建玩家控制器
-            PlayerController playerController = player.AddComponent<PlayerController>();
+            var playerController = player.AddComponent<PlayerController>();
             //获取HUD控制器
-            PlayerStateHUD playerStateHUD = Instance.huds[index].GetComponent<PlayerStateHUD>();
+            var playerStateHUD = Instance.huds[index].GetComponent<PlayerStateHUD>();
             if (playerStateHUD == null)
             {
                 Debug.LogError("在GameRuntimeSceneManager初始化过程中playerStateHUD为空");
             }
             //初始化玩家控制器
             playerController.PlayerControllerInit(Instance.playerNames[index], Instance.playerIds[index], Instance.playTypes[index], playerStateHUD);
+            var controller = playerController.GetComponent<PlayerMoveController>();
+            if (controller == null)
+            {
+                Debug.LogError("在GameRuntimeSceneManager初始化过程中PlayerMoveController为空");
+            }
+
+            controller.ownerId = playerController.characterId;
+            playerStateHUD.ownerId = playerController.characterId;
             //启用HUD
             Instance.huds[index].SetActive(true);
             //启用玩家
@@ -161,10 +172,10 @@ namespace GameSystem.GameScene.GameRuntimeScene
             // TODO: 卸载游戏场景
         }
 
-        public void OnGameCharacterDie(PlayerDieEvent evt)
+        public void OnGameCharacterDie(CharacterDieEvent evt)
         {
             // TODO: 处理游戏角色死亡事件
-           if (evt.DieId < 0)
+           if (evt.DieId[0] == 'n')
            {
                npcCount--;
            }

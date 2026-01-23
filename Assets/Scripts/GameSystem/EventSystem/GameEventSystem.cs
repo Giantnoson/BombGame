@@ -4,7 +4,10 @@ using UnityEngine;
 
 namespace GameSystem.EventSystem
 {
-    public class GameEvent { }
+    public class GameEvent
+    {
+        public string OwnerId;
+    }
     public class GameEventSystem : MonoBehaviour
     {
         public static GameEventSystem Instance { get; private set; }

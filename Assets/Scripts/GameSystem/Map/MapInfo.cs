@@ -4,6 +4,7 @@ using System.Linq;
 using config;
 using JetBrains.Annotations;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace GameSystem.Map
 {
@@ -116,13 +117,13 @@ namespace GameSystem.Map
             //初始化TagMap
             foreach (var tags in TagList)
             {
-                if (TagMap.ContainsKey(nameof(tags)))
+                if (TagMap.ContainsKey(tags.ToString()))
                 {
                     Debug.LogError("TagMap中已存在该标签");
                 }
                 else
                 {
-                    TagMap.Add(nameof(tags),tags);
+                    TagMap.Add(tags.ToString(),tags);
                 }
             }
             //初始化MapData
@@ -334,6 +335,10 @@ namespace GameSystem.Map
         /// <returns>坐标下的点是否是所需的tag</returns>
         public bool CompareTag(Vector2Int pos, TagType type)
         {
+            if (!_mapData.ContainsKey(pos))
+            {
+                return false;
+            }
             ScanPoint(pos, MapData[pos]);
             foreach (TagType tagType in MapData[pos].CurrentTag)
             {
@@ -365,6 +370,11 @@ namespace GameSystem.Map
         /// <returns>坐标下的点是否是所需的tag</returns>
         public bool CompareTag(Vector2Int pos, List<TagType> types)
         {
+            if (!_mapData.ContainsKey(pos))
+            {
+                Debug.LogError($"坐标{pos}不存在");
+                return false;
+            }
             ScanPoint(pos, MapData[pos]);
             foreach (TagType tagType in MapData[pos].CurrentTag)
             {
@@ -420,6 +430,10 @@ namespace GameSystem.Map
             {
                 // 获取f值最小的节点
                 var currentNode = openList.Pop();
+
+
+                
+                
                 // 如果到达目标节点，构建并返回路径
                 if (currentNode == endNode)
                     return ReconstructPath(cameFrom, currentNode, startPos, endPos);
@@ -431,6 +445,12 @@ namespace GameSystem.Map
                     // 如果邻居在关闭列表中，跳过
                     if (closeList.Contains(neighbor))
                         continue;
+                    //当此点不能行走时，跳过
+                    if (!IsWalkable(currentNode.CurrentPos))
+                    {
+                        closeList.Add(currentNode);
+                        continue;
+                    }
                     // 计算从起点经过当前节点到邻居的代价
                     var neighborGScore = gScore[currentNode] + DistanceBetween(currentNode, neighbor);
                     // 如果邻居不在开放列表中，或者找到更好的路径
@@ -626,6 +646,12 @@ namespace GameSystem.Map
             return SearchTag(GetVirtualCoord(v3StartPos), tagTypes);
         }
 
+        public TargetStepInfo SearchTag(Vector2Int startPos, TagType tagTypes)
+        {
+            var _tag = new List<TagType>();
+            _tag.Add(tagTypes);
+            return SearchTag(startPos, _tag);
+        }
         
         public TargetStepInfo SearchTag(Vector2Int startPos, List<TagType> tagTypes)
         {
@@ -661,7 +687,6 @@ namespace GameSystem.Map
             }
             return null;
         }
-
         public TargetStepInfo SearchTag(Vector3 v3StartPos, TagType tagTypes, int maxArea)
         {
             var _tag = new List<TagType>();
@@ -715,6 +740,59 @@ namespace GameSystem.Map
         }
         #endregion
         
+        
+        #region 获取随机位置
+
+        public TargetStepInfo GetRandomPointInArea(Vector3 v3StartPos, int area)
+        {
+            Vector2Int startPos = GetVirtualCoord(v3StartPos);
+            return GetRandomPointInArea(startPos, area);
+        }
+
+        
+        public TargetStepInfo GetRandomPointInArea(Vector2Int startPos, int area)
+        {
+            if (!IsValidPosition(startPos))
+            {
+                Debug.LogError("不合法的位置: " + startPos);
+                return null;
+            }
+            int tryCount = offsetDistance * offsetDistance;
+            int minx = Mathf.CeilToInt(MathF.Min(Mathf.Max(startPos.x - area + 1, 0),offsetDistance * 2));
+            var maxx = Mathf.CeilToInt(Mathf.Min(startPos.x + area - 1, offsetDistance * 2));
+            var miny = Mathf.CeilToInt(MathF.Min(Mathf.Max(startPos.y - area + 1, 0),offsetDistance * 2));
+            var maxy = Mathf.CeilToInt(Mathf.Min(startPos.y + area - 1, offsetDistance * 2));
+            Vector2Int point = new Vector2Int();
+            while (tryCount > 0)
+            {
+                point.x = Random.Range(minx, maxx);
+                point.y = Random.Range(miny, maxy);
+                if (IsWalkable(point))
+                {
+                    return new TargetStepInfo(point,0);
+                }
+                tryCount--;
+            }
+
+            return null;
+        }
+        #endregion
+        
+        
+        public bool IsValidPosition(Vector3 pos)
+        {
+            return IsValidPosition(GetVirtualCoord(pos));
+        }
+
+        /// <summary>
+        /// 判断点是否合法
+        /// </summary>
+        /// <param name="pos">判断的点</param>
+        /// <returns>返回是否合法</returns>
+        public bool IsValidPosition(Vector2Int pos)
+        {
+            return _mapData.ContainsKey(pos);
+        }
         
         private void OnDestroy()
         {
