@@ -1,5 +1,4 @@
-﻿using config;
-using player;
+﻿using Config;
 
 namespace GameSystem.EventSystem
 {
@@ -7,9 +6,22 @@ namespace GameSystem.EventSystem
     {
         public class LoadHUDEvent : GameEvent
         {
-            public LoadHUDEvent(string ownerId, string playerName,  CharacterType characterType, CharacterProper characterProper, GlobalProper globalProper, float hp, float stamina, int exp, int level, float currentSpeed)
+            public CharacterProper CharacterProper;
+            public CharacterType CharacterType;
+            public float CurrentSpeed;
+            public int EXP;
+            public GlobalProper GlobalProper;
+            public float HP;
+            public int Level;
+
+            public string PlayerName;
+            public float Stamina;
+
+            public LoadHUDEvent(string id, string playerName, CharacterType characterType,
+                CharacterProper characterProper, GlobalProper globalProper, float hp, float stamina, int exp, int level,
+                float currentSpeed)
             {
-                OwnerId = ownerId;
+                Id = id;
                 PlayerName = playerName;
                 CharacterType = characterType;
                 CharacterProper = characterProper;
@@ -20,53 +32,65 @@ namespace GameSystem.EventSystem
                 Level = level;
                 CurrentSpeed = currentSpeed;
             }
-
-            public string PlayerName;
-            public CharacterType CharacterType;
-            public CharacterProper CharacterProper;
-            public GlobalProper GlobalProper;
-            public float HP;
-            public float Stamina;
-            public int EXP;
-            public int Level;
-            public float CurrentSpeed;
         }
+
         public class UpdateStaminaEvent : GameEvent
         {
-            public UpdateStaminaEvent(string ownerId, float stamina, float maxStamina, float currentSpeed)
+            public float CurrentSpeed;
+            public float MaxStamina;
+
+            public float Stamina;
+
+            public UpdateStaminaEvent(string id, float stamina, float maxStamina, float currentSpeed)
             {
-                OwnerId = ownerId;
+                Id = id;
                 Stamina = stamina;
                 MaxStamina = maxStamina;
                 CurrentSpeed = currentSpeed;
             }
-
-            public float Stamina;
-            public float MaxStamina;
-            public float CurrentSpeed;
         }
-        
+
         public class UpdateBombEvent : GameEvent
         {
-            public UpdateBombEvent(string ownerId, float bombCooldown, int bombCount, int maxBombCount, float bombRecoveryTime)
+            public float BombCooldown;
+            public int BombCount;
+            public float BombRecoveryTime;
+            public int MaxBombCount;
+
+            public UpdateBombEvent(string id, float bombCooldown, int bombCount, int maxBombCount,
+                float bombRecoveryTime)
             {
-                OwnerId = ownerId;
+                Id = id;
                 BombCooldown = bombCooldown;
                 BombCount = bombCount;
                 MaxBombCount = maxBombCount;
                 BombRecoveryTime = bombRecoveryTime;
             }
-
-            public float BombCooldown;
-            public int BombCount;
-            public int MaxBombCount;
-            public float BombRecoveryTime;
         }
+
         public class LeaveUpEvent : GameEvent
         {
-            public LeaveUpEvent(string ownerId, float hp, float maxHp, float stamina, float maxStamina, int exp, int level, int maxExpToLevelUp, float currentSpeed, int bombCount, int maxBombCount, float bombRecoveryTime, float bombDamage, float bombRadius, float bombFuseTime)
+            public int BombCount;
+            public float BombDamage;
+            public float BombFuseTime;
+            public float BombRadius;
+            public float BombRecoveryTime;
+            public float CurrentSpeed;
+            public int EXP;
+
+            public float HP;
+            public int Level;
+            public int MaxBombCount;
+            public int MaxExpToLevelUp;
+            public float MaxHp;
+            public float MaxStamina;
+            public float Stamina;
+
+            public LeaveUpEvent(string id, float hp, float maxHp, float stamina, float maxStamina, int exp, int level,
+                int maxExpToLevelUp, float currentSpeed, int bombCount, int maxBombCount, float bombRecoveryTime,
+                float bombDamage, float bombRadius, float bombFuseTime)
             {
-                OwnerId = ownerId;
+                Id = id;
                 HP = hp;
                 MaxHp = maxHp;
                 Stamina = stamina;
@@ -82,50 +106,32 @@ namespace GameSystem.EventSystem
                 BombRadius = bombRadius;
                 BombFuseTime = bombFuseTime;
             }
-
-            public float HP;
-            public float MaxHp;
-            public float Stamina;
-            public float MaxStamina;
-            public int EXP;
-            public int Level;
-            public int MaxExpToLevelUp;
-            public float CurrentSpeed;
-            public int BombCount;
-            public int MaxBombCount;
-            public float BombRecoveryTime;
-            public float BombDamage;
-            public float BombRadius;
-            public float BombFuseTime;
         }
 
         public class ExpAddEvent : GameEvent
         {
-            public ExpAddEvent(string ownerId, int exp, int maxExpToLevelUp)
+            public int Exp;
+            public int MaxExpToLevelUp;
+
+            public ExpAddEvent(string id, int exp, int maxExpToLevelUp)
             {
-                OwnerId = ownerId;
+                Id = id;
                 Exp = exp;
                 MaxExpToLevelUp = maxExpToLevelUp;
             }
-
-            public int Exp;
-            public int MaxExpToLevelUp;
         }
 
         public class TakeDamageEvent : GameEvent
         {
-            public TakeDamageEvent(string ownerId, float hp, float maxHp)
+            public float HP;
+            public float MaxHp;
+
+            public TakeDamageEvent(string id, float hp, float maxHp)
             {
-                OwnerId = ownerId;
+                Id = id;
                 HP = hp;
                 MaxHp = maxHp;
             }
-
-            public float HP;
-            public float MaxHp;
         }
-
-
-
     }
 }

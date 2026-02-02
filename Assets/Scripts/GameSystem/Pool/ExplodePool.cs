@@ -1,15 +1,13 @@
 using System.Collections.Generic;
 using GameSystem.GameProps;
-using GameSystem.Pool;
 using UnityEngine;
 
 namespace GameSystem.Pool
 {
     public class ExplodePool : ObjectPool<Explode>
     {
+        private readonly HashSet<Vector3> placedExplodePositions = new();
         public static ExplodePool Instance { get; private set; }
-
-        private HashSet<Vector3> placedExplodePositions = new HashSet<Vector3>();
 
         protected override void InitializeSingleton()
         {
@@ -21,7 +19,6 @@ namespace GameSystem.Pool
             else
             {
                 Destroy(gameObject);
-                return;
             }
         }
 
@@ -35,11 +32,8 @@ namespace GameSystem.Pool
             }
 
             print("explodePrefab加载成功");
-            Explode explode = prefab.GetComponent<Explode>();
-            if (explode == null)
-            {
-                Debug.LogError("explodePrefab预制体上没有Explode组件");
-            }
+            var explode = prefab.GetComponent<Explode>();
+            if (explode == null) Debug.LogError("explodePrefab预制体上没有Explode组件");
         }
 
         public void GetExplode(Vector3 position, Quaternion rotation)
@@ -50,7 +44,7 @@ namespace GameSystem.Pool
                 return;
             }
 
-            GameObject explosion = GetObjectFromPool();
+            var explosion = GetObjectFromPool();
             explosion.transform.position = position;
             explosion.transform.rotation = rotation;
             explosion.SetActive(true);

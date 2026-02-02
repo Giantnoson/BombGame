@@ -1,33 +1,34 @@
-
-using UnityEngine;
-
 namespace GameSystem.EventSystem
 {
     /// <summary>
-    /// 游戏流管理器相关事件
+    ///     游戏流管理器相关事件
     /// </summary>
     public static class GameEvents
     {
         #region GameState Events
+
         /// <summary>
-        /// 游戏状态变化事件
+        ///     游戏状态变化事件
         /// </summary>
         public class GameStateChangedEvent : GameEvent
         {
-            public readonly EnhancedGameFlowManager.GameState oldState;
             public readonly EnhancedGameFlowManager.GameState newState;
+            public readonly EnhancedGameFlowManager.GameState oldState;
 
-            public GameStateChangedEvent(EnhancedGameFlowManager.GameState oldState, EnhancedGameFlowManager.GameState newState)
+            public GameStateChangedEvent(EnhancedGameFlowManager.GameState oldState,
+                EnhancedGameFlowManager.GameState newState)
             {
                 this.oldState = oldState;
                 this.newState = newState;
             }
         }
+
         #endregion
 
         #region Scene Events
+
         /// <summary>
-        /// 场景加载开始事件
+        ///     场景加载开始事件
         /// </summary>
         public class SceneLoadStartedEvent : GameEvent
         {
@@ -40,7 +41,7 @@ namespace GameSystem.EventSystem
         }
 
         /// <summary>
-        /// 场景加载完成事件
+        ///     场景加载完成事件
         /// </summary>
         public class SceneLoadCompletedEvent : GameEvent
         {
@@ -53,7 +54,7 @@ namespace GameSystem.EventSystem
         }
 
         /// <summary>
-        /// 场景卸载事件
+        ///     场景卸载事件
         /// </summary>
         public class SceneUnloadedEvent : GameEvent
         {
@@ -64,43 +65,59 @@ namespace GameSystem.EventSystem
                 this.sceneName = sceneName;
             }
         }
+
         #endregion
 
         #region 游戏控制事件
-        /// <summary>
-        /// 暂停游戏事件
-        /// </summary>
-        public class PauseGameEvent : GameEvent { }
 
         /// <summary>
-        /// 恢复游戏事件
+        ///     暂停游戏事件
         /// </summary>
-        public class ResumeGameEvent : GameEvent { }
+        public class PauseGameEvent : GameEvent
+        {
+        }
 
         /// <summary>
-        /// 重新开始游戏事件
+        ///     恢复游戏事件
         /// </summary>
-        public class RestartGameEvent : GameEvent { }
+        public class ResumeGameEvent : GameEvent
+        {
+        }
 
         /// <summary>
-        /// 返回主菜单事件
+        ///     重新开始游戏事件
         /// </summary>
-        public class ReturnToMainMenuEvent : GameEvent { }
+        public class RestartGameEvent : GameEvent
+        {
+        }
 
         /// <summary>
-        /// 退出游戏事件
+        ///     返回主菜单事件
         /// </summary>
-        public class QuitGameEvent : GameEvent { }
+        public class ReturnToMainMenuEvent : GameEvent
+        {
+        }
 
         /// <summary>
-        /// 时间用尽事件
+        ///     退出游戏事件
         /// </summary>
-        public class TimeUpEvent : GameEvent { }
+        public class QuitGameEvent : GameEvent
+        {
+        }
+
+        /// <summary>
+        ///     时间用尽事件
+        /// </summary>
+        public class TimeUpEvent : GameEvent
+        {
+        }
+
         #endregion
 
         #region 关卡事件
+
         /// <summary>
-        /// 加载关卡事件
+        ///     加载关卡事件
         /// </summary>
         public class LoadLevelEvent : GameEvent
         {
@@ -111,13 +128,14 @@ namespace GameSystem.EventSystem
                 this.levelIndex = levelIndex;
             }
         }
+
         /// <summary>
-        /// 关卡完成事件
+        ///     关卡完成事件
         /// </summary>
         public class LevelCompletedEvent : GameEvent
         {
-            public readonly int levelIndex;
             public readonly bool isSuccess;
+            public readonly int levelIndex;
 
             public LevelCompletedEvent(int levelIndex, bool isSuccess)
             {
@@ -125,6 +143,7 @@ namespace GameSystem.EventSystem
                 this.isSuccess = isSuccess;
             }
         }
+
         #endregion
     }
 }

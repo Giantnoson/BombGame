@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using config;
-using player;
+﻿using System;
+using System.Collections.Generic;
+using Config;
 using UnityEngine;
 
 namespace GameSystem
@@ -9,45 +9,39 @@ namespace GameSystem
 
 
     //游戏类型
-    [System.Serializable]
-    public enum GameType
+    [Serializable]
+    public enum GameModeType
     {
-        Online,//在线
-        Offline//离线
+        OnlinePVP, //在线PVP
+        OfflinePVP, //离线
+        OfflinePVE, //离线PVE
     }
-    
+
     public enum GameMode
     {
         PVP,
         PVE
     }
-    
-    
-    
-    
-    
+
+
     public class GameModeSelect : MonoBehaviour
     {
-        public static GameModeSelect Instance { get;  set; }
+        [Tooltip("玩家类型")] public static List<CharacterType> playTypes;
 
-        [Tooltip("游戏状态")]
-        public static GameState CurrentState { get; set; }
-        [Tooltip("游戏类型")]
-        public static GameType CurrentType { get;set; }
-        [Tooltip("是否启用NPC")]
-        public static bool IsEnableNPC { get; set; }
-        [Tooltip("玩家数量")]
-        public static int PlayerCount { get; set; }
-        [Tooltip("NPC数量")]
-        public static int NPCCount { get; set; }
-        [Tooltip("玩家类型")]
-        public static List<CharacterType> playTypes;
-        [Tooltip("玩家名称")] 
-        public static List<string> playerNames;
-        [Tooltip("玩家ID")]
-        public static List<int> playerIds;
+        [Tooltip("玩家名称")] public static List<string> playerNames;
+
+        [Tooltip("玩家ID")] public static List<int> playerIds;
+
+        public static GameModeSelect Instance { get; set; }
+
+        [Tooltip("游戏状态")] public static EnhancedGameFlowManager.GameState CurrentState { get; set; }
+
+        [Tooltip("游戏类型")] public static GameModeType CurrentModeType { get; set; }
         
-        
+        [Tooltip("玩家数量")] public static int PlayerCount { get; set; }
+
+        [Tooltip("NPC数量")] public static int NPCCount { get; set; }
+
 
         private void Awake()
         {
@@ -59,49 +53,18 @@ namespace GameSystem
             else
             {
                 Destroy(gameObject);
-                return;
             }
         }
 
-        public void SetGameMode(GameType type, GameState state, int playerCount, int npcCount)
+        
+        public void SetGameMode(GameModeType modeType, EnhancedGameFlowManager.GameState state, int playerCount, int npcCount)
         {
-            CurrentType = type;
+            CurrentModeType = modeType;
             CurrentState = state;
             PlayerCount = playerCount;
-            NPCCount = npcCount;  
-        }
-        
-        // 判断是否为离线单人模式
-        public bool IsOffOnlineSinglePlayer()
-        {
-            return CurrentType == GameType.Offline && PlayerCount == 1;
+            NPCCount = npcCount;
         }
 
-        // 判断是否为离线多人模式
-        public bool IsOfflineMultiPlayer()
-        {
-            return CurrentType == GameType.Offline && PlayerCount > 1;
-        }
 
-        // 判断是否为在线模式
-        public bool IsOnlineMode()
-        {
-            return CurrentType == GameType.Online;
-        }
-
-        // 判断是否为单人模式（包括在线和离线）
-        public bool IsSinglePlayer()
-        {
-            return PlayerCount == 1;
-        }
-
-        // 判断是否为多人模式（包括在线和离线）
-        public bool IsMultiPlayer()
-        {
-            return PlayerCount > 1;
-        }
-        
-        
     }
-        
 }

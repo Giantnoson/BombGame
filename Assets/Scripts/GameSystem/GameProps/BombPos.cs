@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Config;
 using GameSystem.EventSystem;
 using GameSystem.Map;
 using UnityEngine;
@@ -9,30 +8,25 @@ namespace GameSystem.GameProps
 {
     public class BombPos : MonoBehaviour
     {
-        public static BombPos Instance { get; private set; }
-        
-        /// <summary>
-        /// BombInfo用于记录炸弹的放置信息
-        /// </summary>
-        private Dictionary<Vector3,BombEvents.BombPlaceRequestEvent> _bombInfo = new Dictionary<Vector3, BombEvents.BombPlaceRequestEvent>();
-
-        public Dictionary<Vector3, BombEvents.BombPlaceRequestEvent> BombInfo => _bombInfo;
-        
-        private Dictionary<Vector3, int> _bombExportArea = new Dictionary<Vector3, int>();
-        
-        public Dictionary<Vector3, int> BombExportArea => _bombExportArea;
+        private MapScan _mapScan;
 
         private Vector3[] drirect;
-        
-        private MapScan _mapScan;
-        
+        public static BombPos Instance { get; private set; }
+
+        /// <summary>
+        ///     BombInfo用于记录炸弹的放置信息
+        /// </summary>
+        public Dictionary<Vector3, BombEvents.BombPlaceRequestEvent> BombInfo { get; } = new();
+
+        public Dictionary<Vector3, int> BombExportArea { get; } = new();
+
         private void Awake()
         {
             if (Instance == null)
                 Instance = this;
             else
                 Destroy(gameObject);
-            drirect = new Vector3[]
+            drirect = new[]
             {
                 Vector3.back,
                 Vector3.forward,
@@ -40,12 +34,9 @@ namespace GameSystem.GameProps
                 Vector3.right
             };
             _mapScan = FindAnyObjectByType<MapScan>();
-            if (_mapScan == null)
-            {
-                Debug.LogError("找不到MapScan");
-            }
+            if (_mapScan == null) Debug.LogError("找不到MapScan");
         }
-        
+
         private void OnEnable()
         {
             GameEventSystem.AddListener<BombEvents.BombPlaceRequestEvent>(BombInfoListener);
@@ -58,78 +49,87 @@ namespace GameSystem.GameProps
             GameEventSystem.RemoveListener<BombEvents.BombDestroyEvent>(BombRemoveListener);
         }
 
+        public Vector3 ToBombPutPos(Vector3 pos)
+        {
+            pos.x = Mathf.Ceil(pos.x) - 0.5f;
+            pos.z = Mathf.Ceil(pos.z) - 0.5f;
+            pos.y = 0f;
+            return pos;
+        }
+
+        public bool IsInExportArea(Vector3 pos)
+        {
+            return BombExportArea.ContainsKey(ToBombPutPos(pos));
+        }
+
+        public bool IsInBombArea(Vector3 pos)
+        {
+            return BombInfo.ContainsKey(ToBombPutPos(pos));
+        }
+
+
         private void BombInfoListener(BombEvents.BombPlaceRequestEvent evt)
         {
-            if (!_bombInfo.ContainsKey(evt.Position))
+            evt.Position.x = Mathf.Ceil(evt.Position.x) - 0.5f;
+            evt.Position.z = Mathf.Ceil(evt.Position.z) - 0.5f;
+            evt.Position.y = 0f;
+            if (!BombInfo.ContainsKey(evt.Position))
             {
-                _bombInfo.Add(evt.Position, evt);
-                if (_bombExportArea.ContainsKey(evt.Position))
-                {
-                    _bombExportArea[evt.Position]++;
-                }
+                BombInfo.Add(evt.Position, evt);
+                if (BombExportArea.ContainsKey(evt.Position))
+                    BombExportArea[evt.Position]++;
                 else
-                {
-                    _bombExportArea.Add(evt.Position, 1);
-                }
+                    BombExportArea.Add(evt.Position, 1);
                 Vector3 current;
-                foreach (var dri in drirect)//记录炸弹爆炸范围
+                foreach (var dri in drirect) //记录炸弹爆炸范围
                 {
                     current = evt.Position;
-                    for (int i = 0; i < evt.BombRadius; i++)
+                    for (var i = 0; i < evt.BombRadius; i++)
                     {
                         current += dri;
-                        if (_mapScan.CompareTag(current, ObjectType.Wall))//当此处为墙时，返回
-                        {
+                        if (_mapScan.CompareTag(current, ObjectType.Wall)) //当此处为墙时，返回
                             break;
-                        }
 
-                        if (_bombExportArea.ContainsKey(current))
-                        {
-                            _bombExportArea[current]++;
-                        }
+                        if (BombExportArea.ContainsKey(current))
+                            BombExportArea[current]++;
                         else
-                        {
-                            _bombExportArea.Add(current, 1);
-                        }
-
+                            BombExportArea.Add(current, 1);
                     }
                 }
             }
-                
         }
 
         public void BombRemoveListener(BombEvents.BombDestroyEvent evt)
         {
-
-
-            if (_bombInfo.ContainsKey(evt.Position))
+            if (BombInfo.ContainsKey(evt.Position))
             {
-                var bombInfo = _bombInfo[evt.Position];
-                if (_bombExportArea.ContainsKey(bombInfo.Position))
+                var bombInfo = BombInfo[evt.Position];
+                if (BombExportArea.ContainsKey(bombInfo.Position))
                 {
-                    _bombExportArea[bombInfo.Position]--;
-                    if (_bombExportArea[bombInfo.Position] == 0)
-                        _bombExportArea.Remove(bombInfo.Position);
+                    BombExportArea[bombInfo.Position]--;
+                    if (BombExportArea[bombInfo.Position] == 0)
+                        BombExportArea.Remove(bombInfo.Position);
                 }
 
                 Vector3 current;
                 foreach (var dri in drirect)
                 {
                     current = bombInfo.Position;
-                    for (int i = 0; i < bombInfo.BombRadius; i++)
+                    for (var i = 0; i < bombInfo.BombRadius; i++)
                     {
                         current += dri;
                         if (_mapScan.CompareTag(current, ObjectType.Wall))
                             break;
-                        if (_bombExportArea.ContainsKey(current))
+                        if (BombExportArea.ContainsKey(current))
                         {
-                            _bombExportArea[current]--;
-                            if (_bombExportArea[current] == 0)
-                                _bombExportArea.Remove(current);
+                            BombExportArea[current]--;
+                            if (BombExportArea[current] == 0)
+                                BombExportArea.Remove(current);
                         }
                     }
                 }
-                _bombInfo.Remove(evt.Position);
+
+                BombInfo.Remove(evt.Position);
             }
             else
             {

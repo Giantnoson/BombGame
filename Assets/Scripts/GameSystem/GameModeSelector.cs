@@ -5,8 +5,6 @@ namespace GameSystem
 {
     public class GameModeSelector : MonoBehaviour
     {
-
-
         public static GameMode CurrentMode { get; private set; }
 
         public void SelectPVPMode()
@@ -23,7 +21,7 @@ namespace GameSystem
 
         private void LoadGameScene()
         {
-            SceneManager.LoadScene("GameScene"); 
+            SceneManager.LoadScene("GameScene");
         }
     }
 }

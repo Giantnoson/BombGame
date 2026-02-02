@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,28 +12,17 @@ namespace GameSystem.Controller
         public GameObject mainMenuPanel;
 
         private GameModeSelector _gameModeSelector;
+
         private void Start()
         {
             _gameModeSelector = FindObjectOfType<GameModeSelector>();
 
-            if (mainMenuPanel != null)
-            {
-                mainMenuPanel.SetActive(true);
-            }
-            if (pvp != null)
-            {
-                pvp.onClick.AddListener(SelectPVPMode);
-            }
+            if (mainMenuPanel != null) mainMenuPanel.SetActive(true);
+            if (pvp != null) pvp.onClick.AddListener(SelectPVPMode);
 
-            if (pve != null)
-            {
-                pve.onClick.AddListener(SelectPVEMode);
-            }
+            if (pve != null) pve.onClick.AddListener(SelectPVEMode);
 
-            if (exit != null)
-            {
-                exit.onClick.AddListener(ExitGame);
-            }
+            if (exit != null) exit.onClick.AddListener(ExitGame);
         }
 
 
@@ -57,5 +43,4 @@ namespace GameSystem.Controller
             Application.Quit();
         }
     }
-
 }

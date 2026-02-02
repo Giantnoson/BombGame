@@ -1,14 +1,13 @@
-
 using UnityEngine;
 
 namespace GameSystem.Character.Enemy
 {
     /// <summary>
-    /// 路径等待状态 - 当路径上有爆炸威胁时暂停移动
+    ///     路径等待状态 - 当路径上有爆炸威胁时暂停移动
     /// </summary>
     public class PathWaitState : EnemyAIBaseState
     {
-        private float maxWaitTime = 3f; // 最大等待时间
+        private readonly float maxWaitTime = 3f; // 最大等待时间
         private float currentWaitTime;
         private bool isWaitingForExplosion;
 
@@ -24,7 +23,8 @@ namespace GameSystem.Character.Enemy
             isWaitingForExplosion = true;
         }
 
-        protected internal override void OnUpdate(IFsm<EnemyAIController> fsm, float elapseSeconds, float realElapseSeconds)
+        protected internal override void OnUpdate(IFsm<EnemyAIController> fsm, float elapseSeconds,
+            float realElapseSeconds)
         {
             currentWaitTime += elapseSeconds;
 
@@ -54,15 +54,11 @@ namespace GameSystem.Character.Enemy
             }
 
             // 4. 检测玩家
-            Transform nearestPlayer = Owner.GetNearestPlayer();
+            var nearestPlayer = Owner.GetNearestPlayer();
             if (nearestPlayer != null)
             {
-                float distance = Vector3.Distance(Owner.transform.position, nearestPlayer.position);
-                if (distance <= Owner.chaseRange)
-                {
-                    ChangeState<ChasePlayerState>(fsm);
-                    return;
-                }
+                var distance = Vector3.Distance(Owner.transform.position, nearestPlayer.position);
+                if (distance <= Owner.chaseRange) ChangeState<ChasePlayerState>(fsm);
             }
         }
 
@@ -72,12 +68,12 @@ namespace GameSystem.Character.Enemy
         }
 
         /// <summary>
-        /// 返回之前的状态
+        ///     返回之前的状态
         /// </summary>
         private void ReturnToPreviousState(IFsm<EnemyAIController> fsm)
         {
             // TODO: 根据上下文决定返回SearchState还是ChasePlayerState
-            EnemyAIStates states = Owner.StatusQueue.Peek();
+            var states = Owner.StatusQueue.Peek();
             switch (states)
             {
                 case EnemyAIStates.Search:
@@ -93,7 +89,7 @@ namespace GameSystem.Character.Enemy
         }
 
         /// <summary>
-        /// 检查路径是否被爆炸阻挡
+        ///     检查路径是否被爆炸阻挡
         /// </summary>
         private bool IsPathBlockedByExplosion()
         {

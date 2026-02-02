@@ -9,49 +9,13 @@ namespace GameSystem.Character.Enemy
         private readonly Dictionary<Type, FsmBase> _fsm;
         private readonly List<FsmBase> _tmpFsms;
 
-        public int Count
-        {
-            get
-            {
-                return _fsm.Count;
-            }
-        }
-
         public FsmManager()
         {
             _fsm = new Dictionary<Type, FsmBase>();
             _tmpFsms = new List<FsmBase>();
         }
 
-        public void Update(float elapseSeconds, float realElapseSeconds)
-        {
-            _tmpFsms.Clear();
-            if (_fsm.Count <= 0)
-            {
-                return;
-            }
-
-            foreach (KeyValuePair<Type, FsmBase> fsm in _fsm)
-            {
-                _tmpFsms.Add(fsm.Value);
-            }
-
-            foreach (FsmBase fsm in _tmpFsms)
-            {
-                if (fsm.IsDestroyed)
-                {
-                    continue;
-                }
-
-                fsm.Update(elapseSeconds, realElapseSeconds);
-            }
-        }
-
-        internal void Shutdown()
-        {
-            _fsm.Clear();
-            _tmpFsms.Clear();
-        }
+        public int Count => _fsm.Count;
 
         public bool HasFsm<T>() where T : class
         {
@@ -62,7 +26,7 @@ namespace GameSystem.Character.Enemy
         {
             if (ownerType == null)
             {
-                Debug.LogError("Owner type is invalid.");
+                Debug.LogError("Owner modeType is invalid.");
                 return false;
             }
 
@@ -78,7 +42,7 @@ namespace GameSystem.Character.Enemy
         {
             if (ownerType == null)
             {
-                Debug.LogError("Owner type is invalid.");
+                Debug.LogError("Owner modeType is invalid.");
                 return false;
             }
 
@@ -94,7 +58,7 @@ namespace GameSystem.Character.Enemy
         {
             if (ownerType == null)
             {
-                Debug.LogError("Owner type is invalid.");
+                Debug.LogError("Owner modeType is invalid.");
                 return null;
             }
 
@@ -110,7 +74,7 @@ namespace GameSystem.Character.Enemy
         {
             if (ownerType == null)
             {
-                Debug.LogError("Owner type is invalid.");
+                Debug.LogError("Owner modeType is invalid.");
                 return null;
             }
 
@@ -119,12 +83,9 @@ namespace GameSystem.Character.Enemy
 
         public FsmBase[] GetAllFsms()
         {
-            int index = 0;
-            FsmBase[] results = new FsmBase[_fsm.Count];
-            foreach (KeyValuePair<Type, FsmBase> fsm in _fsm)
-            {
-                results[index++] = fsm.Value;
-            }
+            var index = 0;
+            var results = new FsmBase[_fsm.Count];
+            foreach (var fsm in _fsm) results[index++] = fsm.Value;
 
             return results;
         }
@@ -138,10 +99,7 @@ namespace GameSystem.Character.Enemy
             }
 
             results.Clear();
-            foreach (KeyValuePair<Type, FsmBase> fsm in _fsm)
-            {
-                results.Add(fsm.Value);
-            }
+            foreach (var fsm in _fsm) results.Add(fsm.Value);
         }
 
         public IFsm<T> CreateFsm<T>(T owner, params FsmState<T>[] states) where T : class
@@ -151,13 +109,10 @@ namespace GameSystem.Character.Enemy
 
         public IFsm<T> CreateFsm<T>(string name, T owner, params FsmState<T>[] states) where T : class
         {
-            Type ownerType = typeof(T);
-            if (HasFsm<T>(name))
-            {
-                Debug.LogError(string.Format("Already exist FSM '{0}'.", name));
-            }
+            var ownerType = typeof(T);
+            if (HasFsm<T>(name)) Debug.LogError(string.Format("Already exist FSM '{0}'.", name));
 
-            Fsm<T> fsm = Fsm<T>.Create(name, owner, states);
+            var fsm = Fsm<T>.Create(name, owner, states);
             _fsm.Add(ownerType, fsm);
             return fsm;
         }
@@ -169,13 +124,10 @@ namespace GameSystem.Character.Enemy
 
         public IFsm<T> CreateFsm<T>(string name, T owner, List<FsmState<T>> states) where T : class
         {
-            Type ownerType = typeof(T);
-            if (HasFsm<T>(name))
-            {
-                Debug.LogError(string.Format("Already exist FSM '{0}'.", name));
-            }
+            var ownerType = typeof(T);
+            if (HasFsm<T>(name)) Debug.LogError(string.Format("Already exist FSM '{0}'.", name));
 
-            Fsm<T> fsm = Fsm<T>.Create(name, owner, states);
+            var fsm = Fsm<T>.Create(name, owner, states);
             _fsm.Add(ownerType, fsm);
             return fsm;
         }
@@ -189,7 +141,7 @@ namespace GameSystem.Character.Enemy
         {
             if (ownerType == null)
             {
-                Debug.LogError("Owner type is invalid.");
+                Debug.LogError("Owner modeType is invalid.");
                 return false;
             }
 
@@ -205,7 +157,7 @@ namespace GameSystem.Character.Enemy
         {
             if (ownerType == null)
             {
-                Debug.LogError("Owner type is invalid.");
+                Debug.LogError("Owner modeType is invalid.");
                 return false;
             }
 
@@ -234,6 +186,27 @@ namespace GameSystem.Character.Enemy
             return InternalDestroyFsm(fsm.OwnerType);
         }
 
+        public void Update(float elapseSeconds, float realElapseSeconds)
+        {
+            _tmpFsms.Clear();
+            if (_fsm.Count <= 0) return;
+
+            foreach (var fsm in _fsm) _tmpFsms.Add(fsm.Value);
+
+            foreach (var fsm in _tmpFsms)
+            {
+                if (fsm.IsDestroyed) continue;
+
+                fsm.Update(elapseSeconds, realElapseSeconds);
+            }
+        }
+
+        internal void Shutdown()
+        {
+            _fsm.Clear();
+            _tmpFsms.Clear();
+        }
+
         private bool InternalHasFsm(Type ownerType)
         {
             return _fsm.ContainsKey(ownerType);
@@ -241,36 +214,27 @@ namespace GameSystem.Character.Enemy
 
         private bool InternalHasFsm(Type ownerType, string name)
         {
-            foreach (KeyValuePair<Type, FsmBase> fsm in _fsm)
-            {
+            foreach (var fsm in _fsm)
                 if (fsm.Key == ownerType && fsm.Value.Name == name)
-                {
                     return true;
-                }
-            }
+
             return false;
         }
 
         private FsmBase InternalGetFsm(Type ownerType)
         {
             FsmBase fsm = null;
-            if (_fsm.TryGetValue(ownerType, out fsm))
-            {
-                return fsm;
-            }
+            if (_fsm.TryGetValue(ownerType, out fsm)) return fsm;
 
             return null;
         }
 
         private FsmBase InternalGetFsm(Type ownerType, string name)
         {
-            foreach (KeyValuePair<Type, FsmBase> fsm in _fsm)
-            {
+            foreach (var fsm in _fsm)
                 if (fsm.Key == ownerType && fsm.Value.Name == name)
-                {
                     return fsm.Value;
-                }
-            }
+
             return null;
         }
 
@@ -288,14 +252,13 @@ namespace GameSystem.Character.Enemy
 
         private bool InternalDestroyFsm(Type ownerType, string name)
         {
-            foreach (KeyValuePair<Type, FsmBase> fsm in _fsm)
-            {
+            foreach (var fsm in _fsm)
                 if (fsm.Key == ownerType && fsm.Value.Name == name)
                 {
                     fsm.Value.Shutdown();
                     return _fsm.Remove(fsm.Key);
                 }
-            }
+
             return false;
         }
     }

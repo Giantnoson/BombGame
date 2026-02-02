@@ -1,9 +1,6 @@
-﻿using UnityEngine;
-
-namespace GameSystem.Character
+﻿namespace GameSystem.Character
 {
     public interface IState
     {
-        
     }
 }

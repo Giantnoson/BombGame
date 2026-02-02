@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace config
+namespace Config
 {
     [CreateAssetMenu()]
     public class GameRuntimeData : ScriptableObject

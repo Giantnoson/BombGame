@@ -1,152 +1,88 @@
-
 using System;
 using System.Collections.Generic;
-using UnityEngine;
-using GameSystem.EventSystem;
 using GameSystem.Character.Player;
+using GameSystem.EventSystem;
 using GameSystem.GameProps;
 using GameSystem.Map;
-using player;
-using UnityEngine.AI;
+using UnityEngine;
 
 namespace GameSystem.Character.Enemy
 {
     /// <summary>
-    /// 敌人AI控制器
+    ///     敌人AI控制器
     /// </summary>
-    public class EnemyAIController : MonoBehaviour
+    public class EnemyAIController : BaseState
     {
-        [Header("AI设置")]
-        [Tooltip("检测范围")]
-        public float detectionRange = 8f;
+        [Header("AI设置")] [Tooltip("检测范围")] public float detectionRange = 8f;
 
-        [Tooltip("追击范围")]
-        public float chaseRange = 8f;
+        [Tooltip("追击范围")] public float chaseRange = 8f;
 
-        [Tooltip("攻击范围")]
-        public float attackRange = 3f;
+        [Tooltip("攻击范围")] public float attackRange = 3f;
 
-        [Tooltip("移动速度")]
-        public float moveSpeed = 3f;
+        [Header("状态")] public float stoppingDistance = 0.3f;
 
-        [Header("炸弹设置")]
-        [Tooltip("最大炸弹数量")]
-        public int maxBombCount = 100;
+        [Tooltip("状态记录")] public List<EnemyAIStates> StatusLog;
 
-        [Tooltip("炸弹冷却时间")]
-        public float bombCooldown = 3f;
-
-        [Tooltip("炸弹爆炸范围")]
-        public float bombRadius = 3f;
-
-        [Tooltip("炸弹伤害")]
-        public float bombDamage = 20f;
-
-        [Tooltip("炸弹爆炸时间")]
-        public float bombFuseTime = 3f;
-        
-        [Tooltip("炸弹数量冷却")]
-        public float bombCountColdDown = 3f;
-
-        [Header("状态")]
-        [Tooltip("敌人ID")]
-        public string _enemyId = "n001";
-        
-        public string EnemyId => _enemyId;
-
-        public float stoppingDistance = 1f;
-        
-        [Tooltip("血量")]
-        public float hp = 100f;
-        [Tooltip("当前炸弹数量")]
-        public int currentBombCount = 100;
-
-        [Tooltip("当前炸弹冷却")]
-        public float currentBombCooldown = 0f;
-        [Tooltip("当前炸弹数量冷却")] 
-        public float currentBombCountColdDown = 3f;
-
-        [Tooltip("状态记录")]
-        public List<EnemyAIStates> StatusLog;
-        [Tooltip("状态队列")]
-        public Queue<EnemyAIStates> StatusQueue = new Queue<EnemyAIStates>();
-        
         public bool isMoving;
 
 
-        
-        [Tooltip("是否死亡")]
-        public bool isDead = false;
+        [Tooltip("是否死亡")] public bool isDead;
 
-        // FSM引用
-        private Fsm<EnemyAIController> fsm;
+        // 敌人寻路组件
+        /*
+        public NavMeshAgent enemyAgent;
+        */
 
-        // 目标引用
-        private Transform targetPlayer;
+        //炸弹位置组件
+        public BombPos bombPos;
+
+        //地图信息组件
+        public MapInfo MapInfo;
 
         // 组件引用
         private CharacterController characterController;
 
-        // 地图扫描组件
-        public MapScan mapScan;
-        // 敌人寻路组件
-        public NavMeshAgent enemyAgent;
+        // FSM引用
+        private Fsm<EnemyAIController> fsm;
 
-        //炸弹位置组件
-        public BombPos bombPos;
-        
-        //地图信息组件
-        public MapInfo MapInfo;
+        private GameObject[] players;
 
-        private EnemyMoveController _moveController;
-        
-        public EnemyMoveController MoveController => _moveController;
-        
-        GameObject[] players;
-        
-        
+        [Tooltip("状态队列")] public Queue<EnemyAIStates> StatusQueue = new();
+
+        // 目标引用
+        private Transform targetPlayer;
+
+        public EnemyMoveController MoveController { get; private set; }
+
+
         // 炸弹位置
-        
+
         private void Awake()
         {
             characterController = GetComponent<CharacterController>();
-            if (characterController == null)
-            {
-                characterController = gameObject.AddComponent<CharacterController>();
-            }
-            mapScan = FindAnyObjectByType<MapScan>();
+            if (characterController == null) characterController = gameObject.AddComponent<CharacterController>();
+            /*
             enemyAgent = GetComponent<NavMeshAgent>();
+            */
             bombPos = FindAnyObjectByType<BombPos>();
             MapInfo = FindAnyObjectByType<MapInfo>();
-            _moveController = GetComponent<EnemyMoveController>();
-            if (mapScan == null)
-            {
-                Debug.LogError("无法找到地图扫描组件");
-            }
-
-            if (enemyAgent == null)
+            MoveController = GetComponent<EnemyMoveController>();
+            /*if (enemyAgent == null)
             {
                 Debug.LogError("无法找到NavMeshAgent组件");
-            }
+            }*/
 
-            if (bombPos == null)
-            {
-                Debug.LogError("无法找到BombPos组件");
-            }
+            if (bombPos == null) Debug.LogError("无法找到BombPos组件");
 
-            if (MapInfo == null)
-            {
-                Debug.LogError("无法找到MapInfo组件");
-            }
-            
-            if (_moveController == null)
-            {
-                Debug.LogError("无法找到EnemyMoveController组件");
-            }
-            
-            _moveController.Init(this,characterController);
-            
+            if (MapInfo == null) Debug.LogError("无法找到MapInfo组件");
+
+            if (MoveController == null) Debug.LogError("无法找到EnemyMoveController组件");
+
+            MoveController.Init(this, characterController);
+
+            /*
             enemyAgent.stoppingDistance = 0f;
+        */
         }
 
 
@@ -155,8 +91,30 @@ namespace GameSystem.Character.Enemy
             // 初始化FSM
             isMoving = false;
             InitializeFSM();
+            StateInit();
             players = GameObject.FindGameObjectsWithTag("Player");
+        }
 
+        private void Update()
+        {
+            if (isDead) return;
+
+            // 定期更新玩家列表（例如每秒更新一次，或者在获取最近玩家时更新）
+            if (Time.frameCount % 60 == 0)
+            {
+                players = GameObject.FindGameObjectsWithTag("Player");
+            }
+
+            StaminaUpdate();
+            BombUpdate();
+            // 更新FSM
+            if (fsm != null && fsm.IsRunning) fsm.Update(Time.deltaTime, Time.unscaledDeltaTime);
+        }
+
+        private void OnDestroy()
+        {
+            // 清理FSM
+            if (fsm != null) fsm.Clear();
         }
 
         private void InitializeFSM()
@@ -185,77 +143,76 @@ namespace GameSystem.Character.Enemy
 
             // 启动FSM，从Idle状态开始
             StatusLog.Add(EnemyAIStates.Idle);
-            StatusQueue.Enqueue(EnemyAIStates.Idle);//预存入两个，方便启动
+            StatusQueue.Enqueue(EnemyAIStates.Idle); //预存入两个，方便启动
             StatusQueue.Enqueue(EnemyAIStates.Idle);
             fsm.Start<IdleState>();
         }
 
-        private void Update()
+
+        protected override void OnPlayerDie(CharacterDieEvent evt)
         {
-            if (isDead) return;
-
-            // 更新炸弹冷却
-            if (currentBombCooldown > 0)
+            if (isDie) return;
+            if (evt.DieId == id)
             {
-                currentBombCooldown = Mathf.Max(0f, currentBombCooldown - Time.deltaTime);
+                isDie = true;
+                id = "Die";
+                fsm.Clear();
+                Die();
             }
-
-            if (currentBombCountColdDown > 0)
-            {
-                currentBombCountColdDown = Mathf.Max(0f, currentBombCountColdDown - Time.deltaTime);
-            }else if (currentBombCountColdDown == 0)
-            {
-                currentBombCountColdDown = bombCountColdDown;
-                currentBombCount ++;
-            }
-            
-            
-            // 更新FSM
-            if (fsm != null && fsm.IsRunning)
-            {
-                fsm.Update(Time.deltaTime, Time.unscaledDeltaTime);
-            }
-            
         }
 
-        private void OnDestroy()
+        protected override void OnTakeDamage(CharacterTakeDamageEvent evt)
         {
-            // 清理FSM
-            if (fsm != null)
+            if (isDie) return;
+            if (evt.HitId == id)
             {
-                fsm.Clear();
+                hp -= evt.Damage;
+                print($"{evt.HitId} 受到来自 {evt.Id}的 {evt.Damage} 伤害。剩余血量为: {hp}");
+                if (hp <= 0) //当玩家死亡时
+                {
+                    hp = 0;
+                    print(id + "玩家死亡");
+                    GameEventSystem.Broadcast(new HUDEvent.TakeDamageEvent(id, hp, maxHp));
+                    GameEventSystem.Broadcast(new CharacterDieEvent
+                    {
+                        AttackerID = evt.Id,
+                        DieId = id,
+                        Exp = 50 * level
+                    });
+                    return;
+                }
+
+                GameEventSystem.Broadcast(new HUDEvent.TakeDamageEvent(id, hp, maxHp));
             }
         }
 
         #region 公共方法
 
         /// <summary>
-        /// 获取最近的玩家
+        ///     获取最近的玩家
         /// </summary>
         public Transform GetNearestPlayer()
         {
             // 查找所有玩家
             Transform nearest = null;
-            float minDistance = Mathf.Infinity;
+            var minDistance = Mathf.Infinity;
 
             foreach (var player in players)
-            {
-
                 if (player.GetComponent<PlayerController>()?.isDie == false)
                 {
-                    float distance = Vector3.Distance(transform.position, player.transform.position);
+                    var distance = Vector3.Distance(transform.position, player.transform.position);
                     if (distance < minDistance && distance <= detectionRange)
                     {
                         minDistance = distance;
                         nearest = player.transform;
                     }
                 }
-            }
+
             return nearest;
         }
 
         /// <summary>
-        /// 检测是否在爆炸范围内
+        ///     检测是否在爆炸范围内
         /// </summary>
         public bool IsInExplosionRange(Vector3 position)
         {
@@ -264,9 +221,8 @@ namespace GameSystem.Character.Enemy
 
         public Vector3 findSafePosition(Vector3 pos)
         {
-            mapScan.ScanArea(pos, Mathf.CeilToInt(detectionRange));
             var directions = new List<Vector3> { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
-            if (!mapScan.IsValidPosition(pos))
+            if (!MapInfo.IsValidPosition(pos))
             {
                 Debug.LogError("不合法的位置: " + pos);
                 return Vector3.down;
@@ -284,22 +240,17 @@ namespace GameSystem.Character.Enemy
                 foreach (var direction in directions)
                 {
                     var nextPos = current + direction;
-                    if (!visited.Contains(nextPos) && mapScan.IsWalkable(nextPos))
+                    if (!visited.Contains(nextPos) && MapInfo.IsWalkable(nextPos))
                     {
                         visited.Add(nextPos);
                         que.Enqueue(nextPos);
-                        if (!IsInExplosionRange(nextPos))
-                        {
-                            return mapScan.GetRealCoord(mapScan.GetVirtualCoord(nextPos));
-                        }
+                        if (!IsInExplosionRange(nextPos)) return MapInfo.GetRealCoord(MapInfo.GetVirtualCoord(nextPos));
                     }
                 }
             }
+
             return Vector3.down;
         }
-
-
-
 
 
         public Vector3 ToBombPutPos(Vector3 pos)
@@ -309,37 +260,58 @@ namespace GameSystem.Character.Enemy
             pos.y = 0f;
             return pos;
         }
-        
-        
-        /// <summary>
-        /// 放置炸弹
-        /// </summary>
-        public void PlaceBomb()
-        {
-            if (currentBombCount <= 0 || currentBombCooldown > 0) return;
 
-            Vector3 bombPos = transform.position;
+        public Vector3 ToSearchPos(Vector3 pos)
+        {
+            pos.y = 0.5f;
+            return pos;
+        }
+
+
+        /// <summary>
+        ///     放置炸弹
+        /// </summary>
+        public void PutBomb(Action<bool> callBack)
+        {
+            if (bombCooldown > 0 || bombCount == 0)
+            {
+                print("炸弹冷却或数量为0，放置失败");
+                return;
+            }
+
+            var bombPos = transform.position;
             bombPos.x = Mathf.Ceil(bombPos.x) - 0.5f;
             bombPos.z = Mathf.Ceil(bombPos.z) - 0.5f;
-            bombPos.y = 0f;
+            bombPos.y = 0.5f;
+            var hitColliders = Physics.OverlapBox(bombPos, new Vector3(0.4f, 0.4f, 0.4f), Quaternion.identity);
+            if (hitColliders.Length > 0)
+                foreach (var collider1 in hitColliders)
+                    if (!collider1.gameObject.CompareTag(tag))
+                    {
+                        print("炸弹放置失败，位置有障碍物");
+                        return;
+                    }
 
-            // 广播炸弹放置事件
+            bombCooldown = maxBombCooldown;
+            bombCount--;
+            bombPos.y = 0f;
+            print("炸弹放置位置:" + bombPos);
             GameEventSystem.Broadcast(new BombEvents.BombPlaceRequestEvent
             {
                 Position = bombPos,
-                OwnerId = EnemyId,
+                Id = id,
                 BombFuseTime = bombFuseTime,
                 BombRadius = bombRadius,
-                BombDamage = bombDamage
+                BombDamage = bombDamage,
+                CallBack = callBack
             });
-
-            currentBombCount--;
-            currentBombCooldown = bombCooldown;
         }
 
+
         /// <summary>
-        /// 移动到目标位置
+        ///     移动到目标位置
         /// </summary>
+        /*
         public bool MoveTo(Vector3 targetPosition)
         {
             //
@@ -357,19 +329,25 @@ namespace GameSystem.Character.Enemy
             isMoving = false;
             return false;
         }
+        */
+        public bool MoveTo(PathInfo path, bool isEnterSafeMode = true)
+        {
+            isMoving = true;
+            return MoveController.MoveToTarget(path, isEnterSafeMode);
+        }
 
         /// <summary>
-        /// 停止移动
+        ///     停止移动
         /// </summary>
         public void StopMove()
         {
             isMoving = false;
+            /*
             enemyAgent.SetDestination(transform.position);
+            */
+            MoveController.StopMoving();
         }
 
         #endregion
-        
-        
-        
     }
 }

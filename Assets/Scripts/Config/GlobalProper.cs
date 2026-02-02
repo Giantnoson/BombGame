@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace player
+namespace Config
 {
     [CreateAssetMenu()]
     public class GlobalProper : ScriptableObject

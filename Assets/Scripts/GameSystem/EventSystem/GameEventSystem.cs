@@ -6,12 +6,26 @@ namespace GameSystem.EventSystem
 {
     public class GameEvent
     {
-        public string OwnerId;
+        public string Id;
     }
+
     public class GameEventSystem : MonoBehaviour
     {
-        public static GameEventSystem Instance { get; private set; }
+        public static bool isPrintLog = false;
 
+        /// <summary>
+        ///     事件字典：存储事件类型及其对应的处理方法
+        ///     键为事件类型(Type)，值为处理该事件的委托(Action<GameEvent>)
+        /// </summary>
+        private static readonly Dictionary<Type, Action<GameEvent>> SEvents = new();
+
+        /// <summary>
+        ///     事件查找字典：用于快速查找和移除事件监听器
+        ///     键为监听器委托(Delegate)，值为对应的处理方法(Action<GameEvent>)
+        /// </summary>
+        private static readonly Dictionary<Delegate, Action<GameEvent>> SEventLookups = new();
+
+        public static GameEventSystem Instance { get; private set; }
 
         private void Awake()
         {
@@ -28,21 +42,9 @@ namespace GameSystem.EventSystem
                 Destroy(gameObject);
             }
         }
-        /// <summary>
-        /// 事件字典：存储事件类型及其对应的处理方法
-        /// 键为事件类型(Type)，值为处理该事件的委托(Action<GameEvent>)
-        /// </summary>
-        static readonly Dictionary<Type, Action<GameEvent>> SEvents = new Dictionary<Type, Action<GameEvent>>();
 
         /// <summary>
-        /// 事件查找字典：用于快速查找和移除事件监听器
-        /// 键为监听器委托(Delegate)，值为对应的处理方法(Action<GameEvent>)
-        /// </summary>
-        static readonly Dictionary<Delegate, Action<GameEvent>> SEventLookups =
-            new Dictionary<Delegate, Action<GameEvent>>();
-
-        /// <summary>
-        /// 添加事件监听器：订阅指定类型的事件
+        ///     添加事件监听器：订阅指定类型的事件
         /// </summary>
         /// <typeparam name="T">事件类型，必须继承自GameEvent</typeparam>
         /// <param name="evt">事件处理方法</param>
@@ -53,12 +55,12 @@ namespace GameSystem.EventSystem
             if (!SEventLookups.ContainsKey(evt))
             {
                 // 创建新的处理方法，将GameEvent转换为具体事件类型T
-                Action<GameEvent> newAction = (e) => evt((T) e);
+                Action<GameEvent> newAction = e => evt((T)e);
                 // 将监听器与处理方法关联
                 SEventLookups[evt] = newAction;
 
                 // 将处理方法添加到事件字典中
-                if (SEvents.TryGetValue(typeof(T), out Action<GameEvent> internalAction))
+                if (SEvents.TryGetValue(typeof(T), out var internalAction))
                     // 如果事件类型已存在，则追加新的处理方法
                     SEvents[typeof(T)] = internalAction += newAction;
                 else
@@ -72,7 +74,7 @@ namespace GameSystem.EventSystem
         }
 
         /// <summary>
-        /// 移除事件监听器：取消订阅指定类型的事件
+        ///     移除事件监听器：取消订阅指定类型的事件
         /// </summary>
         /// <typeparam name="T">事件类型，必须继承自GameEvent</typeparam>
         /// <param name="evt">要移除的事件处理方法</param>
@@ -100,7 +102,7 @@ namespace GameSystem.EventSystem
         }
 
         /// <summary>
-        /// 广播事件：通知所有订阅了该事件类型的监听器
+        ///     广播事件：通知所有订阅了该事件类型的监听器
         /// </summary>
         /// <param name="evt">要广播的事件对象</param>
         public static void Broadcast(GameEvent evt)
@@ -108,14 +110,14 @@ namespace GameSystem.EventSystem
             // 查找事件类型对应的处理方法并调用
             if (SEvents.TryGetValue(evt.GetType(), out var action))
             {
-                print("广播事件对象: " + evt.GetType().Name);
+                if (isPrintLog) print("广播事件对象: " + evt.GetType().Name);
                 action.Invoke(evt);
             }
         }
 
         /// <summary>
-        /// 清空所有事件：移除所有事件监听器和事件类型
-        /// 通常在场景切换或游戏重置时调用
+        ///     清空所有事件：移除所有事件监听器和事件类型
+        ///     通常在场景切换或游戏重置时调用
         /// </summary>
         public static void Clear()
         {

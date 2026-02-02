@@ -1,22 +1,22 @@
-
 using UnityEngine;
 
 namespace GameSystem.Character.Enemy
 {
     /// <summary>
-    /// 攻击状态 - 对玩家进行攻击
+    ///     攻击状态 - 对玩家进行攻击
     /// </summary>
-/// <summary>
-/// 攻击状态类，继承自EnemyAIBaseState，用于控制敌人的攻击行为
-/// </summary>
+    /// <summary>
+    ///     攻击状态类，继承自EnemyAIBaseState，用于控制敌人的攻击行为
+    /// </summary>
     public class AttackState : EnemyAIBaseState
     {
-        private Transform targetPlayer; // 目标玩家的Transform对象
-        private float attackInterval = 1f; // 攻击间隔时间，单位为秒
+        private readonly float attackInterval = 1f; // 攻击间隔时间，单位为秒
+        private bool isAttackSuccess; // 是否成功攻击
         private float lastAttackTime; // 上次攻击的时间戳
+        private Transform targetPlayer; // 目标玩家的Transform对象
 
         /// <summary>
-        /// 进入攻击状态时调用的方法
+        ///     进入攻击状态时调用的方法
         /// </summary>
         /// <param name="fsm">有限状态机接口</param>
         protected internal override void OnEnter(IFsm<EnemyAIController> fsm)
@@ -31,16 +31,14 @@ namespace GameSystem.Character.Enemy
             lastAttackTime = Time.time - attackInterval; // 允许立即攻击
         }
 
-        protected internal override void OnUpdate(IFsm<EnemyAIController> fsm, float elapseSeconds, float realElapseSeconds)
+        protected internal override void OnUpdate(IFsm<EnemyAIController> fsm, float elapseSeconds,
+            float realElapseSeconds)
         {
             // 检查状态
             CheckState(fsm);
 
             // 尝试攻击
-            if (Time.time - lastAttackTime >= attackInterval)
-            {
-                TryAttack();
-            }
+            if (Time.time - lastAttackTime >= attackInterval) TryAttack();
         }
 
         protected internal override void OnLeave(IFsm<EnemyAIController> fsm, bool isShutdown)
@@ -51,7 +49,7 @@ namespace GameSystem.Character.Enemy
         }
 
         /// <summary>
-        /// 检查当前状态
+        ///     检查当前状态
         /// </summary>
         private void CheckState(IFsm<EnemyAIController> fsm)
         {
@@ -75,33 +73,31 @@ namespace GameSystem.Character.Enemy
             }
 
             // 3. 检查玩家是否在攻击范围内
-            float distance = Vector3.Distance(Owner.transform.position, targetPlayer.position);
+            var distance = Vector3.Distance(Owner.transform.position, targetPlayer.position);
             if (distance > Owner.attackRange)
-            {
                 // 玩家超出攻击范围，切换到追击状态
                 ChangeState<ChasePlayerState>(fsm);
-                return;
-            }
         }
 
         /// <summary>
-        /// 尝试攻击
+        ///     尝试攻击
         /// </summary>
         private void TryAttack()
         {
             if (targetPlayer == null) return;
 
             // 检查是否可以放置炸弹
-            if (Owner.currentBombCount > 0 && Owner.currentBombCooldown <= 0)
+            if (Owner.bombCooldown <= 0 && Owner.bombCount > 0)
             {
                 // 放置炸弹攻击
-                Owner.PlaceBomb();
+                Debug.Log("尝试放置炸弹进行攻击");
+                Owner.PutBomb(x => { isAttackSuccess = x; });
                 lastAttackTime = Time.time;
             }
             else
             {
-                // 无法放置炸弹，切换到追击状态
-                ChangeState<ChasePlayerState>(fsm as IFsm<EnemyAIController>);
+                // 无法放置炸弹，可能是因为冷却或数量不足，先尝试追击保持距离
+                ChangeState<ChasePlayerState>(fsm);
             }
         }
     }

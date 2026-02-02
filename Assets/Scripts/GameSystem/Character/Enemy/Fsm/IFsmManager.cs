@@ -6,29 +6,26 @@ namespace GameSystem.Character.Enemy
     public interface IFsmManager
     {
         /// <summary>
-        /// 获取有限状态机数量。
+        ///     获取有限状态机数量。
         /// </summary>
-        int Count
-        {
-            get;
-        }
+        int Count { get; }
 
         /// <summary>
-        /// 检查是否存在有限状态机。
+        ///     检查是否存在有限状态机。
         /// </summary>
         /// <typeparam name="T">有限状态机持有者类型。</typeparam>
         /// <returns>是否存在有限状态机。</returns>
         bool HasFsm<T>() where T : class;
 
         /// <summary>
-        /// 检查是否存在有限状态机。
+        ///     检查是否存在有限状态机。
         /// </summary>
         /// <param name="ownerType">有限状态机持有者类型。</param>
         /// <returns>是否存在有限状态机。</returns>
         bool HasFsm(Type ownerType);
 
         /// <summary>
-        /// 检查是否存在有限状态机。
+        ///     检查是否存在有限状态机。
         /// </summary>
         /// <typeparam name="T">有限状态机持有者类型。</typeparam>
         /// <param name="name">有限状态机名称。</param>
@@ -36,7 +33,7 @@ namespace GameSystem.Character.Enemy
         bool HasFsm<T>(string name) where T : class;
 
         /// <summary>
-        /// 检查是否存在有限状态机。
+        ///     检查是否存在有限状态机。
         /// </summary>
         /// <param name="ownerType">有限状态机持有者类型。</param>
         /// <param name="name">有限状态机名称。</param>
@@ -44,21 +41,21 @@ namespace GameSystem.Character.Enemy
         bool HasFsm(Type ownerType, string name);
 
         /// <summary>
-        /// 获取有限状态机。
+        ///     获取有限状态机。
         /// </summary>
         /// <typeparam name="T">有限状态机持有者类型。</typeparam>
         /// <returns>要获取的有限状态机。</returns>
         IFsm<T> GetFsm<T>() where T : class;
 
         /// <summary>
-        /// 获取有限状态机。
+        ///     获取有限状态机。
         /// </summary>
         /// <param name="ownerType">有限状态机持有者类型。</param>
         /// <returns>要获取的有限状态机。</returns>
         FsmBase GetFsm(Type ownerType);
 
         /// <summary>
-        /// 获取有限状态机。
+        ///     获取有限状态机。
         /// </summary>
         /// <typeparam name="T">有限状态机持有者类型。</typeparam>
         /// <param name="name">有限状态机名称。</param>
@@ -66,7 +63,7 @@ namespace GameSystem.Character.Enemy
         IFsm<T> GetFsm<T>(string name) where T : class;
 
         /// <summary>
-        /// 获取有限状态机。
+        ///     获取有限状态机。
         /// </summary>
         /// <param name="ownerType">有限状态机持有者类型。</param>
         /// <param name="name">有限状态机名称。</param>
@@ -74,19 +71,19 @@ namespace GameSystem.Character.Enemy
         FsmBase GetFsm(Type ownerType, string name);
 
         /// <summary>
-        /// 获取所有有限状态机。
+        ///     获取所有有限状态机。
         /// </summary>
         /// <returns>所有有限状态机。</returns>
         FsmBase[] GetAllFsms();
 
         /// <summary>
-        /// 获取所有有限状态机。
+        ///     获取所有有限状态机。
         /// </summary>
         /// <param name="results">所有有限状态机。</param>
         void GetAllFsms(List<FsmBase> results);
 
         /// <summary>
-        /// 创建有限状态机。
+        ///     创建有限状态机。
         /// </summary>
         /// <typeparam name="T">有限状态机持有者类型。</typeparam>
         /// <param name="owner">有限状态机持有者。</param>
@@ -95,7 +92,7 @@ namespace GameSystem.Character.Enemy
         IFsm<T> CreateFsm<T>(T owner, params FsmState<T>[] states) where T : class;
 
         /// <summary>
-        /// 创建有限状态机。
+        ///     创建有限状态机。
         /// </summary>
         /// <typeparam name="T">有限状态机持有者类型。</typeparam>
         /// <param name="name">有限状态机名称。</param>
@@ -105,7 +102,7 @@ namespace GameSystem.Character.Enemy
         IFsm<T> CreateFsm<T>(string name, T owner, params FsmState<T>[] states) where T : class;
 
         /// <summary>
-        /// 创建有限状态机。
+        ///     创建有限状态机。
         /// </summary>
         /// <typeparam name="T">有限状态机持有者类型。</typeparam>
         /// <param name="owner">有限状态机持有者。</param>
@@ -114,7 +111,7 @@ namespace GameSystem.Character.Enemy
         IFsm<T> CreateFsm<T>(T owner, List<FsmState<T>> states) where T : class;
 
         /// <summary>
-        /// 创建有限状态机。
+        ///     创建有限状态机。
         /// </summary>
         /// <typeparam name="T">有限状态机持有者类型。</typeparam>
         /// <param name="name">有限状态机名称。</param>
@@ -124,21 +121,21 @@ namespace GameSystem.Character.Enemy
         IFsm<T> CreateFsm<T>(string name, T owner, List<FsmState<T>> states) where T : class;
 
         /// <summary>
-        /// 销毁有限状态机。
+        ///     销毁有限状态机。
         /// </summary>
         /// <typeparam name="T">有限状态机持有者类型。</typeparam>
         /// <returns>是否销毁有限状态机成功。</returns>
         bool DestroyFsm<T>() where T : class;
 
         /// <summary>
-        /// 销毁有限状态机。
+        ///     销毁有限状态机。
         /// </summary>
         /// <param name="ownerType">有限状态机持有者类型。</param>
         /// <returns>是否销毁有限状态机成功。</returns>
         bool DestroyFsm(Type ownerType);
 
         /// <summary>
-        /// 销毁有限状态机。
+        ///     销毁有限状态机。
         /// </summary>
         /// <typeparam name="T">有限状态机持有者类型。</typeparam>
         /// <param name="name">要销毁的有限状态机名称。</param>
@@ -146,7 +143,7 @@ namespace GameSystem.Character.Enemy
         bool DestroyFsm<T>(string name) where T : class;
 
         /// <summary>
-        /// 销毁有限状态机。
+        ///     销毁有限状态机。
         /// </summary>
         /// <param name="ownerType">有限状态机持有者类型。</param>
         /// <param name="name">要销毁的有限状态机名称。</param>
@@ -154,7 +151,7 @@ namespace GameSystem.Character.Enemy
         bool DestroyFsm(Type ownerType, string name);
 
         /// <summary>
-        /// 销毁有限状态机。
+        ///     销毁有限状态机。
         /// </summary>
         /// <typeparam name="T">有限状态机持有者类型。</typeparam>
         /// <param name="fsm">要销毁的有限状态机。</param>
@@ -162,7 +159,7 @@ namespace GameSystem.Character.Enemy
         bool DestroyFsm<T>(IFsm<T> fsm) where T : class;
 
         /// <summary>
-        /// 销毁有限状态机。
+        ///     销毁有限状态机。
         /// </summary>
         /// <param name="fsm">要销毁的有限状态机。</param>
         /// <returns>是否销毁有限状态机成功。</returns>

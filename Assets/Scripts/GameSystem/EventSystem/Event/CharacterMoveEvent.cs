@@ -6,38 +6,37 @@ namespace GameSystem.EventSystem
     {
         public class UpdateSpeedEvent : GameEvent
         {
-            public UpdateSpeedEvent(string ownerId, float speed)
+            public float Speed;
+
+            public UpdateSpeedEvent(string id, float speed)
             {
-                OwnerId = ownerId;
+                Id = id;
                 Speed = speed;
             }
-
-            public float Speed;
         }
 
         public class UpdateMoveDirectionEvent : GameEvent
         {
-            public UpdateMoveDirectionEvent(string ownerId, Vector3 direction)
+            public Vector3 Direction;
+
+            public UpdateMoveDirectionEvent(string id, Vector3 direction)
             {
-                OwnerId = ownerId;
+                Id = id;
                 Direction = direction;
             }
-            public Vector3 Direction;
         }
 
         public class UpdateRotationXEvent : GameEvent
         {
-            public UpdateRotationXEvent(string ownerId, float mouseX, float mouseY)
+            public float MouseX;
+            public float MouseY;
+
+            public UpdateRotationXEvent(string id, float mouseX, float mouseY)
             {
-                OwnerId = ownerId;
+                Id = id;
                 MouseX = mouseX;
                 MouseY = mouseY;
             }
-
-            public float MouseX;
-            public float MouseY; 
-
         }
-        
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace config
+namespace Config
 {
     [CreateAssetMenu()]
     public class MapInfoConfig :ScriptableObject

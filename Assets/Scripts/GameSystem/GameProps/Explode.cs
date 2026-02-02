@@ -1,12 +1,16 @@
-﻿using System;
-using GameSystem.Pool;
-using UnityEngine;
+﻿using GameSystem.Pool;
 
 namespace GameSystem.GameProps
 {
-    public class Explode : MonoBehaviour
+    public class Explode : BaseObject
     {
         public float destroyTime = 0.5f;
+
+        private void Awake()
+        {
+            id = gameObject.GetInstanceID().ToString();
+        }
+
         private void OnEnable()
         {
             Invoke("ReturnToPool", destroyTime);

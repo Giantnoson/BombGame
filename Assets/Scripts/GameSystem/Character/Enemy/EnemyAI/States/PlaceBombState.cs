@@ -1,34 +1,33 @@
-
 using UnityEngine;
 
 namespace GameSystem.Character.Enemy
 {
     /// <summary>
-    /// 放置炸弹状态 - 在合适位置放置炸弹
+    ///     放置炸弹状态 - 在合适位置放置炸弹
     /// </summary>
-/// <summary>
-/// 放置炸弹状态类，继承自EnemyAIBaseState
-/// </summary>
+    /// <summary>
+    ///     放置炸弹状态类，继承自EnemyAIBaseState
+    /// </summary>
     public class PlaceBombState : EnemyAIBaseState
     {
         /// <summary>
-        /// 是否已放置炸弹
+        ///     放置延迟
+        /// </summary>
+        private readonly float placeDelay = 0.5f;
+
+        /// <summary>
+        ///     是否已放置炸弹
         /// </summary>
         private bool bombPlaced;
-        
+
         private Vector3 bombPosition;
+
         /// <summary>
-        /// 放置延迟
-        /// </summary>
-        private float placeDelay = 0.5f;
-        /// <summary>
-        /// 当前延迟
+        ///     当前延迟
         /// </summary>
         private float currentDelay;
 
-        
-        
-        
+
         protected internal override void OnEnter(IFsm<EnemyAIController> fsm)
         {
             Debug.Log("进入放置炸弹状态");
@@ -41,17 +40,15 @@ namespace GameSystem.Character.Enemy
             bombPlaced = false;
             currentDelay = 0f;
         }
-        
 
-        protected internal override void OnUpdate(IFsm<EnemyAIController> fsm, float elapseSeconds, float realElapseSeconds)
+
+        protected internal override void OnUpdate(IFsm<EnemyAIController> fsm, float elapseSeconds,
+            float realElapseSeconds)
         {
             if (!bombPlaced)
             {
                 currentDelay += elapseSeconds;
-                if (currentDelay >= placeDelay)
-                {
-                    PlaceBomb();
-                }
+                if (currentDelay >= placeDelay) PlaceBomb();
             }
             else
             {
@@ -67,21 +64,20 @@ namespace GameSystem.Character.Enemy
         }
 
         /// <summary>
-        /// 放置炸弹
+        ///     放置炸弹
         /// </summary>
         private void PlaceBomb()
         {
-            if (Owner.currentBombCount > 0 && Owner.currentBombCooldown <= 0)
+            if (Owner.bombCount > 0 && Owner.bombCooldown <= 0)
             {
                 Debug.Log("放置炸弹");
-                Owner.PlaceBomb();
-                bombPlaced = true;
+                Owner.PutBomb(x => { bombPlaced = x; });
                 bombPosition = Owner.transform.position;
             }
             else
             {
                 // 无法放置炸弹，切换到闲置状态
-                ChangeState<IdleState>(fsm as IFsm<EnemyAIController>);
+                ChangeState<IdleState>(fsm);
             }
         }
     }

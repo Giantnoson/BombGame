@@ -1,17 +1,16 @@
-
 using UnityEngine;
 
 namespace GameSystem.Character.Enemy
 {
     /// <summary>
-    /// 追击玩家状态 - 追击并接近玩家
+    ///     追击玩家状态 - 追击并接近玩家
     /// </summary>
     public class ChasePlayerState : EnemyAIBaseState
     {
-        private Transform targetPlayer;
-        private float targetCheckInterval = 0.1f;
+        private readonly float targetCheckInterval = 0.1f;
+        private bool isMoving;
         private float lastCheckTime;
-        private bool isMoving = false;
+        private Transform targetPlayer;
 
         protected internal override void OnEnter(IFsm<EnemyAIController> fsm)
         {
@@ -20,11 +19,14 @@ namespace GameSystem.Character.Enemy
             Owner.StatusQueue.Enqueue(EnemyAIStates.ChasePlayer);
             Owner.StatusQueue.Dequeue();
             targetPlayer = Owner.GetNearestPlayer();
+            /*
             Owner.enemyAgent.stoppingDistance = Owner.stoppingDistance;
+            */
             isMoving = false;
         }
 
-        protected internal override void OnUpdate(IFsm<EnemyAIController> fsm, float elapseSeconds, float realElapseSeconds)
+        protected internal override void OnUpdate(IFsm<EnemyAIController> fsm, float elapseSeconds,
+            float realElapseSeconds)
         {
             // 定期检查状态
             if (Time.time - lastCheckTime >= targetCheckInterval)
@@ -46,12 +48,14 @@ namespace GameSystem.Character.Enemy
             Debug.Log("离开追击玩家状态");
             targetPlayer = null;
             Owner.StopMove();
+            /*
             Owner.enemyAgent.stoppingDistance = 0f;
+            */
             isMoving = false;
         }
 
         /// <summary>
-        /// 检查当前状态
+        ///     检查当前状态
         /// </summary>
         private void CheckState(IFsm<EnemyAIController> fsm)
         {
@@ -74,14 +78,16 @@ namespace GameSystem.Character.Enemy
             targetPlayer = Owner.GetNearestPlayer();
             if (targetPlayer != null)
             {
-                float distance = Vector3.Distance(Owner.transform.position, Owner.ToBombPutPos(targetPlayer.position));
+                var distance = Vector3.Distance(Owner.transform.position, Owner.ToBombPutPos(targetPlayer.position));
                 if (distance <= Owner.stoppingDistance + 0.3f)
                 {
                     ChangeState<AttackState>(fsm);
                     return;
                 }
-                Owner.MoveTo(Owner.ToBombPutPos(targetPlayer.position));
-                
+
+                Owner.MoveTo(Owner.MapInfo.SearchPath(Owner.transform.position,
+                    Owner.ToBombPutPos(targetPlayer.position), true));
+
                 // 4. 检查是否超出追击范围
                 if (distance > Owner.chaseRange)
                 {
@@ -90,17 +96,13 @@ namespace GameSystem.Character.Enemy
                     return;
                 }
             }
-            
+
             // 5. 检查路径是否被爆炸阻挡
-            if (IsPathBlockedByExplosion())
-            {
-                ChangeState<PathWaitState>(fsm);
-                return;
-            }
+            if (IsPathBlockedByExplosion()) ChangeState<PathWaitState>(fsm);
         }
 
         /// <summary>
-        /// 追击玩家
+        ///     追击玩家
         /// </summary>
         private void ChasePlayer()
         {
@@ -109,26 +111,21 @@ namespace GameSystem.Character.Enemy
                 isMoving = false;
                 return;
             }
-            if(isMoving) return;
-            if (!Owner.MoveTo(Owner.ToBombPutPos(targetPlayer.position)))
-            {
+
+            if (isMoving) return;
+            if (!Owner.MoveTo(Owner.MapInfo.SearchPath(Owner.transform.position,
+                    Owner.ToBombPutPos(targetPlayer.position), true)))
                 ChangeState<SearchState>(fsm);
-            }
             else
-            {
                 isMoving = true;
-            }
         }
 
         /// <summary>
-        /// 检查路径是否被爆炸阻挡
+        ///     检查路径是否被爆炸阻挡
         /// </summary>
         private bool IsPathBlockedByExplosion()
         {
-            if (Owner.IsInExplosionRange(Owner.transform.position))
-            {
-                return true;
-            }
+            if (Owner.IsInExplosionRange(Owner.transform.position)) return true;
             return false;
         }
     }
