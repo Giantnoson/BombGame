@@ -66,7 +66,6 @@ namespace Config
         public float maxHpGrowth = 10f; //最大生命值增加数值
         
     }
-
     
     [System.Serializable]
     public enum CharacterType {

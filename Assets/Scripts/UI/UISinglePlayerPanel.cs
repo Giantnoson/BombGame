@@ -70,17 +70,8 @@ namespace UI
             // Save settings to GameModeSelect
             if (GameModeSelect.Instance != null)
             {
-                if (_playerCount == 1)
-                {
-                    GameModeSelect.Instance.SetGameMode(GameModeType.OfflinePVE, EnhancedGameFlowManager.GameState.Prepare, _playerCount, _npcCount);
-                }
-                else
-                {
-                    GameModeSelect.Instance.SetGameMode(GameModeType.OfflinePVP, EnhancedGameFlowManager.GameState.Prepare, _playerCount, _npcCount);
-                }
-
+                GameModeSelect.Instance.SetGameMode(GameModeType.Offline, EnhancedGameFlowManager.GameState.Prepare, _playerCount, _npcCount);
             }
-            
             // Load Game Scene
             SceneManager.LoadScene("GameScene");
         }

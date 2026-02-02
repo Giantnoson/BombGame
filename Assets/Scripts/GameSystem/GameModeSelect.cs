@@ -12,9 +12,8 @@ namespace GameSystem
     [Serializable]
     public enum GameModeType
     {
-        OnlinePVP, //在线PVP
-        OfflinePVP, //离线
-        OfflinePVE, //离线PVE
+        Online, //在线
+        Offline, //离线
     }
 
     public enum GameMode

@@ -12,8 +12,8 @@ namespace GameSystem.Character.Player
     {
         # region 变量定义
         public PlayerControlConfig playerControlConfig;
-        public float moveVertical;
-        public float moveHorizontal;
+        public float vertical;
+        public float horizontal;
         
         public Vector3 moveDirection;
         public Vector3 beforeMoveDirection = Vector3.zero;
@@ -24,18 +24,25 @@ namespace GameSystem.Character.Player
         public float beforeCameraVertical;
         public bool isStaminaUpdate;
         private bool isCameraViewUpdate = false;
+        [Header(" 玩家控制")]
+        [Tooltip("水平移动")]
+        public string sHorizontal;
+        [Tooltip("垂直移动")]
+        public string sVertical;
+        [Tooltip("放置炸弹")]
+        public KeyCode sputBomb;
 
         #endregion
 
         private void Awake()
         {
-            isCameraViewUpdate = GameModeSelect.CurrentModeType != GameModeType.OfflinePVP;
+            isCameraViewUpdate = GameModeSelect.PlayerCount == 1;
         }
 
         private void Update()
         {
             if (isDie) return; //如果玩家死亡，则不执行以下代码
-            if (Input.GetKeyDown(playerControlConfig.putBomb)) PutBomb();
+            if (Input.GetKeyDown(sputBomb)) PutBomb();
             StaminaUpdate();
             BombUpdate();
             MoveUpdate();
@@ -56,9 +63,9 @@ namespace GameSystem.Character.Player
 
         private void MoveUpdate()
         {
-            moveHorizontal = Input.GetAxis(playerControlConfig.moveHorizontal); // A/D
-            moveVertical = Input.GetAxis(playerControlConfig.moveVertical); // W/S 
-            moveDirection = new Vector3(moveHorizontal, 0, moveVertical);
+            horizontal = Input.GetAxis(sHorizontal); // A/D
+            vertical = Input.GetAxis(sVertical); // W/S 
+            moveDirection = new Vector3(horizontal, 0, vertical);
 
             // 将移动向量从角色本地坐标系转换到世界坐标系
             moveDirection = transform.TransformDirection(moveDirection);
@@ -110,15 +117,22 @@ namespace GameSystem.Character.Player
             this.id = id;
             characterType = type;
             this.playerControlConfig = playerControlConfig;
+            sHorizontal = playerControlConfig.moveHorizontal;
+            sVertical = playerControlConfig.moveVertical;
+            sputBomb = playerControlConfig.putBomb;
             //严格按照此顺序初始化
             StateInit();
+            
             print("玩家属性初始化成功");
         }
 
-        private void InitHUD()
+        public void DisableCamera()
         {
-            GameEventSystem.Broadcast(new HUDEvent.LoadHUDEvent(id, characterName, characterType, characterProper,
-                globalProper, hp, stamina, exp, level, currentSpeed));
+            var cameras = GetComponentsInChildren<Camera>();
+            foreach (var c in cameras)
+            {
+                c.gameObject.SetActive(false);
+            }
         }
 
         protected override void OnPlayerDie(CharacterDieEvent evt)

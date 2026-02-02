@@ -42,7 +42,7 @@ namespace GameSystem.Map
             ScanConfig = Resources.Load<MapScanConfig>(gameObject.scene.name + "/MapScanConfig");
             if (ScanConfig == null)
             {
-                Debug.LogError("未找到MapScanConfig");
+                Debug.LogError($"在{gameObject.scene.name}/MapScanConfig下未找到MapScanConfig");
             }
             else
             {

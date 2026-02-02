@@ -22,7 +22,7 @@ namespace GameSystem.GameProps
         [Tooltip("炸弹爆炸范围")] public float bombRadius = 5f;
 
 
-        private readonly HashSet<string> hitPlayers = new(); // 用于记录已经爆炸伤害过的玩家
+        private readonly HashSet<string> hitPlayers = new HashSet<string>(); // 用于记录已经爆炸伤害过的玩家
 
         private void Awake()
         {

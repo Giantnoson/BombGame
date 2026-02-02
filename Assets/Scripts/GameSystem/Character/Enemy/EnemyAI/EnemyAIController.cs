@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using Config;
 using GameSystem.Character.Player;
 using GameSystem.EventSystem;
 using GameSystem.GameProps;
 using GameSystem.Map;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace GameSystem.Character.Enemy
@@ -21,7 +23,7 @@ namespace GameSystem.Character.Enemy
 
         [Header("状态")] public float stoppingDistance = 0.3f;
 
-        [Tooltip("状态记录")] public List<EnemyAIStates> StatusLog;
+        [Tooltip("状态记录")] public List<EnemyAIStates> StatusLog = new List<EnemyAIStates>();
 
         public bool isMoving;
 
@@ -61,6 +63,9 @@ namespace GameSystem.Character.Enemy
         {
             characterController = GetComponent<CharacterController>();
             if (characterController == null) characterController = gameObject.AddComponent<CharacterController>();
+            
+            // 初始化状态记录列表
+            if (StatusLog == null) StatusLog = new List<EnemyAIStates>();
             /*
             enemyAgent = GetComponent<NavMeshAgent>();
             */
@@ -85,13 +90,26 @@ namespace GameSystem.Character.Enemy
         */
         }
 
+        public void EmenyControllerInit(string name, string id, CharacterType type)
+        {
+            characterName = name;
+            this.id = id;
+            characterType = type;
+            foreach (var cam in gameObject.GetComponentsInChildren<Camera>())
+            {
+                cam.gameObject.SetActive(false);
+            }
+            //严格按照此顺序初始化
+            StateInit();
+            print("玩家属性初始化成功");
+        }
+
 
         private void Start()
         {
             // 初始化FSM
             isMoving = false;
             InitializeFSM();
-            StateInit();
             players = GameObject.FindGameObjectsWithTag("Player");
         }
 

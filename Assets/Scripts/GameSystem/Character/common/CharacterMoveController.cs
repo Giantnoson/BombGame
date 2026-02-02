@@ -53,7 +53,7 @@ namespace GameSystem.Character
 
             if (mainCamera == null) Debug.LogWarning("未找到MainCamera");
             if (!isMiniMapExists)
-                Debug.LogError("在PlayerMoveController中未找到MiniMapCamera");
+                Debug.Log("在PlayerMoveController中未找到MiniMapCamera");
             else
                 miniMapCamera.transform.rotation = Quaternion.Euler(90, 0, 0);
             // 隐藏并锁定鼠标光标到屏幕中心
@@ -83,6 +83,7 @@ namespace GameSystem.Character
             GameEventSystem.AddListener<CharacterMoveEvent.UpdateSpeedEvent>(OnSpeedUpdate);
             GameEventSystem.AddListener<CharacterMoveEvent.UpdateMoveDirectionEvent>(OnMoveDirectionUpdate);
             GameEventSystem.AddListener<CharacterMoveEvent.UpdateRotationXEvent>(OnRotationXUpdate);
+            GameEventSystem.AddListener<CharacterDieEvent>(OnPlayerDie);
         }
 
         private void OnDisable()
@@ -90,6 +91,7 @@ namespace GameSystem.Character
             GameEventSystem.RemoveListener<CharacterMoveEvent.UpdateSpeedEvent>(OnSpeedUpdate);
             GameEventSystem.RemoveListener<CharacterMoveEvent.UpdateMoveDirectionEvent>(OnMoveDirectionUpdate);
             GameEventSystem.RemoveListener<CharacterMoveEvent.UpdateRotationXEvent>(OnRotationXUpdate);
+            GameEventSystem.RemoveListener<CharacterDieEvent>(OnPlayerDie);
         }
 
         public void Init(string playerID)
@@ -117,7 +119,7 @@ namespace GameSystem.Character
             }
         }
 
-        protected virtual void OnPlayerDie(CharacterDieEvent evt)
+        protected void OnPlayerDie(CharacterDieEvent evt)
         {
             if (isDie) return;
             if (evt.DieId == ownerId)

@@ -14,5 +14,6 @@ namespace Config
         [Tooltip("最大经验值")]
         public int maxExpToLevelUp = 100;
         
+        
     }
 }

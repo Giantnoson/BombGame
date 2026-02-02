@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Config
@@ -12,9 +13,9 @@ namespace Config
         public int offsetDistance = 15;
         [Tooltip("扫描类型")]
         public List<TagType> tagList = new List<TagType>();
-
     }
 
+    [Serializable]
     public enum TagType
     {
         Wall,

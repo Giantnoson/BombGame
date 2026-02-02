@@ -34,7 +34,5 @@ namespace Config
         Enemy,
         Bomb,
         Nothing
-        
-        
     }
 }

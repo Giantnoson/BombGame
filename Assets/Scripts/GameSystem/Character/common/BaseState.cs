@@ -6,11 +6,148 @@ namespace GameSystem.Character
 {
     public abstract class BaseState : BaseObject, IState
     {
+        
+                #region 模板相关
+
+        [Tooltip("角色类型")] public CharacterType characterType;
+
+        [Tooltip("角色基础属性配置")] public CharacterProper characterProper;
+
+        /// <summary>
+        ///     全局属性
+        /// </summary>
+        [Tooltip("全局属性")] public GlobalProper globalProper;
+
+        [Tooltip("玩家名称")] public string characterName;
+
+        #endregion
+
+        #region 基础属性相关
+
+        /// <summary>
+        ///     生命值
+        /// </summary>
+        [Header("属性设置")] [Tooltip("生命值")] public float hp;
+
+        /// <summary>
+        ///     等级
+        /// </summary>
+        [Tooltip("等级")] public int level = 1;
+
+        /// <summary>
+        ///     经验值
+        /// </summary>
+        [Tooltip("经验值")] public int exp;
+
+        /// <summary>
+        ///     最大生命值
+        /// </summary>
+        [Tooltip("最大生命值")] public float maxHp = 100; //最大生命值
+
+        #endregion
+
+        #region 移动相关
+
+        /// <summary>
+        ///     基础速度
+        /// </summary>
+        [Header("移动设置")] [Tooltip("基础速度")] public float baseSpeed;
+
+        /// <summary>
+        ///     当前速度
+        /// </summary>
+        [Tooltip("当前速度")] public float currentSpeed;
+
+        /// <summary>
+        ///     速度倍率
+        /// </summary>
+        [Tooltip("速度倍率")] public float speedMultiplier = 1.2f; //速度倍率
+
+        #endregion
+
+        #region 体力相关
+
+        /// <summary>
+        ///     体力
+        /// </summary>
+        [Header("体力设置")] [Tooltip("体力")] public float stamina = 100f;
+
+        /// <summary>
+        ///     最大体力
+        /// </summary>
+        [Tooltip("最大体力")] public float maxStamina = 100f; //体力上限
+
+        /// <summary>
+        ///     体力消耗速率
+        /// </summary>
+        [Tooltip("体力消耗速率")] public float staminaDrainRate = 10f; //体力消耗速率
+
+        /// <summary>
+        ///     体力恢复速率
+        /// </summary>
+        [Tooltip("体力恢复速率")] public float staminaRegenRate = 10f; //体力恢复速率
+
+        #endregion
+
+        #region 炸弹相关
+
+        [Header("炸弹设置")] [Tooltip("炸弹数量")] public int bombCount;
+
+        /// <summary>
+        ///     炸弹伤害
+        /// </summary>
+        [Tooltip("炸弹伤害")] public float bombDamage = 20f; //爆炸伤害
+
+        /// <summary>
+        ///     炸弹爆炸范围
+        /// </summary>
+        [Tooltip("炸弹爆炸范围")] public int bombRadius = 5; //爆炸范围
+
+        /// <summary>
+        ///     炸弹爆炸时间
+        /// </summary>
+        [Tooltip("炸弹爆炸时间")] public float bombFuseTime = 3f; //爆炸时间
+
+        /// <summary>
+        ///     放置炸弹冷却时间
+        /// </summary>
+        [Tooltip("放置炸弹冷却时间")] public float bombCooldown = 0.8f; //放置炸弹冷却时间
+
+        /// <summary>
+        ///     炸弹恢复时间
+        /// </summary>
+        [Tooltip("炸弹恢复时间")] public float bombRecoveryTime = 2f;
+
+        /// <summary>
+        ///     最大炸弹数量
+        /// </summary>
+        [Tooltip("最大炸弹数量")] public int maxBombCount = 5; //最大炸弹数量
+
+        /// <summary>
+        ///     最大炸弹恢复时间
+        /// </summary>
+        [Tooltip("最大炸弹恢复时间")] public float maxBombRecoveryTime = 2f; //最大炸弹恢复时间
+
+        /// <summary>
+        ///     放置炸弹冷却时间
+        /// </summary>
+        [Tooltip("放置炸弹冷却时间")] public float maxBombCooldown = 0.8f; //放置炸弹冷却时间
+
+        #endregion
+
+        #region 状态相关
+
+        [Header("角色状态")] public bool isDie;
+
+        public bool isStaminaEmpty;
+        
         [Header("判断")] [Tooltip("炸弹更新结束")] public bool isBombUpdate;
 
         [Tooltip("移动更新结束")] private float beforeCurrentSpeed;
 
         private float beforeStamina;
+        #endregion
+
 
 
         /// <summary>
@@ -29,7 +166,7 @@ namespace GameSystem.Character
             GameEventSystem.Broadcast(new HUDEvent.LoadHUDEvent(id, characterName, characterType, characterProper,
                 globalProper, hp, stamina, exp, level, currentSpeed));
         }
-
+        
         private void InitProper()
         {
             switch (characterType)
@@ -166,141 +303,7 @@ namespace GameSystem.Character
                 bombRecoveryTime));
         }
 
-        #region 模板相关
 
-        [Tooltip("角色类型")] public CharacterType characterType;
-
-        [Tooltip("角色基础属性配置")] public CharacterProper characterProper;
-
-        /// <summary>
-        ///     全局属性
-        /// </summary>
-        [Tooltip("全局属性")] public GlobalProper globalProper;
-
-        [Tooltip("玩家名称")] public string characterName;
-
-        #endregion
-
-        #region 基础属性相关
-
-        /// <summary>
-        ///     生命值
-        /// </summary>
-        [Header("属性设置")] [Tooltip("生命值")] public float hp;
-
-        /// <summary>
-        ///     等级
-        /// </summary>
-        [Tooltip("等级")] public int level = 1;
-
-        /// <summary>
-        ///     经验值
-        /// </summary>
-        [Tooltip("经验值")] public int exp;
-
-        /// <summary>
-        ///     最大生命值
-        /// </summary>
-        [Tooltip("最大生命值")] public float maxHp = 100; //最大生命值
-
-        #endregion
-
-        #region 移动相关
-
-        /// <summary>
-        ///     基础速度
-        /// </summary>
-        [Header("移动设置")] [Tooltip("基础速度")] public float baseSpeed;
-
-        /// <summary>
-        ///     当前速度
-        /// </summary>
-        [Tooltip("当前速度")] public float currentSpeed;
-
-        /// <summary>
-        ///     速度倍率
-        /// </summary>
-        [Tooltip("速度倍率")] public float speedMultiplier = 1.2f; //速度倍率
-
-        #endregion
-
-        #region 体力相关
-
-        /// <summary>
-        ///     体力
-        /// </summary>
-        [Header("体力设置")] [Tooltip("体力")] public float stamina = 100f;
-
-        /// <summary>
-        ///     最大体力
-        /// </summary>
-        [Tooltip("最大体力")] public float maxStamina = 100f; //体力上限
-
-        /// <summary>
-        ///     体力消耗速率
-        /// </summary>
-        [Tooltip("体力消耗速率")] public float staminaDrainRate = 10f; //体力消耗速率
-
-        /// <summary>
-        ///     体力恢复速率
-        /// </summary>
-        [Tooltip("体力恢复速率")] public float staminaRegenRate = 10f; //体力恢复速率
-
-        #endregion
-
-        #region 炸弹相关
-
-        [Header("炸弹设置")] [Tooltip("炸弹数量")] public int bombCount;
-
-        /// <summary>
-        ///     炸弹伤害
-        /// </summary>
-        [Tooltip("炸弹伤害")] public float bombDamage = 20f; //爆炸伤害
-
-        /// <summary>
-        ///     炸弹爆炸范围
-        /// </summary>
-        [Tooltip("炸弹爆炸范围")] public int bombRadius = 5; //爆炸范围
-
-        /// <summary>
-        ///     炸弹爆炸时间
-        /// </summary>
-        [Tooltip("炸弹爆炸时间")] public float bombFuseTime = 3f; //爆炸时间
-
-        /// <summary>
-        ///     放置炸弹冷却时间
-        /// </summary>
-        [Tooltip("放置炸弹冷却时间")] public float bombCooldown = 0.8f; //放置炸弹冷却时间
-
-        /// <summary>
-        ///     炸弹恢复时间
-        /// </summary>
-        [Tooltip("炸弹恢复时间")] public float bombRecoveryTime = 2f;
-
-        /// <summary>
-        ///     最大炸弹数量
-        /// </summary>
-        [Tooltip("最大炸弹数量")] public int maxBombCount = 5; //最大炸弹数量
-
-        /// <summary>
-        ///     最大炸弹恢复时间
-        /// </summary>
-        [Tooltip("最大炸弹恢复时间")] public float maxBombRecoveryTime = 2f; //最大炸弹恢复时间
-
-        /// <summary>
-        ///     放置炸弹冷却时间
-        /// </summary>
-        [Tooltip("放置炸弹冷却时间")] public float maxBombCooldown = 0.8f; //放置炸弹冷却时间
-
-        #endregion
-
-        #region 状态相关
-
-        [Header("角色状态")] public bool isDie;
-
-        public bool isStaminaEmpty;
-
-        #endregion
 
         # region 事件监听设置
 

@@ -65,7 +65,7 @@ namespace UI
             Debug.Log("Starting Online Game...");
             if (GameModeSelect.Instance != null)
             {
-                GameModeSelect.Instance.SetGameMode(GameModeType.OnlinePVP, EnhancedGameFlowManager.GameState.Prepare, _players.Count, 0);
+                GameModeSelect.Instance.SetGameMode(GameModeType.Online, EnhancedGameFlowManager.GameState.Prepare, _players.Count, 0);
             }
             SceneManager.LoadScene("GameScene");
         }

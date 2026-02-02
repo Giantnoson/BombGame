@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using Config;
 using GameSystem.Character;
+using GameSystem.Character.Enemy;
 using GameSystem.Character.Player;
 using GameSystem.EventSystem;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace GameSystem.GameScene.GameRuntimeScene
@@ -11,8 +13,8 @@ namespace GameSystem.GameScene.GameRuntimeScene
     //游戏运行场景管理器负责管理游戏当中的场景初始化，相对于场景中的流
     public class GameRuntimeSceneManager : BaseSceneManager
     {
-        [Header("初始组件 索引0为单人，1-4为多人")] [Tooltip("玩家预制体")]
-        public GameObject players;
+        [Header("初始组件")] [Tooltip("玩家预制体")]
+        public GameObject Character;
 
         [Tooltip("玩家数量")] public int playerCount;
 
@@ -25,16 +27,20 @@ namespace GameSystem.GameScene.GameRuntimeScene
         [Tooltip("玩家名称")] public List<string> playerNames;
 
         [Tooltip("玩家ID")] public List<string> playerIds;
+        
+        [Tooltip("敌人名称")] public List<string> enemyNames;
 
-        [Tooltip("NPC预制体")] public List<GameObject> npcs;
-
+        [Tooltip("敌人ID")] public List<string> enemyIds;
+        
+        [Tooltip("敌人类型")] public List<CharacterType> enemyTypes;
+        
         [Tooltip("玩家出生点")] public List<Transform> spawns;
 
         [Tooltip("玩家状态HUD")] public List<GameObject> huds;
 
 
         [Header("初始参数")] [Tooltip("是否处于Debug模式")]
-        public bool isDebug;
+        public bool isDebug = false;
 
         [Tooltip("加载第几个角色")] public int loadPlayer;
 
@@ -89,8 +95,61 @@ namespace GameSystem.GameScene.GameRuntimeScene
                 }
                 else
                 {
-                    currentPlayerCount = 1;
+                    playerCount = GameModeSelect.PlayerCount;
+                    npcCount = GameModeSelect.NPCCount;
+                    if (npcCount + playerCount > 4)
+                    {
+                        Debug.LogError("在GameRuntimeSceneManager初始化过程中玩家数量/敌人数量超过4");
+                    }
                     InitGame();
+                }
+            }
+        }
+        
+        public void InitGame()
+        {
+            currentPlayerCount = playerCount;
+            currentNPCCount = npcCount;
+            // TODO: 初始化游戏场景
+            if (GameModeSelect.CurrentModeType == GameModeType.Online)
+            {
+                // TODO: 初始化在线游戏场景
+            }
+            else
+            {
+                if (playerCount == 1)
+                {
+                    LoadPlayer(0);
+                    for (int i = 0; i < npcCount; i++)
+                    {
+                        LoadNPC(i + 2);
+                    }
+                }
+                else if(playerCount == 2)
+                {
+                    LoadPlayer(1);
+                    LoadPlayer(3);
+                    for (int i = 1; i <= npcCount; i++)
+                    {
+                        LoadNPC(i * 2);
+                    }
+                }
+                else if(playerCount == 3)
+                {
+                    LoadPlayer(1);
+                    LoadPlayer(2);
+                    LoadPlayer(3);
+                    if (npcCount == 1)
+                    {
+                        LoadNPC(4);
+                    }
+                }
+                else
+                {
+                    LoadPlayer(1);
+                    LoadPlayer(2);
+                    LoadPlayer(3);
+                    LoadPlayer(4);
                 }
             }
         }
@@ -128,65 +187,57 @@ namespace GameSystem.GameScene.GameRuntimeScene
         private void LoadPlayer(int index)
         {
             //实例化游戏对象
-            var player = Instantiate(Instance.players, Instance.spawns[index].position,
-                Instance.spawns[index].rotation);
-            //创建玩家控制器
-            var playerController = player.AddComponent<PlayerController>();
+            var player = Instantiate(Character, spawns[index].position,
+                spawns[index].rotation);
             //获取HUD控制器
+            huds[index].SetActive(true);
             var playerStateHUD = Instance.huds[index].GetComponent<PlayerStateHUD>();
             if (playerStateHUD == null) Debug.LogError("在GameRuntimeSceneManager初始化过程中playerStateHUD为空");
-            //初始化玩家控制器
-            if (GameModeSelect.CurrentModeType == GameModeType.OfflinePVP && GameModeSelect.PlayerCount == 2)
-            {
-                if (index == 1)
-                {
-                    playerController.PlayerControllerInit(Instance.playerNames[1], Instance.playerIds[1],
-                        Instance.playTypes[1], Instance.ControlConfigs[1]);
-                }
-                else
-                {
-                    playerController.PlayerControllerInit(Instance.playerNames[3], Instance.playerIds[3],
-                        Instance.playTypes[3], Instance.ControlConfigs[3]);
-                }
-            }
-            else
-            {
-                playerController.PlayerControllerInit(Instance.playerNames[index], Instance.playerIds[index],
-                    Instance.playTypes[index], Instance.ControlConfigs[index]);
-            }
-
-            var controller = playerController.GetComponent<CharacterMoveController>();
-            if (controller == null) Debug.LogError("在GameRuntimeSceneManager初始化过程中PlayerMoveController为空");
-
+            playerStateHUD.LoadHUD(playerIds[index]);
+            
+            //创建玩家控制器
+            var playerController = player.AddComponent<PlayerController>();
+            if (index != 0)
+                playerController.DisableCamera();
+            playerController.PlayerControllerInit(playerNames[index], playerIds[index],
+                playTypes[index], ControlConfigs[index]);
+            
+            //创建玩家移动控制器
+            var controller = playerController.AddComponent<CharacterMoveController>();
             controller.Init(playerController.id);
-            playerStateHUD.LoadHUD(playerController.id);
-            //启用HUD
-            Instance.huds[index].SetActive(true);
-            //启用玩家
+            //启用预制体
+            player.name = $"player{index}";
+            player.tag = nameof(ObjectType.Player);
             player.SetActive(true);
         }
 
-
-        public void InitGame()
+        private void LoadNPC(int index)
         {
-            currentPlayerCount = playerCount;
-            currentNPCCount = npcCount;
-            // TODO: 初始化游戏场景
-            if (GameModeSelect.CurrentModeType == GameModeType.OnlinePVP)
-            {
-                // TODO: 初始化在线游戏场景
-            }
-            else
-            {
-                // TODO: 初始化离线游戏场景
-                if (GameModeSelect.CurrentModeType == GameModeType.OfflinePVE)
-                    LoadPlayer(0);
-                else
-                    // TODO: 初始化多人游戏场景
-                    for (var i = 1; i <= Instance.playerCount; i++)
-                        LoadPlayer(i);
-            }
+            //实例化游戏对象
+            var enemy = Instantiate(Instance.Character, Instance.spawns[index].position,
+                Instance.spawns[index].rotation);
+            //创建HUD
+            var playerStateHUD = Instance.huds[index].GetComponent<PlayerStateHUD>();
+            if (playerStateHUD == null) Debug.LogError("在GameRuntimeSceneManager初始化过程中playerStateHUD为空");
+            playerStateHUD.LoadHUD(enemyIds[index]);
+            huds[index].SetActive(true);
+            //初始化敌人移动控制器
+            var moveController = enemy.AddComponent<EnemyMoveController>();
+            var controller = enemy.AddComponent<CharacterMoveController>();
+            controller.Init(enemyIds[index]);
+            //创建NPC控制器
+            var enemyAIController = enemy.AddComponent<EnemyAIController>();
+
+            enemyAIController.EmenyControllerInit(enemyNames[index], enemyIds[index], enemyTypes[index]);
+
+
+            //启用敌人
+            enemy.name = $"enemy{index}";
+            enemy.tag = nameof(ObjectType.Enemy);
+            enemy.SetActive(true);
         }
+
+
 
         public static void Load()
         {
@@ -218,7 +269,7 @@ namespace GameSystem.GameScene.GameRuntimeScene
             {
                 //NPC赢
                 print("游戏结束");
-                CompleteScene(false);
+                CompleteScene(true);
             }
         }
     }
