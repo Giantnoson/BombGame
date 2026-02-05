@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using Config;
-using GameSystem.GameProps;
+using GameSystem.GameScene.MainMenu.GameProps;
 using JetBrains.Annotations;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace GameSystem.Map
+namespace GameSystem.GameScene.MainMenu.Map
 {
     public class MapInfo : MonoBehaviour
     {
@@ -16,7 +16,7 @@ namespace GameSystem.Map
 
         [Tooltip("偏移偏移距离（包含（0.5,0.5），到边界距离)")] public int offsetDistance = 15; // 扫描偏移距离，决定扫描范围
 
-        public MapInfoConfig InfoConfig; // 地图扫描配置
+        public MapScanInfoConfig scanInfoConfig; // 地图扫描配置
 
         [Header("局部扫描调试")] [Tooltip("局部扫描的中心位置")]
         public Vector3 referencePos = new(0.5f, 0.5f, 0.5f); // 局部扫描的中心位置
@@ -63,17 +63,16 @@ namespace GameSystem.Map
                 var poolObj = new GameObject("MapNodePool");
                 _nodePool = poolObj.AddComponent<MapNodePool>();
             }
-
-            InfoConfig = Resources.Load<MapInfoConfig>(gameObject.scene.name + "/MapInfoConfig");
-            if (InfoConfig == null)
+            scanInfoConfig = Resources.Load<MapScanInfoConfig>("Scene/" + gameObject.scene.name + "/MapScanInfoConfig");
+            if (scanInfoConfig == null)
             {
                 Debug.LogError("未找到MapInfoConfig");
             }
             else
             {
-                TagList = InfoConfig.tagList;
-                offsetDistance = InfoConfig.offsetDistance;
-                startY = InfoConfig.startY;
+                TagList = scanInfoConfig.tagList;
+                offsetDistance = scanInfoConfig.offsetDistance;
+                startY = scanInfoConfig.startY;
             }
         }
 

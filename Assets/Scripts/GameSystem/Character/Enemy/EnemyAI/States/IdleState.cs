@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using Config;
-using GameSystem.Map;
+using GameSystem.GameScene.MainMenu.Map;
 using UnityEngine;
 
-namespace GameSystem.Character.Enemy
+namespace GameSystem.GameScene.MainMenu.Character.Enemy
 {
     /// <summary>
     ///     闲置状态 - 扫描周围环境

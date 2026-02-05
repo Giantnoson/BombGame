@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace GameSystem.EventSystem
+namespace GameSystem.GameScene.MainMenu.EventSystem
 {
     /// <summary>
     ///     全局事件系统，负责游戏整体的运行

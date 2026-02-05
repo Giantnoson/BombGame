@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace GameSystem
+namespace GameSystem.GameScene.MainMenu
 {
     public class GameModeSelector : MonoBehaviour
     {

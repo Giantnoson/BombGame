@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace GameSystem.Character
+namespace GameSystem.GameScene.MainMenu.Character
 {
     public class CenterController : MonoBehaviour
     {

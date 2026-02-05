@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GameSystem.Character.Enemy
+namespace GameSystem.GameScene.MainMenu.Character.Enemy
 {
     public abstract class FsmBase
     {

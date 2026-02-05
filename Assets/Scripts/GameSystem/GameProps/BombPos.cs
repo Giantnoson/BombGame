@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using Config;
-using GameSystem.EventSystem;
-using GameSystem.Map;
+using GameSystem.GameScene.MainMenu.EventSystem;
+using GameSystem.GameScene.MainMenu.Map;
 using UnityEngine;
 
-namespace GameSystem.GameProps
+namespace GameSystem.GameScene.MainMenu.GameProps
 {
     public class BombPos : MonoBehaviour
     {

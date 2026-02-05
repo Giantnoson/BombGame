@@ -1,9 +1,9 @@
-﻿using GameSystem.EventSystem;
+﻿using GameSystem.GameScene.MainMenu.EventSystem;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace GameSystem.Character
+namespace GameSystem.GameScene.MainMenu.Character
 {
     public class PlayerStateHUD : MonoBehaviour
     {

@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using Config;
-using GameSystem.Map;
+using GameSystem.GameScene.MainMenu.Map;
 using UnityEngine;
 
-namespace GameSystem.Character.Enemy
+namespace GameSystem.GameScene.MainMenu.Character.Enemy
 {
     /// <summary>
     ///     搜索状态类，继承自EnemyAIBaseState，用于控制敌人的搜索行为

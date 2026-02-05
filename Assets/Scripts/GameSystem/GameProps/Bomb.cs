@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using Config;
-using GameSystem.Character.Enemy;
-using GameSystem.Character.Player;
-using GameSystem.EventSystem;
-using GameSystem.Pool;
+using GameSystem.GameScene.MainMenu.Character.Enemy;
+using GameSystem.GameScene.MainMenu.Character.Player;
+using GameSystem.GameScene.MainMenu.EventSystem;
+using GameSystem.GameScene.MainMenu.Pool;
 using UnityEngine;
 // UnityEditor命名空间只能在编辑器脚本中使用，已移除
 
-namespace GameSystem.GameProps
+namespace GameSystem.GameScene.MainMenu.GameProps
 {
     public class Bomb : BaseObject
     {

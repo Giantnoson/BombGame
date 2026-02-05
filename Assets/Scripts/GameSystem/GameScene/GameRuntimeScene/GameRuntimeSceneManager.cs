@@ -1,20 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using Config;
-using GameSystem.Character;
-using GameSystem.Character.Enemy;
-using GameSystem.Character.Player;
-using GameSystem.EventSystem;
+using GameSystem.GameScene.MainMenu.Character;
+using GameSystem.GameScene.MainMenu.Character.Enemy;
+using GameSystem.GameScene.MainMenu.Character.Player;
+using GameSystem.GameScene.MainMenu.EventSystem;
 using Unity.VisualScripting;
 using UnityEngine;
 
-namespace GameSystem.GameScene.GameRuntimeScene
+namespace GameSystem.GameScene.MainMenu.GameScene.GameRuntimeScene
 {
     //游戏运行场景管理器负责管理游戏当中的场景初始化，相对于场景中的流
     public class GameRuntimeSceneManager : BaseSceneManager
     {
-        [Header("初始组件")] [Tooltip("玩家预制体")]
+        [Header("初始组件")] [Tooltip("角色预制体")]
         public GameObject Character;
+
+        [Tooltip("正交摄像机")]
+        public Camera OrthographicCamera;
+        
+        [Tooltip("可破坏墙体")]
+        public GameObject DestructibleWall;
 
         [Tooltip("玩家数量")] public int playerCount;
 
@@ -48,6 +54,8 @@ namespace GameSystem.GameScene.GameRuntimeScene
 
         [Tooltip("当前NPC数")] public int currentNPCCount;
 
+        
+        private List<GameObject> Characters = new List<GameObject>();
         public static GameRuntimeSceneManager Instance { get; private set; }
 
 
@@ -63,20 +71,21 @@ namespace GameSystem.GameScene.GameRuntimeScene
                 Destroy(gameObject);
                 return;
             }
-
+            DontDestroyOnLoad(gameObject);
             InitVariable();
+            
         }
 
         private void OnEnable()
         {
             // 订阅游戏流管理器事件
-            EnhancedGameFlowManager.OnGameStateChanged += OnGameStateChanged;
+            GameFlowManager.OnGameStateChanged += OnGameStateChanged;
             GameEventSystem.AddListener<CharacterDieEvent>(OnGameCharacterDie);
         }
 
         private void OnDisable()
         {
-            EnhancedGameFlowManager.OnGameStateChanged -= OnGameStateChanged;
+            GameFlowManager.OnGameStateChanged -= OnGameStateChanged;
             GameEventSystem.RemoveListener<CharacterDieEvent>(OnGameCharacterDie);
         }
         
@@ -96,7 +105,7 @@ namespace GameSystem.GameScene.GameRuntimeScene
                 else
                 {
                     playerCount = GameModeSelect.PlayerCount;
-                    npcCount = GameModeSelect.NPCCount;
+                    npcCount = GameModeSelect.EnemyCount;
                     if (npcCount + playerCount > 4)
                     {
                         Debug.LogError("在GameRuntimeSceneManager初始化过程中玩家数量/敌人数量超过4");
@@ -120,6 +129,7 @@ namespace GameSystem.GameScene.GameRuntimeScene
                 if (playerCount == 1)
                 {
                     LoadPlayer(0);
+                    OrthographicCamera.gameObject.SetActive(false);
                     for (int i = 0; i < npcCount; i++)
                     {
                         LoadNPC(i + 2);
@@ -127,6 +137,8 @@ namespace GameSystem.GameScene.GameRuntimeScene
                 }
                 else if(playerCount == 2)
                 {
+                    OrthographicCamera.gameObject.SetActive(true);
+                    OrthographicCamera.targetDisplay = 0;
                     LoadPlayer(1);
                     LoadPlayer(3);
                     for (int i = 1; i <= npcCount; i++)
@@ -136,6 +148,8 @@ namespace GameSystem.GameScene.GameRuntimeScene
                 }
                 else if(playerCount == 3)
                 {
+                    OrthographicCamera.gameObject.SetActive(true);
+                    OrthographicCamera.targetDisplay = 0;
                     LoadPlayer(1);
                     LoadPlayer(2);
                     LoadPlayer(3);
@@ -146,6 +160,8 @@ namespace GameSystem.GameScene.GameRuntimeScene
                 }
                 else
                 {
+                    OrthographicCamera.gameObject.SetActive(true);
+                    OrthographicCamera.targetDisplay = 0;
                     LoadPlayer(1);
                     LoadPlayer(2);
                     LoadPlayer(3);
@@ -156,7 +172,17 @@ namespace GameSystem.GameScene.GameRuntimeScene
         
         public override void CleanupScene()
         {
-            // 清理逻辑
+            foreach (var character in Characters)
+            {
+                if (character != null)
+                {
+                    Destroy(character);
+                }
+            }
+            Characters.Clear();
+
+            // 注意：不要在CleanupScene中调用InitializeScene()
+            // CleanupScene只在场景卸载时调用，不应该重新初始化场景
         }
 
         private void InitVariable()
@@ -209,6 +235,7 @@ namespace GameSystem.GameScene.GameRuntimeScene
             player.name = $"player{index}";
             player.tag = nameof(ObjectType.Player);
             player.SetActive(true);
+            Characters.Add(player);
         }
 
         private void LoadNPC(int index)
@@ -235,6 +262,7 @@ namespace GameSystem.GameScene.GameRuntimeScene
             enemy.name = $"enemy{index}";
             enemy.tag = nameof(ObjectType.Enemy);
             enemy.SetActive(true);
+            Characters.Add(enemy);
         }
 
 
@@ -263,13 +291,17 @@ namespace GameSystem.GameScene.GameRuntimeScene
             else if (currentPlayerCount == 1 && currentNPCCount == 0)
             {
                 print("游戏结束");
+                /*
                 CompleteScene(true);
+            */
             }
             else if (currentPlayerCount == 0 && currentNPCCount != 0)
             {
                 //NPC赢
                 print("游戏结束");
+                /*
                 CompleteScene(true);
+            */
             }
         }
     }

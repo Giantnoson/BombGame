@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace Config
 {
+    /// <summary>
+    /// 基于二维表的全局扫图
+    /// </summary>
     [CreateAssetMenu()]
     public class MapScanConfig : ScriptableObject
     {

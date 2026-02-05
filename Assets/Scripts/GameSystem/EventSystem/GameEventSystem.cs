@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace GameSystem.EventSystem
+namespace GameSystem.GameScene.MainMenu.EventSystem
 {
     public class GameEvent
     {

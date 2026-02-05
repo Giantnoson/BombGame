@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace GameSystem.Character.Enemy
+namespace GameSystem.GameScene.MainMenu.Character.Enemy
 {
     /// <summary>
     ///     放置炸弹状态 - 在合适位置放置炸弹

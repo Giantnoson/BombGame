@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace GameSystem.Character.Enemy
+namespace GameSystem.GameScene.MainMenu.Character.Enemy
 {
     /// <summary>
     ///     敌人AI状态基类

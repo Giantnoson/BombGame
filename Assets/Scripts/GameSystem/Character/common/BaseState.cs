@@ -1,8 +1,8 @@
 ﻿using Config;
-using GameSystem.EventSystem;
+using GameSystem.GameScene.MainMenu.EventSystem;
 using UnityEngine;
 
-namespace GameSystem.Character
+namespace GameSystem.GameScene.MainMenu.Character
 {
     public abstract class BaseState : BaseObject, IState
     {
@@ -426,7 +426,7 @@ namespace GameSystem.Character
         private void OnGameOver(GameOverEvent evt)
         {
             //TODO 处理游戏结算
-            if (GameModeSelect.NPCCount != 0)
+            if (GameModeSelect.EnemyCount != 0)
             {
                 if (isDie && evt.isWin) print("游戏结束，玩家失败");
                 if (!isDie && evt.isWin) print("游戏结束，玩家胜利");

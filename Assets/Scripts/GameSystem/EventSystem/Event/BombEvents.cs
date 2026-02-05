@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace GameSystem.EventSystem
+namespace GameSystem.GameScene.MainMenu.EventSystem
 {
     public class BombEvents : MonoBehaviour
     {

@@ -1,9 +1,9 @@
-﻿using GameSystem.EventSystem;
-using GameSystem.Map;
+﻿using GameSystem.GameScene.MainMenu.EventSystem;
+using GameSystem.GameScene.MainMenu.Map;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace GameSystem.Character.Enemy
+namespace GameSystem.GameScene.MainMenu.Character.Enemy
 {
     public class EnemyMoveController : MonoBehaviour
     {

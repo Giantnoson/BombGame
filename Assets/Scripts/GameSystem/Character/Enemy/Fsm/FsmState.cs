@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace GameSystem.Character.Enemy
+namespace GameSystem.GameScene.MainMenu.Character.Enemy
 {
     public abstract class FsmState<T> where T : class
     {

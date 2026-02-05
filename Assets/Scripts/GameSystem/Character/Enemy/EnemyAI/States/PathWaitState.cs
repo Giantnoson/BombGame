@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace GameSystem.Character.Enemy
+namespace GameSystem.GameScene.MainMenu.Character.Enemy
 {
     /// <summary>
     ///     路径等待状态 - 当路径上有爆炸威胁时暂停移动

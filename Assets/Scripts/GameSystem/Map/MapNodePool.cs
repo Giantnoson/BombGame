@@ -1,7 +1,7 @@
-using GameSystem.Pool;
+using GameSystem.GameScene.MainMenu.Pool;
 using UnityEngine;
 
-namespace GameSystem.Map
+namespace GameSystem.GameScene.MainMenu.Map
 {
     /// <summary>
     ///     MapNode对象池，用于复用MapNode对象，避免频繁创建和销毁

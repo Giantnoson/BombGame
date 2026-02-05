@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace GameSystem.Character.Enemy
+namespace GameSystem.GameScene.MainMenu.Character.Enemy
 {
     /// <summary>
     ///     躲避爆炸状态 - 躲避爆炸威胁，寻找安全区域

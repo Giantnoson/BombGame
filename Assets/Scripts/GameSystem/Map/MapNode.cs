@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Config;
 using UnityEngine;
 
-namespace GameSystem.Map
+namespace GameSystem.GameScene.MainMenu.Map
 {
     [Serializable]
     public class MapNode

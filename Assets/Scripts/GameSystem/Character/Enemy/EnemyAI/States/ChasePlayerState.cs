@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace GameSystem.Character.Enemy
+namespace GameSystem.GameScene.MainMenu.Character.Enemy
 {
     /// <summary>
     ///     追击玩家状态 - 追击并接近玩家

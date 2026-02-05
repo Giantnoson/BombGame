@@ -4,7 +4,7 @@ using Config;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace GameSystem.Map
+namespace GameSystem.GameScene.MainMenu.Map
 {
     /// <summary>
     ///     地图扫描，要求地图关于（0，0）对称
@@ -39,7 +39,7 @@ namespace GameSystem.Map
         /// </summary>
         private void Awake()
         {
-            ScanConfig = Resources.Load<MapScanConfig>(gameObject.scene.name + "/MapScanConfig");
+            ScanConfig = Resources.Load<MapScanConfig>( "Scene/"+ gameObject.scene.name + "/MapScanConfig");
             if (ScanConfig == null)
             {
                 Debug.LogError($"在{gameObject.scene.name}/MapScanConfig下未找到MapScanConfig");

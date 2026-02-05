@@ -1,8 +1,8 @@
-using GameSystem.EventSystem;
+using GameSystem.GameScene.MainMenu.EventSystem;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace GameSystem.GameScene
+namespace GameSystem.GameScene.MainMenu.GameScene
 {
     /// <summary>
     ///     示例游戏场景管理器
@@ -29,18 +29,6 @@ namespace GameSystem.GameScene
             if (string.IsNullOrEmpty(sceneName)) sceneName = "GameScene";
         }
 
-        private void Update()
-        {
-            // 更新计时器UI
-            if (timerText != null && EnhancedGameFlowManager.Instance.IsGameActive)
-            {
-                var time = EnhancedGameFlowManager.Instance.GameTimer;
-                var minutes = Mathf.FloorToInt(time / 60);
-                var seconds = Mathf.FloorToInt(time % 60);
-                timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
-            }
-        }
-
         public override void InitializeScene()
         {
             Debug.Log($"初始化游戏场景: {sceneName}");
@@ -49,10 +37,6 @@ namespace GameSystem.GameScene
             currentEnemiesDefeated = 0;
             isSceneCompleted = false;
             isSceneSuccessful = false;
-
-            // 设置UI
-            if (levelText != null) levelText.text = $"关卡 {EnhancedGameFlowManager.Instance.CurrentLevelIndex + 1}";
-
             // 添加按钮事件监听
             if (pauseButton != null) pauseButton.onClick.AddListener(OnPauseButtonClicked);
 
@@ -61,7 +45,6 @@ namespace GameSystem.GameScene
             if (mainMenuButton != null) mainMenuButton.onClick.AddListener(OnMainMenuButtonClicked);
 
             // 订阅游戏事件
-            GameEventSystem.AddListener<GameEvents.TimeUpEvent>(OnTimeUp);
         }
 
         public override void CleanupScene()
@@ -76,7 +59,6 @@ namespace GameSystem.GameScene
             if (mainMenuButton != null) mainMenuButton.onClick.RemoveListener(OnMainMenuButtonClicked);
 
             // 取消订阅游戏事件
-            GameEventSystem.RemoveListener<GameEvents.TimeUpEvent>(OnTimeUp);
         }
 
         public override void PauseScene()
@@ -91,29 +73,7 @@ namespace GameSystem.GameScene
             // 可以在这里添加恢复逻辑，比如恢复动画、音效等
         }
 
-        /// <summary>
-        ///     敌人被击败时调用
-        /// </summary>
-        public void OnEnemyDefeated()
-        {
-            currentEnemiesDefeated++;
-            Debug.Log($"击败敌人: {currentEnemiesDefeated}/{enemiesToDefeat}");
-
-            // 检查是否完成关卡
-            if (currentEnemiesDefeated >= enemiesToDefeat && !isSceneCompleted) CompleteScene(true);
-        }
-
-        #region Game Event Handlers
-
-        private void OnTimeUp(GameEvents.TimeUpEvent evt)
-        {
-            // 时间用尽，游戏失败
-            if (!isSceneCompleted) CompleteScene(false);
-        }
-
-        #endregion
-
-        #region Button Event Handlers
+        #region 按键事件处理器
 
         private void OnPauseButtonClicked()
         {

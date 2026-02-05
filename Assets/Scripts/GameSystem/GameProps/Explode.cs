@@ -1,6 +1,6 @@
-﻿using GameSystem.Pool;
+﻿using GameSystem.GameScene.MainMenu.Pool;
 
-namespace GameSystem.GameProps
+namespace GameSystem.GameScene.MainMenu.GameProps
 {
     public class Explode : BaseObject
     {

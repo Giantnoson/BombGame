@@ -1,7 +1,7 @@
-﻿using GameSystem.GameProps;
+﻿using GameSystem.GameScene.MainMenu.GameProps;
 using UnityEngine;
 
-namespace GameSystem.Pool
+namespace GameSystem.GameScene.MainMenu.Pool
 {
     public class BombPool : ObjectPool<Bomb>
     {

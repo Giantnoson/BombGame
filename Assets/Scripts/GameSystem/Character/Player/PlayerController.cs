@@ -1,12 +1,12 @@
 ﻿using System;
 using Config;
-using GameSystem.EventSystem;
+using GameSystem.GameScene.MainMenu.EventSystem;
 using UnityEngine;
 // 引入GameSystem命名空间，可能包含游戏相关的系统类
 
 // 引入Unity引擎的核心命名空间
 
-namespace GameSystem.Character.Player
+namespace GameSystem.GameScene.MainMenu.Character.Player
 {
     public class PlayerController : BaseState
     {

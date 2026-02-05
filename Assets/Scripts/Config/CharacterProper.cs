@@ -8,6 +8,8 @@ namespace Config
         [Header("角色基础设置")]
         [Tooltip("角色类型")]
         public CharacterType playerType; //角色类型
+        [Tooltip("角色描述")]
+        public string characterDescription; //角色描述
         [Tooltip("最大生命值")]
         public float maxHp = 100; //最大生命值
         [Tooltip("移动速度")]

@@ -1,8 +1,9 @@
-using GameSystem.EventSystem;
+using Config;
+using GameSystem.GameScene.MainMenu.EventSystem;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace GameSystem
+namespace GameSystem.GameScene.MainMenu
 {
     /// <summary>
     ///     场景管理器接口，定义了场景需要实现的基本功能
@@ -68,7 +69,7 @@ namespace GameSystem
             InitializeScene();
 
             // 订阅游戏流管理器事件
-            EnhancedGameFlowManager.OnGameStateChanged += OnGameStateChanged;
+            GameFlowManager.OnGameStateChanged += OnGameStateChanged;
         }
 
         protected virtual void OnDestroy()
@@ -77,7 +78,7 @@ namespace GameSystem
             CleanupScene();
 
             // 取消订阅游戏流管理器事件
-            EnhancedGameFlowManager.OnGameStateChanged -= OnGameStateChanged;
+            GameFlowManager.OnGameStateChanged -= OnGameStateChanged;
         }
 
         public string SceneName => sceneName;
@@ -105,33 +106,19 @@ namespace GameSystem
         /// </summary>
         /// <param name="oldState">旧状态</param>
         /// <param name="newState">新状态</param>
-        protected virtual void OnGameStateChanged(EnhancedGameFlowManager.GameState oldState,
-            EnhancedGameFlowManager.GameState newState)
+        protected virtual void OnGameStateChanged(SceneInfo oldState,
+            SceneInfo newState)
         {
-            switch (newState)
+            switch (newState.state)
             {
-                case EnhancedGameFlowManager.GameState.Paused:
+                case GameState.Paused:
                     PauseScene();
                     break;
 
-                case EnhancedGameFlowManager.GameState.Playing:
-                    if (oldState == EnhancedGameFlowManager.GameState.Paused) ResumeScene();
+                case GameState.Playing:
+                    if (oldState.state == GameState.Paused) ResumeScene();
                     break;
             }
-        }
-
-        /// <summary>
-        ///     完成场景
-        /// </summary>
-        /// <param name="isSuccessful">是否成功</param>
-        protected virtual void CompleteScene(bool isSuccessful)
-        {
-            isSceneCompleted = true;
-            isSceneSuccessful = isSuccessful;
-
-            // 通知游戏流管理器场景已完成
-            GameEventSystem.Broadcast(new GameEvents.LevelCompletedEvent(
-                EnhancedGameFlowManager.Instance.CurrentLevelIndex, isSuccessful));
         }
     }
 }

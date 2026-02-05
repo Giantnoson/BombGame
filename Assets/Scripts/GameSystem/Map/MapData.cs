@@ -3,7 +3,7 @@ using System.Text;
 using Config;
 using UnityEngine;
 
-namespace GameSystem.Map
+namespace GameSystem.GameScene.MainMenu.Map
 {
     public class MapData
     {

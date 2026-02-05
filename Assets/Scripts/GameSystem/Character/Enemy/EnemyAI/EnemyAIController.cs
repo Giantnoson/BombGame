@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using Config;
-using GameSystem.Character.Player;
-using GameSystem.EventSystem;
-using GameSystem.GameProps;
-using GameSystem.Map;
+using GameSystem.GameScene.MainMenu.Character.Player;
+using GameSystem.GameScene.MainMenu.EventSystem;
+using GameSystem.GameScene.MainMenu.GameProps;
+using GameSystem.GameScene.MainMenu.Map;
 using Unity.VisualScripting;
 using UnityEngine;
 
-namespace GameSystem.Character.Enemy
+namespace GameSystem.GameScene.MainMenu.Character.Enemy
 {
     /// <summary>
     ///     敌人AI控制器

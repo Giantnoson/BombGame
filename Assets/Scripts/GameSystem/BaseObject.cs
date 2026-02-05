@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace GameSystem
+namespace GameSystem.GameScene.MainMenu
 {
     public class BaseObject : MonoBehaviour
     {
