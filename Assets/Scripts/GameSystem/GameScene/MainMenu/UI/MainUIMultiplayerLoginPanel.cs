@@ -1,3 +1,5 @@
+using System.Net.Sockets;
+using Core.Net;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -33,7 +35,7 @@ namespace GameSystem.GameScene.MainMenu
 
             // Mock login success
             Debug.Log($"Logging in as {username}...");
-            MainUIManager.Instance.ShowPanel("MultiplayerLobbyPanel");
+            TcpGameClient.Instance.TcpStart(username, password);
         }
 
         private void OnBackClick()

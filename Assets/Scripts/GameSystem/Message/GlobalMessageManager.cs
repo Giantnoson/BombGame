@@ -99,6 +99,11 @@ namespace GameSystem.GameScene.MessageScene
             }
         }
         
+        public void SendTopMessage(string message)
+        {
+            SendTopMessage(MessageType.System, MessageLevel.Normal, message);
+        }
+        
         public void SendLeftButtonMessage(Message message)
         {
             //当默认等级大于当前等级，则退出
