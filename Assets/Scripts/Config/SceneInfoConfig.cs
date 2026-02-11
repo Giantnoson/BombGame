@@ -37,5 +37,6 @@ namespace Config
         GameOver, //游戏结束
         Victory, //游戏胜利
         Settings, //设置界面
+        Message, //消息界面
     }
 }

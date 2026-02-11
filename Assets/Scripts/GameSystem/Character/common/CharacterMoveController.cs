@@ -56,9 +56,6 @@ namespace GameSystem.GameScene.MainMenu.Character
                 Debug.Log("在PlayerMoveController中未找到MiniMapCamera");
             else
                 miniMapCamera.transform.rotation = Quaternion.Euler(90, 0, 0);
-            // 隐藏并锁定鼠标光标到屏幕中心
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
         }
 
         private void Update()

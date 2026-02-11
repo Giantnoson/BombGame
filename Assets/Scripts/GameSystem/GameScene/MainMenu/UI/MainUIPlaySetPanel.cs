@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Config;
+using GameSystem.GameScene.MessageScene;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -22,8 +23,6 @@ namespace GameSystem.GameScene.MainMenu
         public Button ResetBtn;
         
         
-        
-        
         [Tooltip("属性面板加载器")]
         public LoadProper loadProper;
         [Tooltip("玩家头部信息显示")]
@@ -38,7 +37,8 @@ namespace GameSystem.GameScene.MainMenu
         public TMP_Dropdown playerMoveSelect;
         [Tooltip("角色键位描述")]
         public TextMeshProUGUI playerMoveDescription;
-        public List<bool> isMoveModeSelect = new List<bool>{false,false,false,false}; 
+        public List<bool> isMoveModeSelect = new List<bool>{false,false,false,false};
+        public PlayerControlConfig CompareTemp = new PlayerControlConfig();
         
         [Header("角色类型设置")]
         [Tooltip("角色类型名称")]
@@ -92,6 +92,7 @@ namespace GameSystem.GameScene.MainMenu
             var x = Resources.Load<CharacterProper>("Character/" + playTypes[playerIndex].ToString());
             if (x == null)
             {
+                GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Error, "没有找到该角色属性");
                 Debug.LogError("没有找到该角色属性");
             }
             loadProper.Load(x);
@@ -117,23 +118,24 @@ namespace GameSystem.GameScene.MainMenu
             var x = Resources.Load<PlayerControlList>("PlayerControl/PlayerControlList");
             if (x == null)
             {
+                GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Error, "没有找到该角色键位列表");
                 Debug.LogError("没有找到该角色键位列表");
             }
             moveModeList = x.playerMoveModeConfigs;
             for (int i = 0; i < playerCount; i++)
             {
                 playTypes.Add(CharacterType.Balance);
-                playerNames.Add($"Player{i}");
+                playerNames.Add($"Player{i + 1}");
                 playerIds.Add($"P{i + 1}");
-                playerMoveMode.Add(new PlayerControlConfig());
-                playerHeadStr.Add("玩家" + i);
+                playerMoveMode.Add(CompareTemp);
+                playerHeadStr.Add($"玩家{i + 1}" );
             }
             for (int i = playerCount; i < playerCount + enemyCount; i++)
             {
                 playTypes.Add(CharacterType.Enemy);
                 playerNames.Add($"Enemy{(i - playerCount) + 1}");
                 playerIds.Add($"E{i - playerCount + 1}");
-                playerMoveMode.Add(new PlayerControlConfig());
+                playerMoveMode.Add(CompareTemp);
             }
             
             
@@ -187,6 +189,7 @@ namespace GameSystem.GameScene.MainMenu
             var x = Resources.Load<CharacterProper>("Character/" + playerTypeName[index]);
             if (x == null)
             {
+                GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Error, "没有找到该角色属性");
                 Debug.LogError("没有找到该角色属性");
             }
             loadProper.Load(x);
@@ -196,19 +199,54 @@ namespace GameSystem.GameScene.MainMenu
 
         private void OnPlayerControlSelect(int index)
         {
+            // 当选择最后一个选项时（空配置）
             if (index == moveModeName.Count - 1)
             {
+                // 如果当前玩家之前有选择过配置，释放该配置
+                if (playerMoveMode[playerIndex] != CompareTemp && 
+                    moveModeList.Contains(playerMoveMode[playerIndex]))
+                {
+                    int previousIndex = moveModeList.IndexOf(playerMoveMode[playerIndex]);
+                    isMoveModeSelect[previousIndex] = false;
+                }
+        
                 playerMoveDescription.text = "请选择一个键位配置";
-                playerMoveMode[playerIndex] = new PlayerControlConfig();
-                
+                playerMoveMode[playerIndex] = CompareTemp;
+                return;
+            }
+    
+            // 当选择已选中的配置时，不做任何操作
+            if (moveModeList[index] == playerMoveMode[playerIndex])
+            {
+                playerMoveDescription.text = moveModeList[index].description;
+                return;
+            }
+    
+            // 当选择新配置时
+            if (!isMoveModeSelect[index])
+            {
+                // 如果当前玩家之前有选择过配置，释放该配置
+                if (playerMoveMode[playerIndex] != CompareTemp && 
+                    moveModeList.Contains(playerMoveMode[playerIndex]))
+                {
+                    int previousIndex = moveModeList.IndexOf(playerMoveMode[playerIndex]);
+                    isMoveModeSelect[previousIndex] = false;
+                }
+        
+                // 选择新配置
+                playerMoveDescription.text = moveModeList[index].description;
+                playerMoveMode[playerIndex] = moveModeList[index];
+                isMoveModeSelect[index] = true;
             }
             else
             {
-                playerMoveDescription.text = moveModeList[index].description;
-                playerMoveMode[playerIndex] = moveModeList[index];     
+                // 如果配置已被其他玩家选择，回退到之前的选择
+                playerMoveSelect.value = playerMoveMode[playerIndex] == CompareTemp ? 
+                    moveModeName.Count - 1 : 
+                    moveModeList.IndexOf(playerMoveMode[playerIndex]);
             }
-
         }
+
         
         public void OnNextBtnClick()
         {
@@ -232,23 +270,32 @@ namespace GameSystem.GameScene.MainMenu
 
         private void OnStartClick()
         {
-
-            // 使用GameFlowManager.StartSinglePlayerGame方法，按照正常流程加载游戏
-            if (GameFlowManager.Instance == null || GameFlowManager.Instance == null)
+            //验游戏流处理器和模式选择器是否启动
+            if (GameFlowManager.Instance == null || GameModeSelect.Instance == null)
             {
+                GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Error, "没有找到GameFlowManager或GameFlowManager");
                 Debug.LogError("没有找到GameFlowManager或GameFlowManager");
                 return;
             }
-            
-            
-            for (int i = 0; i < playerCount; i++)
+
+            //确认角色是否已经选择好启动配置
+            int count = 0;
+            for (int i = 0; i < moveModeName.Count - 1; i++)
             {
-                characterBaseInfos.Add(new CharacterBaseInfo(playTypes[i], playerNames[i], playerIds[i], playerMoveMode[i]));
+                if (isMoveModeSelect[i]) count++;
             }
 
-            for (int i = playerCount; i < enemyCount + playerCount; i++)
+            if (count != playerCount)
             {
-                characterBaseInfos.Add(new CharacterBaseInfo(playTypes[i], playerNames[i], playerIds[i], null));
+                GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Warning, "请将玩家配置选择完整");
+                Debug.LogWarning("请将玩家配置选择完整");
+                return;
+            }
+            //加载配置到集合当中
+            characterBaseInfos.Clear();
+            for (int i = 0; i < playerCount + enemyCount; i++)
+            {
+                characterBaseInfos.Add(new CharacterBaseInfo(playTypes[i], playerNames[i], playerIds[i], playerMoveMode[i]));
             }
             GameModeSelect.CharacterBaseInfos = characterBaseInfos;
             
@@ -264,13 +311,25 @@ namespace GameSystem.GameScene.MainMenu
             var x = Resources.Load<PlayerControlList>("PlayerControl/PlayerControlList");
             if (x == null)
             {
+                GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Error, "没有找到该角色键位列表");
                 Debug.LogError("没有找到该角色键位列表");
             }
             moveModeList = x.playerMoveModeConfigs;
+
+            for (int i = 0; i < isMoveModeSelect.Count; i++)
+            {
+                isMoveModeSelect[i] = false;
+            }
+            
+            playTypes.Clear();
+            playerNames.Clear();
+            playerIds.Clear();
+            playerMoveMode.Clear();
+            playerHeadStr.Clear();
             for (int i = 0; i < playerCount; i++)
             {
                 playTypes.Add(CharacterType.Balance);
-                playerNames.Add($"Player{i}");
+                playerNames.Add($"Player{i + 1}");
                 playerIds.Add($"P{i + 1}");
                 playerMoveMode.Add(new PlayerControlConfig());
                 playerHeadStr.Add("玩家" + i);

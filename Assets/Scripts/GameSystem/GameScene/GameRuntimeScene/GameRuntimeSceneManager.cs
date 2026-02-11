@@ -25,31 +25,15 @@ namespace GameSystem.GameScene.MainMenu.GameScene.GameRuntimeScene
         [Tooltip("玩家数量")] public int playerCount;
 
         [Tooltip("NPC数量")] public int npcCount;
-
-        [Tooltip("玩家类型")] public List<CharacterType> playTypes;
-
-        [Tooltip("玩家输入控制")] public List<PlayerControlConfig> ControlConfigs;
-
-        [Tooltip("玩家名称")] public List<string> playerNames;
-
-        [Tooltip("玩家ID")] public List<string> playerIds;
         
-        [Tooltip("敌人名称")] public List<string> enemyNames;
-
-        [Tooltip("敌人ID")] public List<string> enemyIds;
-        
-        [Tooltip("敌人类型")] public List<CharacterType> enemyTypes;
+        [Tooltip("玩家控制配置")] public static List<CharacterBaseInfo> CharacterBaseInfos = new List<CharacterBaseInfo>();
         
         [Tooltip("玩家出生点")] public List<Transform> spawns;
 
         [Tooltip("玩家状态HUD")] public List<GameObject> huds;
 
 
-        [Header("初始参数")] [Tooltip("是否处于Debug模式")]
-        public bool isDebug = false;
-
-        [Tooltip("加载第几个角色")] public int loadPlayer;
-
+        [Header("初始参数")]
         [Tooltip("当前玩家数")] public int currentPlayerCount;
 
         [Tooltip("当前NPC数")] public int currentNPCCount;
@@ -71,7 +55,6 @@ namespace GameSystem.GameScene.MainMenu.GameScene.GameRuntimeScene
                 Destroy(gameObject);
                 return;
             }
-            DontDestroyOnLoad(gameObject);
             InitVariable();
             
         }
@@ -92,31 +75,29 @@ namespace GameSystem.GameScene.MainMenu.GameScene.GameRuntimeScene
 
         public override void InitializeScene()
         {
-            if (isDebug)
+
+            if (GameModeSelect.Instance == null)
             {
-                LoadPlayer(loadPlayer);
+                Debug.LogError("在GameRuntimeSceneManager初始化过程中GameModeSelect为空");
             }
             else
             {
-                if (GameModeSelect.Instance == null)
+                playerCount = GameModeSelect.PlayerCount;
+                npcCount = GameModeSelect.EnemyCount;
+                if (npcCount + playerCount > 4)
                 {
-                    Debug.LogError("在GameRuntimeSceneManager初始化过程中GameModeSelect为空");
+                    Debug.LogError("在GameRuntimeSceneManager初始化过程中玩家数量/敌人数量超过4");
                 }
-                else
-                {
-                    playerCount = GameModeSelect.PlayerCount;
-                    npcCount = GameModeSelect.EnemyCount;
-                    if (npcCount + playerCount > 4)
-                    {
-                        Debug.LogError("在GameRuntimeSceneManager初始化过程中玩家数量/敌人数量超过4");
-                    }
-                    InitGame();
-                }
+
+                CharacterBaseInfos = GameModeSelect.CharacterBaseInfos;
+                InitGame();
             }
         }
         
         public void InitGame()
         {
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
             currentPlayerCount = playerCount;
             currentNPCCount = npcCount;
             // TODO: 初始化游戏场景
@@ -128,44 +109,44 @@ namespace GameSystem.GameScene.MainMenu.GameScene.GameRuntimeScene
             {
                 if (playerCount == 1)
                 {
-                    LoadPlayer(0);
+                    LoadPlayer(0,0);
                     OrthographicCamera.gameObject.SetActive(false);
                     for (int i = 0; i < npcCount; i++)
                     {
-                        LoadNPC(i + 2);
+                        LoadNPC(i + 1, i + 2);
                     }
                 }
                 else if(playerCount == 2)
                 {
                     OrthographicCamera.gameObject.SetActive(true);
                     OrthographicCamera.targetDisplay = 0;
-                    LoadPlayer(1);
-                    LoadPlayer(3);
+                    LoadPlayer(0,1);
+                    LoadPlayer(1,3);
                     for (int i = 1; i <= npcCount; i++)
                     {
-                        LoadNPC(i * 2);
+                        LoadNPC(1 + i, i + 2);
                     }
                 }
                 else if(playerCount == 3)
                 {
                     OrthographicCamera.gameObject.SetActive(true);
                     OrthographicCamera.targetDisplay = 0;
-                    LoadPlayer(1);
-                    LoadPlayer(2);
-                    LoadPlayer(3);
+                    LoadPlayer(0, 1);
+                    LoadPlayer(1, 2);
+                    LoadPlayer(2, 3);
                     if (npcCount == 1)
                     {
-                        LoadNPC(4);
+                        LoadNPC(3, 4);
                     }
                 }
                 else
                 {
                     OrthographicCamera.gameObject.SetActive(true);
                     OrthographicCamera.targetDisplay = 0;
-                    LoadPlayer(1);
-                    LoadPlayer(2);
-                    LoadPlayer(3);
-                    LoadPlayer(4);
+                    LoadPlayer(0, 1);
+                    LoadPlayer(1, 2);
+                    LoadPlayer(2, 3);
+                    LoadPlayer(3, 4);
                 }
             }
         }
@@ -180,14 +161,16 @@ namespace GameSystem.GameScene.MainMenu.GameScene.GameRuntimeScene
                 }
             }
             Characters.Clear();
-
+            // 隐藏并锁定鼠标光标到屏幕中心
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
             // 注意：不要在CleanupScene中调用InitializeScene()
             // CleanupScene只在场景卸载时调用，不应该重新初始化场景
         }
 
         private void InitVariable()
         {
-            if (spawns.Count == 5 || huds.Count == 5|| ControlConfigs.Count == 5)
+            if (spawns.Count == 5 || huds.Count == 5)
             {
                 foreach (var vaSpawn in spawns)
                     if (vaSpawn == null)
@@ -196,37 +179,30 @@ namespace GameSystem.GameScene.MainMenu.GameScene.GameRuntimeScene
                 foreach (var vaHud in huds)
                     if (vaHud == null)
                         Debug.LogError("在GameRuntimeSceneManager初始化过程中玩家状态HUD为空");
-                foreach (var controlConfig in ControlConfigs)
-                {
-                    if (controlConfig == null)
-                    {
-                        Debug.LogError("在GameRuntimeSceneManager初始化过程中玩家输入控制为空");
-                    }
-                }
             }
             else
             {
-                Debug.LogError("在GameRuntimeSceneManager初始化过程中出现出生点数量/HUD/玩家输入控制数量不足");
+                Debug.LogError("在GameRuntimeSceneManager初始化过程中出现出生点数量/HUD数量不足");
             }
         }
 
-        private void LoadPlayer(int index)
+        private void LoadPlayer(int index,int oIndex)
         {
             //实例化游戏对象
-            var player = Instantiate(Character, spawns[index].position,
-                spawns[index].rotation);
+            var player = Instantiate(Character, spawns[oIndex].position,
+                spawns[oIndex].rotation);
             //获取HUD控制器
-            huds[index].SetActive(true);
-            var playerStateHUD = Instance.huds[index].GetComponent<PlayerStateHUD>();
+            huds[oIndex].SetActive(true);
+            var playerStateHUD = huds[oIndex].GetComponent<PlayerStateHUD>();
             if (playerStateHUD == null) Debug.LogError("在GameRuntimeSceneManager初始化过程中playerStateHUD为空");
-            playerStateHUD.LoadHUD(playerIds[index]);
+            playerStateHUD.LoadHUD(CharacterBaseInfos[index].CharacterId);
             
             //创建玩家控制器
             var playerController = player.AddComponent<PlayerController>();
             if (index != 0)
                 playerController.DisableCamera();
-            playerController.PlayerControllerInit(playerNames[index], playerIds[index],
-                playTypes[index], ControlConfigs[index]);
+            playerController.PlayerControllerInit(CharacterBaseInfos[index].CharacterName, CharacterBaseInfos[index].CharacterId,
+                CharacterBaseInfos[index].CharacterType, CharacterBaseInfos[index].CharacterControlConfig);
             
             //创建玩家移动控制器
             var controller = playerController.AddComponent<CharacterMoveController>();
@@ -238,28 +214,27 @@ namespace GameSystem.GameScene.MainMenu.GameScene.GameRuntimeScene
             Characters.Add(player);
         }
 
-        private void LoadNPC(int index)
+        private void LoadNPC(int index, int oIndex)
         {
             //实例化游戏对象
-            var enemy = Instantiate(Instance.Character, Instance.spawns[index].position,
-                Instance.spawns[index].rotation);
+            var enemy = Instantiate(Instance.Character, spawns[oIndex].position,
+                spawns[oIndex].rotation);
             //创建HUD
-            var playerStateHUD = Instance.huds[index].GetComponent<PlayerStateHUD>();
+            var playerStateHUD = huds[oIndex].GetComponent<PlayerStateHUD>();
             if (playerStateHUD == null) Debug.LogError("在GameRuntimeSceneManager初始化过程中playerStateHUD为空");
-            playerStateHUD.LoadHUD(enemyIds[index]);
+            playerStateHUD.LoadHUD(CharacterBaseInfos[index].CharacterId);
             huds[index].SetActive(true);
             //初始化敌人移动控制器
             var moveController = enemy.AddComponent<EnemyMoveController>();
             var controller = enemy.AddComponent<CharacterMoveController>();
-            controller.Init(enemyIds[index]);
+            controller.Init(CharacterBaseInfos[index].CharacterId);
             //创建NPC控制器
             var enemyAIController = enemy.AddComponent<EnemyAIController>();
 
-            enemyAIController.EmenyControllerInit(enemyNames[index], enemyIds[index], enemyTypes[index]);
-
-
+            enemyAIController.EmenyControllerInit(CharacterBaseInfos[index].CharacterName, CharacterBaseInfos[index].CharacterId, CharacterBaseInfos[index].CharacterType);
+            
             //启用敌人
-            enemy.name = $"enemy{index}";
+            enemy.name = CharacterBaseInfos[index].CharacterName;
             enemy.tag = nameof(ObjectType.Enemy);
             enemy.SetActive(true);
             Characters.Add(enemy);
@@ -303,6 +278,23 @@ namespace GameSystem.GameScene.MainMenu.GameScene.GameRuntimeScene
                 CompleteScene(true);
             */
             }
+        }
+
+        public override void PauseScene()
+        {
+            base.PauseScene();
+            // 锁定鼠标
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+
+        }
+
+        public override void ResumeScene()
+        {
+            base.ResumeScene();
+            // 解除鼠标锁定
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
         }
     }
 }

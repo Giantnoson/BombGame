@@ -16,8 +16,8 @@ MonoBehaviour:
   - sceneName: MainMenu
     state: 0
     isFlag: 0
-    isAdditive: 1
-    isPersistent: 1
+    isAdditive: 0
+    isPersistent: 0
     loadOnStartup: 1
   - sceneName: LoadingScene
     state: 1
@@ -37,9 +37,9 @@ MonoBehaviour:
     isAdditive: 1
     isPersistent: 0
     loadOnStartup: 0
-  - sceneName: Paused
+  - sceneName: PausedScene
     state: 3
-    isFlag: 1
+    isFlag: 0
     isAdditive: 1
     isPersistent: 0
     loadOnStartup: 0
@@ -49,3 +49,15 @@ MonoBehaviour:
     isAdditive: 1
     isPersistent: 0
     loadOnStartup: 0
+  - sceneName: Message
+    state: 7
+    isFlag: 0
+    isAdditive: 1
+    isPersistent: 1
+    loadOnStartup: 1
+  - sceneName: PausedScene
+    state: 3
+    isFlag: 0
+    isAdditive: 1
+    isPersistent: 1
+    loadOnStartup: 1

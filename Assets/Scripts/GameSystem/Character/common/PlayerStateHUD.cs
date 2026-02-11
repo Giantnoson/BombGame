@@ -17,6 +17,8 @@ namespace GameSystem.GameScene.MainMenu.Character
         {
             this.ownerId = ownerId;
         }
+        
+        
 
         private void InitUI()
         {

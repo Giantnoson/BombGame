@@ -105,7 +105,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Enemy
         }
 
         /// <summary>
-        ///     创建一个有限状态机(FSM)实例
+        /// 创建一个有限状态机(FSM)实例
         /// </summary>
         /// <typeparam name="T">有限状态机所有者的类型</typeparam>
         /// <param name="name">有限状态机的名称</param>
@@ -165,7 +165,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Enemy
         }
 
         /// <summary>
-        ///     清理有限状态机。
+        /// 清理有限状态机。
         /// </summary>
         public void Clear()
         {
@@ -182,7 +182,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Enemy
         }
 
         /// <summary>
-        ///     有限状态机轮询。
+        /// 有限状态机轮询。
         /// </summary>
         /// <param name="elapseSeconds">逻辑流逝时间，以秒为单位。</param>
         /// <param name="realElapseSeconds">真实流逝时间，以秒为单位。</param>

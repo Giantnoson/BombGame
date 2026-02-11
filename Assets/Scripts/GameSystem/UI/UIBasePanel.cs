@@ -3,18 +3,10 @@ using System.Collections.Generic;
 using Config;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu
+namespace GameSystem.GameScene
 {
     public abstract class UIBasePanel : MonoBehaviour
     {
-
-        public static int SelectedGameScene;
-        
-        private void OnEnable()
-        {
-
-        }
-
         public virtual void Show()
         {
             gameObject.SetActive(true);

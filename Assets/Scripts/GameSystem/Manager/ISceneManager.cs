@@ -11,43 +11,43 @@ namespace GameSystem.GameScene.MainMenu
     public interface ISceneManager
     {
         /// <summary>
-        ///     场景名称
+        /// 场景名称
         /// </summary>
         string SceneName { get; }
 
         /// <summary>
-        ///     场景是否已完成
+        /// 场景是否已完成
         /// </summary>
         bool IsSceneCompleted { get; }
 
         /// <summary>
-        ///     场景是否成功完成
+        /// 场景是否成功完成
         /// </summary>
         bool IsSceneSuccessful { get; }
 
         /// <summary>
-        ///     场景初始化，在场景加载完成后调用
+        /// 场景初始化，在场景加载完成后调用
         /// </summary>
         void InitializeScene();
 
         /// <summary>
-        ///     场景清理，在场景卸载前调用
+        /// 场景清理，在场景卸载前调用
         /// </summary>
         void CleanupScene();
 
         /// <summary>
-        ///     场景暂停，当游戏暂停时调用
+        /// 场景暂停，当游戏暂停时调用
         /// </summary>
         void PauseScene();
 
         /// <summary>
-        ///     场景恢复，当游戏从暂停状态恢复时调用
+        /// 场景恢复，当游戏从暂停状态恢复时调用
         /// </summary>
         void ResumeScene();
     }
 
     /// <summary>
-    ///     基础场景管理器，实现了ISceneManager接口的通用功能
+    /// 基础场景管理器，实现了ISceneManager接口的通用功能
     /// </summary>
     public abstract class BaseSceneManager : MonoBehaviour, ISceneManager
     {
@@ -93,16 +93,17 @@ namespace GameSystem.GameScene.MainMenu
         public virtual void PauseScene()
         {
             Time.timeScale = 0f;
-            
+
         }
 
         public virtual void ResumeScene()
         {
             Time.timeScale = 1f;
+
         }
 
         /// <summary>
-        ///     游戏状态变化处理
+        /// 游戏状态变化处理
         /// </summary>
         /// <param name="oldState">旧状态</param>
         /// <param name="newState">新状态</param>

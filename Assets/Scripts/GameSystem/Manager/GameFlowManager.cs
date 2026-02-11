@@ -28,14 +28,16 @@ namespace GameSystem.GameScene.MainMenu
         }
 
         /// 之前的状态，用于状态恢复
+        [SerializeField]
         private SceneInfo _previousState;
-
+        [SerializeField]
         private SceneInfo _loadingScene;
+        [SerializeField]
         /// 当前加载的场景
-        private readonly List<string> _loadedScenes = new();
-
+        private List<string> _loadedScenes = new();
+        [SerializeField]
         /// 持久化场景列表
-        private readonly List<string> _persistentScenes = new();
+        private List<string> _persistentScenes = new();
         
         /// 场景加载状态
         public bool IsSceneLoading { get; private set; }
@@ -72,6 +74,7 @@ namespace GameSystem.GameScene.MainMenu
             }
             else
             {
+                UnregisterEventListeners();
                 Destroy(gameObject);
             }
         }
@@ -98,7 +101,7 @@ namespace GameSystem.GameScene.MainMenu
         /// </summary>
         /// <param name="state">需要寻找的状态</param>
         /// <returns></returns>
-        private SceneInfo FindState(GameState state)
+        public SceneInfo FindState(GameState state)
         {
             return sceneInfos.Find(x => x.state == state);
         }
@@ -255,14 +258,11 @@ namespace GameSystem.GameScene.MainMenu
                 case GameState.MainMenu:
                     Time.timeScale = 1f;
                     IsGameActive = false;
-                    LoadScene(newState);
                     break;
-
                 case GameState.Loading:
                     Time.timeScale = 1f;
                     IsGameActive = false;
                     break;
-
                 case GameState.Playing:
                     Time.timeScale = 1f;
                     IsGameActive = true;
@@ -304,7 +304,7 @@ namespace GameSystem.GameScene.MainMenu
         /// 卸载所有已加载的场景（除了指定的场景和持久化场景）
         /// </summary>
         /// <param name="sceneNameToKeep">要保留的场景名称</param>
-        private void UnloadAllLoadedScenesExcept(string sceneNameToKeep)
+        private void UnloadAllLoadedScenesExcept(string sceneNameToKeep = null)
         {
             foreach (var sceneName in _loadedScenes)
             {
@@ -359,6 +359,8 @@ namespace GameSystem.GameScene.MainMenu
         public void ReturnToMainMenu()
         {
             ChangeGameState(FindState(GameState.MainMenu));
+            MainUIManager.Instance.ShowPanel("MainPanel");
+            MainUIManager.Instance.ShowDontHidePanel("BG");            
         }
 
         /// <summary>
@@ -376,6 +378,37 @@ namespace GameSystem.GameScene.MainMenu
         #endregion
 
         #region 场景管理
+
+        public void ReLoadCurrentScene()
+        {
+            if (CurrentState == null)
+            {
+                Debug.LogError("当前状态为空，无法重新加载场景");
+                return;
+            }
+
+            // 获取当前场景名称
+            string currentSceneName = CurrentState.sceneName;
+    
+            if (string.IsNullOrEmpty(currentSceneName))
+            {
+                Debug.LogError("当前场景名称为空，无法重新加载");
+                return;
+            }
+
+            if (CurrentState.state == GameState.Playing)
+            {
+                LoadScene(CurrentState, true);
+            }
+            else
+            {
+                LoadScene(CurrentState);
+            }
+            
+            
+        }
+        
+        
         /// <summary>
         /// 根据SceneInfo加载场景
         /// </summary>
@@ -383,14 +416,20 @@ namespace GameSystem.GameScene.MainMenu
         /// <param name="isUseTransition">是否使用过渡场景</param>
         private void LoadScene(SceneInfo sceneInfo, bool isUseTransition = false)
         {
-            if (IsSceneLoading) return;
-
             IsSceneLoading = true;
             SceneLoadProgress = 0f;
-
-            if(isUseTransition) StartCoroutine(LoadSceneWithTransitionCoroutine(sceneInfo));
-            // 开始异步加载场景
-            StartCoroutine(LoadSceneAsyncCoroutine(sceneInfo.sceneName, sceneInfo.isAdditive));
+            
+            
+            
+            
+            if (isUseTransition)
+            {
+                StartCoroutine(LoadSceneWithTransitionCoroutine(sceneInfo));
+            }
+            else
+            {
+                StartCoroutine(LoadSceneAsyncCoroutine(sceneInfo.sceneName, sceneInfo.isAdditive));
+            }
         }
 
         /// <summary>
@@ -496,8 +535,7 @@ namespace GameSystem.GameScene.MainMenu
             
             // 卸载过渡场景
             SceneManager.UnloadSceneAsync(_loadingScene.sceneName);
-            
-            // 场景加载完成，不再自动切换游戏状态
+            IsSceneLoading = false;
         }
         
         /// <summary>
@@ -527,20 +565,11 @@ namespace GameSystem.GameScene.MainMenu
             
             // 等待场景加载完成
             while (!asyncOperation.isDone) yield return null;
+
+            IsSceneLoading = false;
         }
         
-        /// <summary>
-        /// 卸载场景
-        /// </summary>
-        /// <param name="sceneName">场景名称</param>
-        public void UnloadScene(string sceneName)
-        {
-            if (_loadedScenes.Contains(sceneName))
-            {
-                SceneManager.UnloadSceneAsync(sceneName);
-                _loadedScenes.Remove(sceneName);
-            }
-        }
+
         
         /// <summary>
         /// 卸载所有已加载的场景（除了持久化场景）
@@ -554,6 +583,19 @@ namespace GameSystem.GameScene.MainMenu
                 {
                     UnloadScene(sceneName);
                 }
+            }
+        }
+        
+        /// <summary>
+        /// 卸载场景
+        /// </summary>
+        /// <param name="sceneName">场景名称</param>
+        public void UnloadScene(string sceneName)
+        {
+            if (_loadedScenes.Contains(sceneName))
+            {
+                SceneManager.UnloadSceneAsync(sceneName);
+                _loadedScenes.Remove(sceneName);
             }
         }
 
