@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Config;
 using GameSystem.GameScene.MainMenu.EventSystem;
+using GameSystem.UI;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -359,8 +360,8 @@ namespace GameSystem.GameScene.MainMenu
         public void ReturnToMainMenu()
         {
             ChangeGameState(FindState(GameState.MainMenu));
-            MainUIManager.Instance.ShowPanel("MainPanel");
-            MainUIManager.Instance.ShowDontHidePanel("BG");            
+            MainUIManager.Instance.ShowPanel(PanelSymbols.MainPanel);
+            MainUIManager.Instance.ShowDontHidePanel(PanelSymbols.BgPanel);            
         }
 
         /// <summary>

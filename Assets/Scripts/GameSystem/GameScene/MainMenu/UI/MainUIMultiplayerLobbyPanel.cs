@@ -1,12 +1,12 @@
+using GameSystem.UI;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
 
 namespace GameSystem.GameScene.MainMenu
 {
     public class MainUIMultiplayerLobbyPanel : UIBasePanel
     {
-        public string panelName = "MultiplayerLobbyPanel";
+        public override PanelSymbol symbol => PanelSymbols.MultiPlayerLobbyPanel;
         public Button createRoomBtn;
         public Button joinRoomBtn; // Generic join or refresh
         public Transform roomListContainer;
@@ -19,7 +19,6 @@ namespace GameSystem.GameScene.MainMenu
             joinRoomBtn.onClick.AddListener(OnRefreshListClick);
             backBtn.onClick.AddListener(OnBackClick);
 
-            MainUIManager.Instance.RegisterPanel(panelName, this);
         }
 
         public override void Show()
@@ -32,8 +31,8 @@ namespace GameSystem.GameScene.MainMenu
         {
             Debug.Log("Creating Room...");
             // Mock room creation
-            MainUIManager.Instance.ShowPanel("MultiplayerRoomPanel");
-            var roomPanel = MainUIManager.Instance.GetPanel<MainUIMultiplayerRoomPanel>("MultiplayerRoomPanel");
+            MainUIManager.Instance.ShowPanel(PanelSymbols.MultiPlayerMapSelectPanel);
+            var roomPanel = MainUIManager.Instance.GetPanel<MainUIMultiplayerRoomPanel>(PanelSymbols.MultiPlayerRoomPanel);
             if (roomPanel != null)
             {
                 roomPanel.SetAsHost(true);
@@ -67,8 +66,8 @@ namespace GameSystem.GameScene.MainMenu
         private void JoinRoom(int roomId)
         {
             Debug.Log($"Joining Room {roomId}...");
-            MainUIManager.Instance.ShowPanel("MultiplayerRoomPanel");
-            var roomPanel = MainUIManager.Instance.GetPanel<MainUIMultiplayerRoomPanel>("MultiplayerRoomPanel");
+            MainUIManager.Instance.ShowPanel(PanelSymbols.MultiPlayerRoomPanel);
+            var roomPanel = MainUIManager.Instance.GetPanel<MainUIMultiplayerRoomPanel>(PanelSymbols.MultiPlayerRoomPanel);
             if (roomPanel != null)
             {
                 roomPanel.SetAsHost(false);

@@ -10,6 +10,12 @@ namespace Config
         [Header("角色控制配置")]
        public List<PlayerControlConfig> playerMoveModeConfigs;
 
+        public static string BaseConfig = "PlayerControl/PlayerControlList";
+        
+        public static List<PlayerControlConfig> LoadMapSelectInfoLists(string path)
+        {
+            return Resources.Load<PlayerControlList>(path).playerMoveModeConfigs;
+        }
     }
     
     [Serializable]

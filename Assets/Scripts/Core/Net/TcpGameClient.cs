@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using Config;
 using GameSystem.GameScene.MainMenu;
 using GameSystem.GameScene.MessageScene;
+using GameSystem.UI;
 using UnityEngine;
 
 namespace Core.Net
 {
-    // Unity 组件包装，示例中会在 OnEnable 时连接，在 OnDisable 时断开
-    public class TcpGameClient : MonoBehaviour
+    public class TcpGameClient
     {
         private static TcpGameClient _instance;
         public static TcpGameClient Instance
@@ -16,13 +17,7 @@ namespace Core.Net
             {
                 if (_instance == null)
                 {
-                    _instance = FindObjectOfType<TcpGameClient>();
-                    if (_instance == null)
-                    {
-                        GameObject go = new GameObject("TcpGameClient");
-                        _instance = go.AddComponent<TcpGameClient>();
-                        DontDestroyOnLoad(go);
-                    }
+                    _instance = new TcpGameClient();
                 }
                 return _instance;
             }
@@ -34,9 +29,9 @@ namespace Core.Net
         private string username;
         private string password;
 
-        public string host = "frp-any.com";
-        public int port = 51493;
-        public bool isConnected;
+        private string host = "localhost";
+        private int port = 25565;
+        private bool isConnected;
 
         public void TcpStart(string uname, string pwd)
         {
@@ -55,21 +50,52 @@ namespace Core.Net
                     {
                         if (msg._cmd == CmdType.Login)
                         {
-                            if ((string)msg._body["result"] == "success")
+                            if (msg.GetString("result") == "success")
                             {
-                                playerId = msg._body["playerId"].ToString();
+                                playerId = msg.GetString("playerId");
                                 isConnected = true;
                                 Debug.Log($"Login successful, playerId={playerId}");
-                                MainUIManager.Instance.ShowPanel("MultiplayerLobbyPanel");
+                                MainUIManager.Instance.ShowPanel(PanelSymbols.MultiPlayerLobbyPanel);
                             }
                             else
                             {
-                                Debug.Log($"login failed: {msg._body["reason"]}");
+                                Debug.Log($"login failed: {msg.GetString("reason")}");
                             }
                         }
                         else if (msg._cmd == CmdType.Exception)
                         {
-                            GlobalMessageManager.Instance.SendTopMessage(msg._body["msg"].ToString());
+                            GlobalMessageManager.Instance.SendTopMessage(msg.GetString("msg"));
+                        }
+                        else if (msg._cmd == CmdType.EnterScene)
+                        {
+                            int mapId = msg.GetInt("mapId");
+                            Debug.Log($"Entering scene {mapId}");
+
+                            List<MapSelectInfo> mapSelectInfoList =
+                                MapSelectInfoList.LoadMapSelectInfoLists(MapSelectInfoList.BaseConfig);
+                            MapSelectInfo mapInfo = mapSelectInfoList.Find(m => m.mapId == mapId);
+                            if (mapInfo == null)
+                            {
+                                Debug.LogError($"Map info not found for mapId={mapId}");
+                                return;
+                            }
+
+                            GameModeSelect.Instance.SetMap(mapInfo);
+                            if (GameModeSelect.Instance != null)
+                            {
+                                GameModeSelect.Instance.SetGameMode(GameModeType.Offline, 1, 0);
+                                GameModeSelect.CharacterBaseInfos = new List<CharacterBaseInfo>
+                                {
+                                    new CharacterBaseInfo(
+                                        CharacterType.Balance,
+                                        "玩家1",
+                                        "玩家1",
+                                        PlayerControlList.LoadMapSelectInfoLists(PlayerControlList.BaseConfig)[0]
+                                    )
+                                };
+                                GameModeSelect.Instance.StartGame();
+                                MainUIManager.Instance.CloseAll();
+                            }
                         }
                         else
                         {
@@ -93,20 +119,7 @@ namespace Core.Net
             _tcp.Connect(host, port);
         }
 
-        void ReLogin()
-        {
-            if (username == null || password == null)
-            {
-                Debug.LogWarning("Username or password is null, cannot re-login");
-                return;
-            }
-            isConnected = false;
-            Debug.Log("Re-attempting login via TCP");
-            System.Threading.Thread.Sleep(1000);
-            TryToLogin();
-        }
-
-        public void TryToLogin()
+        private void TryToLogin()
         {
             if (_tcp == null) { Debug.LogWarning("TCP client is null"); return; }
 
@@ -116,14 +129,17 @@ namespace Core.Net
                 { "password", password }
             };
             var msg = new Message(CmdType.Login, body);
-            try
+            _tcp.SendMessage(msg);
+        }
+
+        public static void SendMessage(Message message)
+        {
+            if (Instance._tcp == null)
             {
-                _tcp.SendMessage(msg);
+                Debug.LogWarning("TCP client is null, cannot send message");
+                return;
             }
-            catch (Exception e)
-            {
-                Debug.LogError($"Send login failed: {e}");
-            }
+            Instance._tcp.SendMessage(message);
         }
     }
 }

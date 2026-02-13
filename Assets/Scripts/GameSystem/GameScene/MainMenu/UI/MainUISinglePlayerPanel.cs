@@ -3,14 +3,15 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using GameSystem.GameScene.MainMenu;
+using GameSystem.UI;
 using UnityEngine.SceneManagement;
 
 namespace GameSystem.GameScene.MainMenu
 {
     public class MainUISinglePlayerPanel : UIBasePanel
     {
+        public override PanelSymbol symbol => PanelSymbols.SinglePlayerPanel;
         
-        public string panelName = "SinglePlayerPanel";
         public TMP_Text playerCountText;
         public TMP_Text npcCountText;
         
@@ -36,7 +37,6 @@ namespace GameSystem.GameScene.MainMenu
             backBtn.onClick.AddListener(OnBackClick);
 
             UpdateUI();
-            MainUIManager.Instance.RegisterPanel(panelName, this);
         }
 
         private void ChangePlayerCount(int delta)
@@ -74,7 +74,7 @@ namespace GameSystem.GameScene.MainMenu
             if (GameModeSelect.Instance != null)
             {
                 GameModeSelect.Instance.SetGameMode(GameModeType.Offline, _playerCount, _npcCount);
-                MainUIManager.Instance.ShowPanel("PlaySetPanel");
+                MainUIManager.Instance.ShowPanel(PanelSymbols.PlaySettingPanel);
             }
         }
 

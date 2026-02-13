@@ -2,6 +2,7 @@
 using System.Linq;
 using Config;
 using GameSystem.GameScene.MessageScene;
+using GameSystem.UI;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -12,10 +13,11 @@ namespace GameSystem.GameScene.MainMenu
 {
     public class MainUIPlaySetPanel : UIBasePanel
     {
+        public override PanelSymbol symbol => PanelSymbols.PlaySettingPanel;
+        
         public static int MaxCharacterCount = 4;
         [Header("基础设置")]
         [Tooltip("面板名称")]
-        public string panelName = "PlaySetPanel";
         public Button nextBtn;
         public Button prevBtn;
         public Button startBtn;

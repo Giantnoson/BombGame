@@ -8,7 +8,7 @@ namespace Core.Net
     public class Message
     {
         public int _cmd;
-        public byte[] _data;
+        public byte[] _data = new byte[0];
         public Dictionary<String, Object> _body = new Dictionary<String, Object>();
 
         public Dictionary<String, Object> Body
@@ -24,6 +24,11 @@ namespace Core.Net
         {
             this._cmd = cmd;
             this.Body = body;
+        }
+        
+        public Message(int cmd)
+        {
+            this._cmd = cmd;
         }
         
         public Message Response(Dictionary<String, Object> body)

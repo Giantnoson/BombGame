@@ -1,6 +1,7 @@
 ﻿using System;
 using Config;
 using GameSystem.GameScene.MainMenu.EventSystem;
+using GameSystem.UI;
 using UnityEngine;
 
 namespace GameSystem.GameScene.PushedScene
@@ -12,7 +13,7 @@ namespace GameSystem.GameScene.PushedScene
 
         private void Start()
         {
-            PauseSceneManager.Instance.RegisterPanel(pauseScenePanel.panelName,pauseScenePanel);
+            PauseSceneManager.Instance.RegisterPanel(pauseScenePanel);
             
             PauseSceneManager.Instance.CloseAll();
             GameEventSystem.AddListener<GameEvents.PauseGameEvent>(OnPauseGameEvent);
@@ -31,7 +32,7 @@ namespace GameSystem.GameScene.PushedScene
 
         private void OnPauseGameEvent(GameEvents.PauseGameEvent evt)
         {
-            PauseSceneManager.Instance.ShowPanel(pauseScenePanel.panelName);
+            PauseSceneManager.Instance.ShowPanel(PanelSymbols.PauseScenePanel);
         }
 
         private void OnResumeGameEvent(GameEvents.ResumeGameEvent evt)
@@ -43,7 +44,7 @@ namespace GameSystem.GameScene.PushedScene
         {
             if (evt.newState.state == GameState.Paused)
             {
-                PauseSceneManager.Instance.ShowPanel(pauseScenePanel.panelName);
+                PauseSceneManager.Instance.ShowPanel(PanelSymbols.PauseScenePanel);
             }
             else if (evt.oldState.state == GameState.Paused)
             {

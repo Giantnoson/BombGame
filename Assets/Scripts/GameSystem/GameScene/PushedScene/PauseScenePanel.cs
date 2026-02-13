@@ -1,6 +1,7 @@
 ﻿using System;
 using Config;
 using GameSystem.GameScene.MainMenu;
+using GameSystem.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,6 +9,7 @@ namespace GameSystem.GameScene.PushedScene
 {
     public class PauseScenePanel : UIBasePanel
     {
+        public override PanelSymbol symbol => PanelSymbols.PauseScenePanel;
         
         
         [Header("基础设置")]

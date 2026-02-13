@@ -4,13 +4,14 @@ using TMPro;
 using System.Collections.Generic;
 using Config;
 using GameSystem.GameScene.MainMenu;
+using GameSystem.UI;
 using UnityEngine.SceneManagement;
 
 namespace GameSystem.GameScene.MainMenu
 {
     public class MainUIMultiplayerRoomPanel : UIBasePanel
     {
-        public string panelName = "MultiplayerRoomPanel";
+        public override PanelSymbol symbol => PanelSymbols.MultiPlayerRoomPanel;
         public Transform playerListContainer;
         public GameObject playerEntryPrefab;
         public Button startBtn;
@@ -23,8 +24,6 @@ namespace GameSystem.GameScene.MainMenu
         {
             startBtn.onClick.AddListener(OnStartClick);
             leaveBtn.onClick.AddListener(OnLeaveClick);
-
-            MainUIManager.Instance.RegisterPanel(panelName, this);
         }
 
         public void SetAsHost(bool isHost)
@@ -70,7 +69,7 @@ namespace GameSystem.GameScene.MainMenu
                 // TODO 在线模式启动
                 //GameModeSelect.Instance.SetGameMode(GameModeType.Online, GameState.Prepare, _players.Count, 0);
             }
-            SceneManager.LoadScene("GameScene");
+            SceneManager.LoadScene("CubeWorld");
         }
 
         private void OnLeaveClick()

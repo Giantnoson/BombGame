@@ -1,15 +1,16 @@
 ﻿using System.Collections.Generic;
 using Config;
+using Core.Net;
 using GameSystem.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace GameSystem.GameScene.MainMenu
+namespace GameSystem.GameScene.MainMenu.UI
 {
-    public class MainUIMapSelectPanel : UIBasePanel
+    public class MainUIMultiPlayerMapSelectPanel : UIBasePanel
     {
-        public override PanelSymbol symbol => PanelSymbols.MapSelectPanel;
+        public override PanelSymbol symbol => PanelSymbols.MultiPlayerMapSelectPanel;
         [Header("UI组件")]
         public Button nextBtn;
         public Button prevBtn;
@@ -22,15 +23,16 @@ namespace GameSystem.GameScene.MainMenu
         [Header("地图相关")]
         public List<MapSelectInfo> mapSelectInfoList;
         public int mapIndex;
-        public Sprite mapSprite;
         public string mapDescription;
+        public Sprite mapSprite;
         public string mapName;
-        
+
+        private bool isMatching;
         
         
         private void Start()
         {
-            mapSelectInfoList = Resources.Load<MapSelectInfoList>("BaseConfig/MapSelectInfoList").mapSelectInfoList;
+            mapSelectInfoList = MapSelectInfoList.LoadMapSelectInfoLists(MapSelectInfoList.BaseConfig);
             if (mapSelectInfoList == null || mapSelectInfoList.Count == 0)
             {
                 Debug.LogError("MapSelectInfoList为Null或者为空");
@@ -44,6 +46,9 @@ namespace GameSystem.GameScene.MainMenu
             prevBtn.onClick.AddListener(OnClickPrevBtnBtn);
             continueBtn.onClick.AddListener(OnContinueBtnClick);
             backButton.onClick.AddListener(OnBackClick);
+            
+            isMatching = false;
+            continueBtn.GetComponentInChildren<TextMeshProUGUI>().text = "开始匹配";
         }
 
         private void SetMapSelectInfo(int index)
@@ -81,9 +86,23 @@ namespace GameSystem.GameScene.MainMenu
 
         private void OnContinueBtnClick()
         {
-            GameModeSelect.Instance.SetMap(mapSelectInfoList[mapIndex]);
-            MainUIManager.Instance.ShowPanel(PanelSymbols.SinglePlayerPanel);
+            // GameModeSelect.Instance.SetMap(mapSelectInfoList[mapIndex]);
+            // MainUIManager.Instance.ShowPanel(PanelSymbols.SinglePlayerPanel);
+            if (isMatching)
+            {
+                isMatching = false;
+                continueBtn.GetComponentInChildren<TextMeshProUGUI>().text = "开始匹配";
+                TcpGameClient.SendMessage(new Message(CmdType.BaseGameCancelMatch));
+                return;
+            }
+            TcpGameClient.SendMessage(new Message(CmdType.BaseGameStartMatch, new Dictionary<string, object>
+            {
+                {"id", mapSelectInfoList[mapIndex].mapId}
+            }));
+            continueBtn.GetComponentInChildren<TextMeshProUGUI>().text = "取消匹配";
+            isMatching = true;
         }
+        
         private void OnBackClick()
         {
             MainUIManager.Instance.Back();

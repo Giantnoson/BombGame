@@ -1,5 +1,6 @@
 using System.Net.Sockets;
 using Core.Net;
+using GameSystem.UI;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -8,7 +9,7 @@ namespace GameSystem.GameScene.MainMenu
 {
     public class MainUIMultiplayerLoginPanel : UIBasePanel
     {
-        public string panelName = "MultiplayerLoginPanel";
+        public override PanelSymbol symbol => PanelSymbols.MultiPlayerLoginPanel;
         public TMP_InputField usernameInput;
         public TMP_InputField passwordInput;
         public Button loginBtn;
@@ -18,8 +19,6 @@ namespace GameSystem.GameScene.MainMenu
         {
             loginBtn.onClick.AddListener(OnLoginClick);
             backBtn.onClick.AddListener(OnBackClick);
-
-            MainUIManager.Instance.RegisterPanel(panelName, this);
         }
 
         private void OnLoginClick()

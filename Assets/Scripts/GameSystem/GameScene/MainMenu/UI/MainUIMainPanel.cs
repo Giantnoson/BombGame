@@ -1,3 +1,4 @@
+using GameSystem.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -5,7 +6,7 @@ namespace GameSystem.GameScene.MainMenu
 {
     public class MainUIMainPanel : UIBasePanel
     {
-        public string panelName = "MainPanel";
+        public override PanelSymbol symbol => PanelSymbols.MainPanel;
         public Button startButton;
         public Button quitButton;
 
@@ -13,13 +14,11 @@ namespace GameSystem.GameScene.MainMenu
         {
             startButton.onClick.AddListener(OnStartClick);
             quitButton.onClick.AddListener(OnQuitClick);
-            
-            MainUIManager.Instance.RegisterPanel(panelName, this);
         }
 
         private void OnStartClick()
         {
-            MainUIManager.Instance.ShowPanel("ModeSelectPanel");
+            MainUIManager.Instance.ShowPanel(PanelSymbols.ModeSelectPanel);
         }
 
         private void OnQuitClick()

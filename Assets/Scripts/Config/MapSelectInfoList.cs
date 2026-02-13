@@ -9,6 +9,14 @@ namespace Config
     public class MapSelectInfoList : ScriptableObject
     {
         public List<MapSelectInfo> mapSelectInfoList = new List<MapSelectInfo>();
+        
+        public static string BaseConfig = "BaseConfig/MapSelectInfoList";
+        
+        public static List<MapSelectInfo> LoadMapSelectInfoLists(string path)
+        {
+            return Resources.Load<MapSelectInfoList>(path).mapSelectInfoList;
+        }
+        
     }
     
     [Serializable]
@@ -18,6 +26,7 @@ namespace Config
         public string mapSceneName;
         public string mapDescription;
         public Sprite mapSprite;
+        public int mapId;
     }
     
 }

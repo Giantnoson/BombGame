@@ -40,8 +40,7 @@ namespace GameSystem.GameScene.MainMenu
 
             // 2. Mode Select Panel
             controller.modeSelectPanel = CreatePanel<MainUIModeSelectPanel>(panelsRect, "ModeSelectPanel");
-            controller.modeSelectPanel.singlePlayerButton = CreateButton(controller.modeSelectPanel.transform, "SingleBtn", "单人游戏", new Vector2(0, 50));
-            controller.modeSelectPanel.multiplayerButton = CreateButton(controller.modeSelectPanel.transform, "MultiBtn", "多人游戏", new Vector2(0, -50));
+            controller.modeSelectPanel.singlePlayerButton = CreateButton(controller.modeSelectPanel.transform, "SingleBtn", "单人游戏", new Vector2(0, 50)); controller.modeSelectPanel.multiplayerButton = CreateButton(controller.modeSelectPanel.transform, "MultiBtn", "多人游戏", new Vector2(0, -50));
             controller.modeSelectPanel.backButton = CreateButton(controller.modeSelectPanel.transform, "BackBtn", "返回", new Vector2(-300, 200), new Vector2(100, 50));
 
             // 3. Single Player Panel

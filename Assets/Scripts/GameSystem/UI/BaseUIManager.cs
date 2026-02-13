@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using GameSystem.GameScene.MainMenu;
+using GameSystem.UI;
 using UnityEngine;
 
 namespace GameSystem.GameScene
@@ -18,16 +19,18 @@ namespace GameSystem.GameScene
             set => _dontHide = value;
         }
 
-        public void RegisterPanel(string panelName, UIBasePanel panel)
+        public void RegisterPanel(UIBasePanel panel)
         {
+            string panelName = panel.symbol.name;
             if (!_panels.ContainsKey(panelName))
             {
                 _panels.Add(panelName, panel);
             }
         }
 
-        public T GetPanel<T>(string panelName) where T : UIBasePanel
+        public T GetPanel<T>(PanelSymbol symbol) where T : UIBasePanel
         {
+            string panelName = symbol.name;
             if (_panels.TryGetValue(panelName, out UIBasePanel panel))
             {
                 return panel as T;
@@ -35,8 +38,9 @@ namespace GameSystem.GameScene
             return null;
         }
 
-        public void ShowPanel(string panelName)
+        public void ShowPanel(PanelSymbol symbol)
         {
+            string panelName = symbol.name;
             if (_panels.TryGetValue(panelName, out UIBasePanel panel))
             {
                 if (_panelStack.Count > 0)
@@ -53,9 +57,9 @@ namespace GameSystem.GameScene
             }
         }
         
-        public void ShowPanels(List<string> panelName)
+        public void ShowPanels(List<PanelSymbol> symbols)
         {
-            TryGetValues(panelName, out List<UIBasePanel> panels);
+            TryGetValues(symbols, out List<UIBasePanel> panels);
             while (_panelStack.Count > 0)
             {
                 _panelStack.Peek().Hide();
@@ -68,17 +72,18 @@ namespace GameSystem.GameScene
             }
         }
 
-        public void ShowDontHidePanel(List<string> panelName)
+        public void ShowDontHidePanel(List<PanelSymbol> symbols)
         {
-            TryGetValues(panelName, out List<UIBasePanel> panels);
+            TryGetValues(symbols, out List<UIBasePanel> panels);
             foreach (var panel in panels)
             {
                 panel.Show();
             }
         }
         
-        public void ShowDontHidePanel(string panelName)
+        public void ShowDontHidePanel(PanelSymbol symbol)
         {
+            string panelName = symbol.name;
             if (_panels.TryGetValue(panelName, out UIBasePanel panel))
             {
                 panel.Show();
@@ -89,11 +94,12 @@ namespace GameSystem.GameScene
             }
         }
 
-        private void TryGetValues(List<string> panelNames ,out List<UIBasePanel> panels)
+        private void TryGetValues(List<PanelSymbol> symbols ,out List<UIBasePanel> panels)
         {
             panels = new List<UIBasePanel>();
-            foreach (var panelName in panelNames)
+            foreach (var symbol in symbols)
             {
+                string panelName = symbol.name;
                 if (_panels.TryGetValue(panelName, out UIBasePanel panel))
                 {
                     panels.Add(panel);

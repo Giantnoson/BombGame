@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Net;
-using System.Collections.Generic;
 using UnityEngine;
+using Event = Core.Events.Event;
 
 namespace Core.Net
 {
@@ -23,7 +23,7 @@ namespace Core.Net
         public override void Clear()
         {
             msgList.Clear();
-            _eventQueues = new Queue<Core.Events.Event>();
+            _eventQueues = new Queue<Event>();
         }
 
         protected override void AsynConnectHandler()

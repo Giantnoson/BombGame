@@ -1,3 +1,4 @@
+using GameSystem.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -5,7 +6,7 @@ namespace GameSystem.GameScene.MainMenu
 {
     public class MainUIModeSelectPanel : UIBasePanel
     {
-        public string panelName = "ModeSelectPanel";
+        public override PanelSymbol symbol => PanelSymbols.ModeSelectPanel;
         public Button singlePlayerButton;
         public Button multiplayerButton;
         public Button backButton;
@@ -16,17 +17,16 @@ namespace GameSystem.GameScene.MainMenu
             multiplayerButton.onClick.AddListener(OnMultiplayerClick);
             backButton.onClick.AddListener(OnBackClick);
 
-            MainUIManager.Instance.RegisterPanel(panelName, this);
         }
         
         private void OnSinglePlayerClick()
         {
-            MainUIManager.Instance.ShowPanel("MapSelectPanel");
+            MainUIManager.Instance.ShowPanel(PanelSymbols.MapSelectPanel);
         }
 
         private void OnMultiplayerClick()
         {
-            MainUIManager.Instance.ShowPanel("MultiplayerLoginPanel");
+            MainUIManager.Instance.ShowPanel(PanelSymbols.MultiPlayerLoginPanel);
         }
 
         private void OnBackClick()
