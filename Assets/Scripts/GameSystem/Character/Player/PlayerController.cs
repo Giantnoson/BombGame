@@ -1,5 +1,4 @@
-﻿using System;
-using Config;
+﻿using Config;
 using GameSystem.GameScene.MainMenu.EventSystem;
 using UnityEngine;
 // 引入GameSystem命名空间，可能包含游戏相关的系统类
@@ -61,7 +60,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
             beforeCameraVertical = cameraVertical;
         }
 
-        private void MoveUpdate()
+        protected virtual void MoveUpdate()
         {
             horizontal = Input.GetAxis(sHorizontal); // A/D
             vertical = Input.GetAxis(sVertical); // W/S 

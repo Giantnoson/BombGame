@@ -97,7 +97,8 @@ namespace GameSystem.GameScene.MainMenu.UI
             }
             TcpGameClient.SendMessage(new Message(CmdType.BaseGameStartMatch, new Dictionary<string, object>
             {
-                {"id", mapSelectInfoList[mapIndex].mapId}
+                {"id", mapSelectInfoList[mapIndex].mapId},
+                {"career", "Balance"}
             }));
             continueBtn.GetComponentInChildren<TextMeshProUGUI>().text = "取消匹配";
             isMatching = true;

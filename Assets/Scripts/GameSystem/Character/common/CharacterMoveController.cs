@@ -1,3 +1,4 @@
+using System;
 using GameSystem.GameScene.MainMenu.EventSystem;
 using UnityEngine;
 
@@ -67,6 +68,11 @@ namespace GameSystem.GameScene.MainMenu.Character
             mouseY *= mouseSensitivity;
             rotationX -= mouseY; // 减号确保鼠标向上移动时视角向上
             rotationX = Mathf.Clamp(rotationX, verticalRotationMinLimit, verticalRotationMaxLimit); // 限制垂直视角范围
+            if (Math.Pow(moveDirection.x, 2) + Math.Pow(moveDirection.z, 2) > 1) //如果移动向量的水平分量长度大于1，则进行归一化
+            {
+                moveDirection = moveDirection.normalized;
+            }
+
             controller.SimpleMove(moveDirection * MoveSpeed);
             //角色旋转
             transform.Rotate(Vector3.up, mouseX); // 绕Y轴旋转角色 

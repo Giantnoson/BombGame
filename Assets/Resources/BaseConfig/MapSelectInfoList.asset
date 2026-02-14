@@ -13,7 +13,13 @@ MonoBehaviour:
   m_Name: MapSelectInfoList
   m_EditorClassIdentifier: 
   mapSelectInfoList:
+  - mapName: "\u968F\u673A"
+    mapSceneName: "\u968F\u673A\u4E16\u754C"
+    mapDescription: "\u968F\u673A\u9009\u62E9\u4E00\u4E2A\u4E16\u754C"
+    mapSprite: {fileID: 21300000, guid: 28dc135e7f2a558458786d69d3ad302b, type: 3}
+    mapId: 0
   - mapName: "\u65B9\u5757\u4E16\u754C"
     mapSceneName: CubeWorld
     mapDescription: "\u7531\u7B80\u5355\u7684\u65B9\u5757\u62FC\u63A5\u800C\u6210\u7684\u4E16\u754C\uFF0C\u6563\u53D1\u7740\u6734\u7D20\u7684\u7F8E"
     mapSprite: {fileID: 21300000, guid: 28dc135e7f2a558458786d69d3ad302b, type: 3}
+    mapId: 1

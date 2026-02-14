@@ -198,9 +198,17 @@ namespace GameSystem.GameScene.MainMenu.GameScene.GameRuntimeScene
             playerStateHUD.LoadHUD(CharacterBaseInfos[index].CharacterId);
             
             //创建玩家控制器
-            var playerController = player.AddComponent<PlayerController>();
-            if (index != 0)
+            PlayerController playerController;
+            if (index == 0)
+            {
+                playerController = player.AddComponent<OnlinePlayerController>();
+            }
+            else
+            {
+                playerController = player.AddComponent<PlayerController>();
                 playerController.DisableCamera();
+            }
+
             playerController.PlayerControllerInit(CharacterBaseInfos[index].CharacterName, CharacterBaseInfos[index].CharacterId,
                 CharacterBaseInfos[index].CharacterType, CharacterBaseInfos[index].CharacterControlConfig);
             
