@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Core.Net;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace GameSystem.GameScene.MainMenu.Character.Player

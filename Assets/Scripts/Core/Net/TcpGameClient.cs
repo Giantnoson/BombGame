@@ -134,7 +134,7 @@ namespace Core.Net
                                 if (!string.IsNullOrEmpty(career) && !string.IsNullOrEmpty(uname) && !string.IsNullOrEmpty(id))
                                 {
                                     PlayerControlConfig config = null;
-                                    if (id != playerId)
+                                    if (id == playerId)
                                     {
                                         config = PlayerControlList.LoadMapSelectInfoLists(PlayerControlList.BaseConfig)[controlConfig];
                                     }
@@ -179,7 +179,8 @@ namespace Core.Net
                                 float x = msg.GetInt("x") / 100f;
                                 float y = msg.GetInt("y") / 100f;
                                 float z = msg.GetInt("z") / 100f;
-                                float angle = msg.GetInt("angle");
+                                float angle = msg.GetFloat("angle");
+                                Debug.Log("Received move message: id=" + movePlayerId + ", x=" + x + ", y=" + y + ", z=" + z + ", angle=" + angle);
                                 GameEventSystem.Broadcast(new MoveEvents.PlayerMoveEvent(movePlayerId, new Vector3(x, y, z), angle));
                             }
                         }
