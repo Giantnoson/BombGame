@@ -69,7 +69,7 @@ namespace Core.Net
                 byte[] lenBuf = new byte[4];
                 while (!ct.IsCancellationRequested && _client != null && _client.Connected)
                 {
-                    Debug.Log("waiting for message via TCP");
+                    // Debug.Log("waiting for message via TCP");
                     // 读取 4 字节长度前缀（network order, big-endian）
                     await ReadExactAsync(lenBuf, 0, 4, ct).ConfigureAwait(false);
                     if (BitConverter.IsLittleEndian)
@@ -78,7 +78,7 @@ namespace Core.Net
                     if (len <= 0 || len > 1 * 1024 * 1024) // 限制最大消息大小（10MB）
                         throw new Exception($"Invalid message length: {len}");
 
-                    Debug.Log("receive message via TCP, length=" + len);
+                    // Debug.Log("receive message via TCP, length=" + len);
                     byte[] payload = new byte[len];
                     await ReadExactAsync(payload, 0, len, ct).ConfigureAwait(false);
 

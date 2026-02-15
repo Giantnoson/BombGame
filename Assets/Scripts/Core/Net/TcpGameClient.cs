@@ -33,8 +33,8 @@ namespace Core.Net
         private string username;
         private string password;
 
-        private string host = "frp-any.com";
-        private int port = 51493;
+        private string host = "localhost";
+        private int port = 25565;
         private bool isConnected;
 
         public void TcpStart(string uname, string pwd)
@@ -59,7 +59,7 @@ namespace Core.Net
                                 playerId = msg.GetString("playerId");
                                 isConnected = true;
                                 Debug.Log($"Login successful, playerId={playerId}");
-                                MainUIManager.Instance.ShowPanel(PanelSymbols.MultiPlayerLobbyPanel);
+                                MainUIManager.Instance.ShowPanel(PanelSymbols.MultiPlayerPlaySetPanel);
                             }
                             else
                             {
@@ -180,7 +180,6 @@ namespace Core.Net
                                 float y = msg.GetInt("y") / 100f;
                                 float z = msg.GetInt("z") / 100f;
                                 float angle = msg.GetFloat("angle");
-                                Debug.Log("Received move message: id=" + movePlayerId + ", x=" + x + ", y=" + y + ", z=" + z + ", angle=" + angle);
                                 GameEventSystem.Broadcast(new MoveEvents.PlayerMoveEvent(movePlayerId, new Vector3(x, y, z), angle));
                             }
                         }

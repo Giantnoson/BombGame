@@ -19,9 +19,6 @@ namespace GameSystem.GameScene.MainMenu.GameScene.GameRuntimeScene
         [Tooltip("正交摄像机")]
         public Camera OrthographicCamera;
         
-        [Tooltip("可破坏墙体")]
-        public GameObject DestructibleWall;
-
         [Tooltip("玩家数量")] public int playerCount;
 
         [Tooltip("玩家控制配置")] public static List<CharacterBaseInfo> CharacterBaseInfos = new List<CharacterBaseInfo>();
@@ -155,10 +152,14 @@ namespace GameSystem.GameScene.MainMenu.GameScene.GameRuntimeScene
 
             playerController.PlayerControllerInit(info.CharacterName, info.CharacterId,
                 info.CharacterType, info.CharacterControlConfig);
+
+            if (info.CharacterId == TcpGameClient.PlayerId)
+            {
+                //创建玩家移动控制器
+                var controller = playerController.AddComponent<CharacterMoveController>();
+                controller.Init(playerController.id);
+            }
             
-            //创建玩家移动控制器
-            var controller = playerController.AddComponent<CharacterMoveController>();
-            controller.Init(playerController.id);
             //启用预制体
             player.name = $"player{idx}";
             player.tag = nameof(ObjectType.Player);

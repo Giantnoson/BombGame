@@ -39,7 +39,7 @@ namespace GameSystem.GameScene.MainMenu
         [Tooltip("角色键位描述")]
         public TextMeshProUGUI playerMoveDescription;
         public List<bool> isMoveModeSelect = new List<bool>{false,false,false,false};
-        public PlayerControlConfig CompareTemp = new PlayerControlConfig();
+        public PlayerControlConfig CompareTemp;
         
         [Header("角色类型设置")]
         [Tooltip("角色类型名称")]
@@ -61,7 +61,6 @@ namespace GameSystem.GameScene.MainMenu
         [Tooltip("当前索引")]
         public int playerIndex = 0;
         public int playerCount = 0;
-        public int enemyCount = 0;
 
         public string mapDescription;
         public Sprite mapSprite;
@@ -76,8 +75,8 @@ namespace GameSystem.GameScene.MainMenu
             //角色键位刷新
             if (playerMoveMode[playerIndex].putBomb == KeyCode.None)
             {
-                playerMoveDescription.text = "请选择一个键位配置";
-                playerMoveSelect.value = moveModeName.Count - 1;
+                playerMoveDescription.text = playerMoveMode[0].description;
+                playerMoveSelect.value = 0;
             }
             else
             {
@@ -111,7 +110,6 @@ namespace GameSystem.GameScene.MainMenu
             SetMapSelectInfo(mapIndex);
 
             playerCount = 1;
-            enemyCount = 0;
             //初始化角色ID
             var x = Resources.Load<PlayerControlList>("PlayerControl/PlayerControlList");
             if (x == null)
@@ -120,6 +118,7 @@ namespace GameSystem.GameScene.MainMenu
                 Debug.LogError("没有找到该角色键位列表");
             }
             moveModeList = x.playerMoveModeConfigs;
+            CompareTemp = moveModeList[0];
             for (int i = 0; i < playerCount; i++)
             {
                 playTypes.Add(CharacterType.Balance);
@@ -128,7 +127,7 @@ namespace GameSystem.GameScene.MainMenu
                 playerMoveMode.Add(CompareTemp);
                 playerHeadStr.Add($"玩家{i + 1}" );
             }
-            for (int i = playerCount; i < playerCount + enemyCount; i++)
+            for (int i = playerCount; i < playerCount; i++)
             {
                 playTypes.Add(CharacterType.Enemy);
                 playerNames.Add($"Enemy{(i - playerCount) + 1}");
@@ -161,7 +160,7 @@ namespace GameSystem.GameScene.MainMenu
             playerMoveSelect.ClearOptions();
             playerMoveSelect.AddOptions(moveModeName);
             playerMoveSelect.onValueChanged.AddListener(OnPlayerControlSelect);
-            playerMoveSelect.value = moveModeName.Count - 1;
+            playerMoveSelect.value = 0;
             
             nextBtn.onClick.AddListener(OnNextBtnClick);
             prevBtn.onClick.AddListener(OnPrevBtnBtnClick);

@@ -92,7 +92,7 @@ namespace Core.Net
             Array.Copy(_data, 0, bytes, 4, _data.Length);
             // 转为16进制字符串输出调试
             string cmdHex = _cmd.ToString("X4");
-            Debug.Log($"Message ToBytes: cmd={cmdHex}, length={bytes.Length}");
+            // Debug.Log($"Message ToBytes: cmd={cmdHex}, length={bytes.Length}");
             return bytes;
         }
         
