@@ -84,6 +84,7 @@ namespace GameSystem.GameScene.MainMenu
             GameModeSelect.Instance.SetMap(mapSelectInfoList[mapIndex]);
             MainUIManager.Instance.ShowPanel(PanelSymbols.SinglePlayerPanel);
         }
+        
         private void OnBackClick()
         {
             MainUIManager.Instance.Back();

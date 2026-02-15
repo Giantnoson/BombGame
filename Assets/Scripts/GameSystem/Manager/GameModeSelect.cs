@@ -140,5 +140,21 @@ namespace GameSystem.GameScene.MainMenu
             CharacterId = characterId;
             CharacterControlConfig = characterControlConfig;
         }
+
+        public CharacterBaseInfo(string typeName, string characterName, string characterId,
+            PlayerControlConfig characterControlConfig)
+        {
+            CharacterType = CharacterProper.ParseCharacterType(typeName);
+            CharacterName = characterName;
+            CharacterId = characterId;
+            CharacterControlConfig = characterControlConfig;
+        }
+        
+        public CharacterBaseInfo(string typeName, string characterName, string characterId)
+        {
+            CharacterType = CharacterProper.ParseCharacterType(typeName);
+            CharacterName = characterName;
+            CharacterId = characterId;
+        }
     }
 }

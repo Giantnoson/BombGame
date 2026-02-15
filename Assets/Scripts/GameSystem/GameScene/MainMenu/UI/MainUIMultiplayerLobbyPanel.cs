@@ -31,7 +31,7 @@ namespace GameSystem.GameScene.MainMenu
         {
             Debug.Log("Creating Room...");
             // Mock room creation
-            MainUIManager.Instance.ShowPanel(PanelSymbols.MultiPlayerMapSelectPanel);
+            MainUIManager.Instance.ShowPanel(PanelSymbols.MultiPlayerPlaySetPanel);
             var roomPanel = MainUIManager.Instance.GetPanel<MainUIMultiplayerRoomPanel>(PanelSymbols.MultiPlayerRoomPanel);
             if (roomPanel != null)
             {

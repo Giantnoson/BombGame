@@ -115,10 +115,13 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
             characterName = name;
             this.id = id;
             characterType = type;
-            this.playerControlConfig = playerControlConfig;
-            sHorizontal = playerControlConfig.moveHorizontal;
-            sVertical = playerControlConfig.moveVertical;
-            sputBomb = playerControlConfig.putBomb;
+            if (playerControlConfig != null)
+            {
+                this.playerControlConfig = playerControlConfig;
+                sHorizontal = playerControlConfig.moveHorizontal;
+                sVertical = playerControlConfig.moveVertical;
+                sputBomb = playerControlConfig.putBomb;
+            }
             //严格按照此顺序初始化
             StateInit();
             

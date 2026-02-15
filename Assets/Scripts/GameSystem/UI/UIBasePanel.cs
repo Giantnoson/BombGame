@@ -1,4 +1,3 @@
-using GameSystem.GameScene.MainMenu;
 using GameSystem.UI;
 using UnityEngine;
 
@@ -11,7 +10,6 @@ namespace GameSystem.GameScene
         public virtual void Show()
         {
             gameObject.SetActive(true);
-            MainUIManager.Instance.RegisterPanel(this);
         }
 
         public virtual void Hide()

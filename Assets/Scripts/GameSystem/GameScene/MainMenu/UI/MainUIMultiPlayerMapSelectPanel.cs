@@ -29,7 +29,6 @@ namespace GameSystem.GameScene.MainMenu.UI
 
         private bool isMatching;
         
-        
         private void Start()
         {
             mapSelectInfoList = MapSelectInfoList.LoadMapSelectInfoLists(MapSelectInfoList.BaseConfig);
@@ -87,15 +86,15 @@ namespace GameSystem.GameScene.MainMenu.UI
         private void OnContinueBtnClick()
         {
             // GameModeSelect.Instance.SetMap(mapSelectInfoList[mapIndex]);
-            // MainUIManager.Instance.ShowPanel(PanelSymbols.SinglePlayerPanel);
+            MainUIManager.Instance.ShowPanel(PanelSymbols.SinglePlayerPanel);
             if (isMatching)
             {
                 isMatching = false;
                 continueBtn.GetComponentInChildren<TextMeshProUGUI>().text = "开始匹配";
-                TcpGameClient.SendMessage(new Message(CmdType.BaseGameCancelMatch));
+                TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameCancelMatch));
                 return;
             }
-            TcpGameClient.SendMessage(new Message(CmdType.BaseGameStartMatch, new Dictionary<string, object>
+            TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameStartMatch, new Dictionary<string, object>
             {
                 {"id", mapSelectInfoList[mapIndex].mapId},
                 {"career", "Balance"}

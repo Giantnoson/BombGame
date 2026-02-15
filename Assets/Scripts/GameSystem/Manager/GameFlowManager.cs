@@ -360,8 +360,9 @@ namespace GameSystem.GameScene.MainMenu
         public void ReturnToMainMenu()
         {
             ChangeGameState(FindState(GameState.MainMenu));
+            MainUIController.Reset();
+            MainUIManager.Instance.ShowPanel(PanelSymbols.BgPanel, true);
             MainUIManager.Instance.ShowPanel(PanelSymbols.MainPanel);
-            MainUIManager.Instance.ShowDontHidePanel(PanelSymbols.BgPanel);            
         }
 
         /// <summary>

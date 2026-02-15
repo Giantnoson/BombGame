@@ -157,7 +157,7 @@ namespace Core.Net
         }
 
         // 便捷方法：发送 Message 对象（依赖项目中的 Message 类）
-        public void SendMessage(Message msg)
+        public void SendMessage(NetMessage msg)
         {
             SendBytes(msg.ToBytes());
         }

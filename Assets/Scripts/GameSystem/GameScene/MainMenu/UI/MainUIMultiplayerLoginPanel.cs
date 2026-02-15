@@ -17,6 +17,8 @@ namespace GameSystem.GameScene.MainMenu
 
         private void Start()
         {
+            usernameInput.text = "gql";
+            passwordInput.text = "123456";
             loginBtn.onClick.AddListener(OnLoginClick);
             backBtn.onClick.AddListener(OnBackClick);
         }
@@ -32,7 +34,6 @@ namespace GameSystem.GameScene.MainMenu
                 return;
             }
 
-            // Mock login success
             Debug.Log($"Logging in as {username}...");
             TcpGameClient.Instance.TcpStart(username, password);
         }

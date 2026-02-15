@@ -5,7 +5,7 @@ using Object = System.Object;
 
 namespace Core.Net
 {
-    public class Message
+    public class NetMessage
     {
         public int _cmd;
         public byte[] _data = new byte[0];
@@ -20,18 +20,18 @@ namespace Core.Net
             }
         }
         
-        public Message(int cmd, Dictionary<String, Object> body)
+        public NetMessage(int cmd, Dictionary<String, Object> body)
         {
             this._cmd = cmd;
             this.Body = body;
         }
         
-        public Message(int cmd)
+        public NetMessage(int cmd)
         {
             this._cmd = cmd;
         }
         
-        public Message Response(Dictionary<String, Object> body)
+        public NetMessage Response(Dictionary<String, Object> body)
         {
             this.Body = body;
             return this;
@@ -96,14 +96,14 @@ namespace Core.Net
             return bytes;
         }
         
-        public static Message FromBytes(byte[] bytes)
+        public static NetMessage FromBytes(byte[] bytes)
         {
             int cmd = BitConverter.ToInt32(bytes, 0);
             // 转为主机字节序
             int cmdHost = System.Net.IPAddress.NetworkToHostOrder(cmd);
             byte[] data = new byte[bytes.Length - 4];
             Array.Copy(bytes, 4, data, 0, data.Length);
-            return new Message(cmdHost, BodyFromBytes(data));
+            return new NetMessage(cmdHost, BodyFromBytes(data));
         }
         
         private static Dictionary<String, Object> BodyFromBytes(byte[] data)

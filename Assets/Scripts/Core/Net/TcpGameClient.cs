@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Config;
 using GameSystem.GameScene.MainMenu;
 using GameSystem.GameScene.MessageScene;
@@ -45,7 +46,7 @@ namespace Core.Net
             {
                 try
                 {
-                    Message msg = Message.FromBytes(bytes);
+                    NetMessage msg = NetMessage.FromBytes(bytes);
                     if (msg != null)
                     {
                         if (msg._cmd == CmdType.Login)
@@ -66,33 +67,73 @@ namespace Core.Net
                         {
                             GlobalMessageManager.Instance.SendTopMessage(msg.GetString("msg"));
                         }
-                        else if (msg._cmd == CmdType.EnterScene)
+                        else if (msg._cmd == CmdType.BaseGameMatchSuccess)
                         {
                             int mapId = msg.GetInt("mapId");
+                            string career = msg.GetString("career");
+                            string id = msg.GetString("id");
+                            string uname = msg.GetString("uname");
+                            int controlConfig = msg.GetInt("controlConfig");
+                            string otherPlayersInfo = msg.GetString("otherPlayers");
+                            List<CharacterBaseInfo> players = new List<CharacterBaseInfo>();
+                            players.Add(new CharacterBaseInfo(
+                                career,
+                                id,
+                                uname,
+                                PlayerControlList.LoadMapSelectInfoLists(PlayerControlList.BaseConfig)[controlConfig]
+                            ));
+                            otherPlayersInfo.Split("|").ToList().ForEach(info =>
+                            {
+                                string[] parts = info.Split(",");
+                                string career = "";
+                                string name = "";
+                                string id = "";
+                                foreach (var part in parts)
+                                {
+                                    string[] kv = part.Split(":");
+                                    if (kv.Length == 2)
+                                    {
+                                        if (kv[0] == "career")
+                                        {
+                                            career = kv[1];
+                                        }
+                                        else if (kv[0] == "name")
+                                        {
+                                            name = kv[1];
+                                        }
+                                        else if (kv[0] == "id")
+                                        {
+                                            id = kv[1];
+                                        }
+                                    }
+                                }
+
+                                if (!string.IsNullOrEmpty(career) && !string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(id))
+                                {
+                                    players.Add(new CharacterBaseInfo(
+                                        career,
+                                        name,
+                                        id
+                                    ));
+                                }
+                            });
                             Debug.Log($"Entering scene {mapId}");
 
                             List<MapSelectInfo> mapSelectInfoList =
                                 MapSelectInfoList.LoadMapSelectInfoLists(MapSelectInfoList.BaseConfig);
                             MapSelectInfo mapInfo = mapSelectInfoList.Find(m => m.mapId == mapId);
+                            
                             if (mapInfo == null)
                             {
                                 Debug.LogError($"Map info not found for mapId={mapId}");
                                 return;
                             }
-
+                            
                             GameModeSelect.Instance.SetMap(mapInfo);
                             if (GameModeSelect.Instance != null)
                             {
-                                GameModeSelect.Instance.SetGameMode(GameModeType.Offline, 1, 0);
-                                GameModeSelect.CharacterBaseInfos = new List<CharacterBaseInfo>
-                                {
-                                    new CharacterBaseInfo(
-                                        CharacterType.Balance,
-                                        "玩家1",
-                                        "玩家1",
-                                        PlayerControlList.LoadMapSelectInfoLists(PlayerControlList.BaseConfig)[0]
-                                    )
-                                };
+                                GameModeSelect.Instance.SetGameMode(GameModeType.Offline, players.Count, 0);
+                                GameModeSelect.CharacterBaseInfos = players;
                                 GameModeSelect.Instance.StartGame();
                                 MainUIManager.Instance.CloseAll();
                             }
@@ -128,18 +169,18 @@ namespace Core.Net
                 { "username", username },
                 { "password", password }
             };
-            var msg = new Message(CmdType.Login, body);
+            var msg = new NetMessage(CmdType.Login, body);
             _tcp.SendMessage(msg);
         }
 
-        public static void SendMessage(Message message)
+        public static void SendMessage(NetMessage netMessage)
         {
             if (Instance._tcp == null)
             {
                 Debug.LogWarning("TCP client is null, cannot send message");
                 return;
             }
-            Instance._tcp.SendMessage(message);
+            Instance._tcp.SendMessage(netMessage);
         }
     }
 }

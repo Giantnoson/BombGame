@@ -66,7 +66,26 @@ namespace Config
         public int maxBombCountGrowth = 1; //最大炸弹数增加数值
         [Tooltip("最大生命值增加数值")]
         public float maxHpGrowth = 10f; //最大生命值增加数值
+
+        static public CharacterProper LoadCharacterProper(CharacterType type)
+        {
+            return Resources.Load<CharacterProper>($"Character/{type}");
+        }
         
+        static public CharacterProper LoadCharacterProper(string typeName)
+        {
+            return LoadCharacterProper(ParseCharacterType(typeName));
+        }
+        
+        static public CharacterType ParseCharacterType(string typeName)
+        {
+            if (System.Enum.TryParse(typeName, out CharacterType type))
+            {
+                return type;
+            }
+            Debug.LogError($"无法解析角色类型: {typeName}, 使用默认值Balance");
+            return CharacterType.Balance;
+        }
     }
     
     [System.Serializable]

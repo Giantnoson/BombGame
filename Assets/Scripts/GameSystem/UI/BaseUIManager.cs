@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using GameSystem.GameScene.MainMenu;
 using GameSystem.UI;
 using UnityEngine;
@@ -12,6 +11,8 @@ namespace GameSystem.GameScene
         private Stack<UIBasePanel> _panelStack = new Stack<UIBasePanel>();
 
         private List<string> _dontHide = new List<string>();//只有closeALL可以关闭
+        
+        private string resourcePath = "GUI/";
         
         public List<string> DontHide
         {
@@ -38,9 +39,28 @@ namespace GameSystem.GameScene
             return null;
         }
 
-        public void ShowPanel(PanelSymbol symbol)
+        public void ShowPanel(PanelSymbol symbol, bool dontHide = false)
         {
             string panelName = symbol.name;
+            if (!_panels.ContainsKey(panelName))
+            {
+                GameObject panelPrefab = Resources.Load<GameObject>(resourcePath + panelName);
+                if (panelPrefab == null)
+                {
+                    Debug.LogError($"Panel prefab {panelName} not found at path {resourcePath + panelName}!");
+                    return;
+                }
+                GameObject panelObj = Instantiate(panelPrefab, transform);
+                MainUIController.AddPanel(panelObj);
+                UIBasePanel newPanel = panelObj.GetComponent<UIBasePanel>();
+                if (newPanel == null)
+                {
+                    Debug.LogError($"Panel prefab {panelName} does not have a UIBasePanel component!");
+                    Destroy(panelObj);
+                    return;
+                }
+                RegisterPanel(newPanel);
+            }
             if (_panels.TryGetValue(panelName, out UIBasePanel panel))
             {
                 if (_panelStack.Count > 0)
@@ -49,68 +69,13 @@ namespace GameSystem.GameScene
                 }
 
                 panel.Show();
-                _panelStack.Push(panel);
-            }
-            else
-            {
-                Debug.LogWarning($"Panel {panelName} not found!");
-            }
-        }
-        
-        public void ShowPanels(List<PanelSymbol> symbols)
-        {
-            TryGetValues(symbols, out List<UIBasePanel> panels);
-            while (_panelStack.Count > 0)
-            {
-                _panelStack.Peek().Hide();
-            }
-
-            foreach (var panel in panels)
-            {
-                panel.Show();
-                _panelStack.Push(panel);
-            }
-        }
-
-        public void ShowDontHidePanel(List<PanelSymbol> symbols)
-        {
-            TryGetValues(symbols, out List<UIBasePanel> panels);
-            foreach (var panel in panels)
-            {
-                panel.Show();
-            }
-        }
-        
-        public void ShowDontHidePanel(PanelSymbol symbol)
-        {
-            string panelName = symbol.name;
-            if (_panels.TryGetValue(panelName, out UIBasePanel panel))
-            {
-                panel.Show();
-            }
-            else
-            {
-                Debug.LogWarning($"Panel {panelName} not found!");
-            }
-        }
-
-        private void TryGetValues(List<PanelSymbol> symbols ,out List<UIBasePanel> panels)
-        {
-            panels = new List<UIBasePanel>();
-            foreach (var symbol in symbols)
-            {
-                string panelName = symbol.name;
-                if (_panels.TryGetValue(panelName, out UIBasePanel panel))
+                if (!dontHide)
                 {
-                    panels.Add(panel);
-                }
-                else
-                {
-                    Debug.LogWarning($"Panel {panelName} not found!");
+                    _panelStack.Push(panel);
                 }
             }
         }
-        
+
         public void Back()
         {
             if (_panelStack.Count > 1)
