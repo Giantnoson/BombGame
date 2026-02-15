@@ -11,6 +11,7 @@ namespace Config
         public List<MapSelectInfo> mapSelectInfoList = new List<MapSelectInfo>();
         
         public static string BaseConfig = "BaseConfig/MapSelectInfoList";
+        public static string OnLineConfig = "OnLineConfig/MapSelectInfoList";
         
         public static List<MapSelectInfo> LoadMapSelectInfoLists(string path)
         {

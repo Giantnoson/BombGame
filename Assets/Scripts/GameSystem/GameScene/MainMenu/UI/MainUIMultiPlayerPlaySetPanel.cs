@@ -100,7 +100,7 @@ namespace GameSystem.GameScene.MainMenu
         
         private void OnEnable()
         {
-            mapSelectInfoList = MapSelectInfoList.LoadMapSelectInfoLists(MapSelectInfoList.BaseConfig);
+            mapSelectInfoList = MapSelectInfoList.LoadMapSelectInfoLists(MapSelectInfoList.OnLineConfig);
             if (mapSelectInfoList == null || mapSelectInfoList.Count == 0)
             {
                 Debug.LogError("MapSelectInfoList为Null或者为空");

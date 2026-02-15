@@ -128,6 +128,9 @@ namespace GameSystem.GameScene.MainMenu
         public string CharacterName;
         public string CharacterId;
         public PlayerControlConfig CharacterControlConfig;
+        public int Index;
+        public Vector3 Spawn;
+        public float Angle;
 
         public CharacterBaseInfo()
         {
@@ -142,19 +145,15 @@ namespace GameSystem.GameScene.MainMenu
         }
 
         public CharacterBaseInfo(string typeName, string characterName, string characterId,
-            PlayerControlConfig characterControlConfig)
+            PlayerControlConfig characterControlConfig, int idx, Vector3 spawn, float angle)
         {
             CharacterType = CharacterProper.ParseCharacterType(typeName);
             CharacterName = characterName;
             CharacterId = characterId;
             CharacterControlConfig = characterControlConfig;
-        }
-        
-        public CharacterBaseInfo(string typeName, string characterName, string characterId)
-        {
-            CharacterType = CharacterProper.ParseCharacterType(typeName);
-            CharacterName = characterName;
-            CharacterId = characterId;
+            Index = idx;
+            Spawn = spawn;
+            Angle = angle;
         }
     }
 }

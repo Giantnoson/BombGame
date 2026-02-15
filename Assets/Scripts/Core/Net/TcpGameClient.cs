@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Config;
 using GameSystem.GameScene.MainMenu;
+using GameSystem.GameScene.MainMenu.EventSystem;
 using GameSystem.GameScene.MessageScene;
 using GameSystem.UI;
 using UnityEngine;
@@ -23,6 +24,8 @@ namespace Core.Net
                 return _instance;
             }
         }
+        
+        public static string PlayerId => Instance.playerId;
 
         private TcpClientImpl _tcp;
 
@@ -70,24 +73,22 @@ namespace Core.Net
                         else if (msg._cmd == CmdType.BaseGameMatchSuccess)
                         {
                             int mapId = msg.GetInt("mapId");
-                            string career = msg.GetString("career");
-                            string id = msg.GetString("id");
-                            string uname = msg.GetString("uname");
-                            int controlConfig = msg.GetInt("controlConfig");
-                            string otherPlayersInfo = msg.GetString("otherPlayers");
+                            string playersInfo = msg.GetString("playersInfo");
+                            int idx = 0;
+                            Debug.Log("Received match success message: mapId=" + mapId + ", playersInfo=" + playersInfo);
                             List<CharacterBaseInfo> players = new List<CharacterBaseInfo>();
-                            players.Add(new CharacterBaseInfo(
-                                career,
-                                id,
-                                uname,
-                                PlayerControlList.LoadMapSelectInfoLists(PlayerControlList.BaseConfig)[controlConfig]
-                            ));
-                            otherPlayersInfo.Split("|").ToList().ForEach(info =>
+                            playersInfo.Split("|").ToList().ForEach(info =>
                             {
+                                Debug.Log("Parsing player info: " + info);
                                 string[] parts = info.Split(",");
                                 string career = "";
-                                string name = "";
+                                string uname = "";
                                 string id = "";
+                                int controlConfig = -1;
+                                float x = -1;
+                                float y = -1;
+                                float z = -1;
+                                float angle = -1f;
                                 foreach (var part in parts)
                                 {
                                     string[] kv = part.Split(":");
@@ -97,30 +98,62 @@ namespace Core.Net
                                         {
                                             career = kv[1];
                                         }
-                                        else if (kv[0] == "name")
+                                        else if (kv[0] == "uname")
                                         {
-                                            name = kv[1];
+                                            uname = kv[1];
                                         }
                                         else if (kv[0] == "id")
                                         {
                                             id = kv[1];
                                         }
+                                        else if (kv[0] == "controlConfig")
+                                        {
+                                            controlConfig = int.Parse(kv[1]);
+                                        }
+                                        else if (kv[0] == "x")
+                                        {
+                                            x = int.Parse(kv[1]) / 100f;
+                                        }
+                                        else if (kv[0] == "y")
+                                        {
+                                            y = int.Parse(kv[1]) / 100f;
+                                        }
+                                        else if (kv[0] == "z")
+                                        {
+                                            z = int.Parse(kv[1]) / 100f;
+                                        }
+                                        else if (kv[0] == "angle")
+                                        {
+                                            angle = float.Parse(kv[1]);
+                                        }
                                     }
                                 }
+                                
+                                Debug.Log("Parsed player info: career=" + career + ", uname=" + uname + ", id=" + id + ", controlConfig=" + controlConfig + ", idx=" + ", x=" + x + ", y=" + y + ", z=" + z + ", angle=" + angle);
 
-                                if (!string.IsNullOrEmpty(career) && !string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(id))
+                                if (!string.IsNullOrEmpty(career) && !string.IsNullOrEmpty(uname) && !string.IsNullOrEmpty(id))
                                 {
+                                    PlayerControlConfig config = null;
+                                    if (id != playerId)
+                                    {
+                                        config = PlayerControlList.LoadMapSelectInfoLists(PlayerControlList.BaseConfig)[controlConfig];
+                                    }
                                     players.Add(new CharacterBaseInfo(
                                         career,
-                                        name,
-                                        id
+                                        uname,
+                                        id,
+                                        config,
+                                        idx,
+                                        new Vector3(x, y, z),
+                                        angle
                                     ));
                                 }
+                                idx++;
                             });
                             Debug.Log($"Entering scene {mapId}");
 
                             List<MapSelectInfo> mapSelectInfoList =
-                                MapSelectInfoList.LoadMapSelectInfoLists(MapSelectInfoList.BaseConfig);
+                                MapSelectInfoList.LoadMapSelectInfoLists(MapSelectInfoList.OnLineConfig);
                             MapSelectInfo mapInfo = mapSelectInfoList.Find(m => m.mapId == mapId);
                             
                             if (mapInfo == null)
@@ -132,10 +165,22 @@ namespace Core.Net
                             GameModeSelect.Instance.SetMap(mapInfo);
                             if (GameModeSelect.Instance != null)
                             {
-                                GameModeSelect.Instance.SetGameMode(GameModeType.Offline, players.Count, 0);
+                                GameModeSelect.Instance.SetGameMode(GameModeType.Online, players.Count, 0);
                                 GameModeSelect.CharacterBaseInfos = players;
                                 GameModeSelect.Instance.StartGame();
                                 MainUIManager.Instance.CloseAll();
+                            }
+                        }
+                        else if (msg._cmd == CmdType.Move)
+                        {
+                            string movePlayerId = msg.GetString("id");
+                            if (movePlayerId != playerId)
+                            {
+                                float x = msg.GetInt("x") / 100f;
+                                float y = msg.GetInt("y") / 100f;
+                                float z = msg.GetInt("z") / 100f;
+                                float angle = msg.GetInt("angle");
+                                GameEventSystem.Broadcast(new MoveEvents.PlayerMoveEvent(movePlayerId, new Vector3(x, y, z), angle));
                             }
                         }
                         else

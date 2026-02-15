@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 496c62cc3ac76644b8f872d7c4342c77, type: 3}
+  m_Name: MapScanConfig
+  m_EditorClassIdentifier: 
+  startY: 0.5
+  offsetDistance: 15
+  tagPointPairsList:
+  - tag: 0
+    point: 87
+  - tag: 1
+    point: 68
+  - tag: 2
+    point: 80
+  - tag: 3
+    point: 69
+  - tag: 4
+    point: 66
+  - tag: 5
+    point: 78

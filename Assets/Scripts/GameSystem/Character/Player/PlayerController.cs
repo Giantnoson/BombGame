@@ -33,12 +33,12 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
 
         #endregion
 
-        private void Awake()
+        protected virtual void Awake()
         {
             isCameraViewUpdate = GameModeSelect.PlayerCount == 1;
         }
 
-        private void Update()
+        protected virtual void Update()
         {
             if (isDie) return; //如果玩家死亡，则不执行以下代码
             if (Input.GetKeyDown(sputBomb)) PutBomb();

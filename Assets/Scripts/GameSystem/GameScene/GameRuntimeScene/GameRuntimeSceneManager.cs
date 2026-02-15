@@ -201,7 +201,7 @@ namespace GameSystem.GameScene.MainMenu.GameScene.GameRuntimeScene
             PlayerController playerController;
             if (index == 0)
             {
-                playerController = player.AddComponent<OnlinePlayerController>();
+                playerController = player.AddComponent<PlayerController>();
             }
             else
             {

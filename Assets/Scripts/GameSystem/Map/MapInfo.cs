@@ -63,17 +63,17 @@ namespace GameSystem.GameScene.MainMenu.Map
                 var poolObj = new GameObject("MapNodePool");
                 _nodePool = poolObj.AddComponent<MapNodePool>();
             }
-            scanInfoConfig = Resources.Load<MapScanInfoConfig>("Scene/" + gameObject.scene.name + "/MapScanInfoConfig");
-            if (scanInfoConfig == null)
-            {
-                Debug.LogError("未找到MapInfoConfig");
-            }
-            else
-            {
-                TagList = scanInfoConfig.tagList;
-                offsetDistance = scanInfoConfig.offsetDistance;
-                startY = scanInfoConfig.startY;
-            }
+            // scanInfoConfig = Resources.Load<MapScanInfoConfig>("Scene/" + gameObject.scene.name + "/MapScanInfoConfig");
+            // if (scanInfoConfig == null)
+            // {
+            //     Debug.LogError("未找到MapInfoConfig");
+            // }
+            // else
+            // {
+            //     TagList = scanInfoConfig.tagList;
+            //     offsetDistance = scanInfoConfig.offsetDistance;
+            //     startY = scanInfoConfig.startY;
+            // }
         }
 
         private void Start()
