@@ -14,6 +14,8 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
         
         protected override void Awake()
         {
+            var characterController = GetComponent<CharacterController>();
+            if (characterController != null) Destroy(characterController); // 移除CharacterController组件，避免物理碰撞干扰
             GameEventSystem.AddListener<MoveEvents.PlayerMoveEvent>(OnMoveEvent);
         }
 
