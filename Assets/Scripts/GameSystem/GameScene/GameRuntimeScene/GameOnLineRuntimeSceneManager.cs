@@ -141,7 +141,6 @@ namespace GameSystem.GameScene.MainMenu.GameScene.GameRuntimeScene
             {
                 playerController = player.AddComponent<OnlineOtherPlayerController>();
                 playerController.DisableCamera();
-                (playerController as OnlineOtherPlayerController).PlayerId = info.CharacterId;
                 //获取HUD控制器
                 huds[hudIndex].SetActive(true);
                 var playerStateHUD = huds[hudIndex].GetComponent<PlayerStateHUD>();
@@ -149,6 +148,7 @@ namespace GameSystem.GameScene.MainMenu.GameScene.GameRuntimeScene
                 playerStateHUD.LoadHUD(info.CharacterId);
                 hudIndex++;
             }
+            (playerController as BaseOnlinePlayerController).PlayerId = info.CharacterId;
 
             playerController.PlayerControllerInit(info.CharacterName, info.CharacterId,
                 info.CharacterType, info.CharacterControlConfig);

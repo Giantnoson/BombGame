@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8046916320499385191}
   - component: {fileID: 800318460351475860}
   - component: {fileID: 5535268262560954414}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Arrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -87,7 +87,7 @@ GameObject:
   - component: {fileID: 2668289627219371779}
   - component: {fileID: 6900821007220985012}
   - component: {fileID: 4697282303741154116}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: MultiPlayerPlaySetPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -101,7 +101,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 267438765107387335}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -200,7 +200,6 @@ MonoBehaviour:
   playerMoveMode: []
   playerIndex: 0
   playerCount: 0
-  enemyCount: 0
   mapDescription: 
   mapSprite: {fileID: 0}
   mapName: 
@@ -218,7 +217,7 @@ GameObject:
   - component: {fileID: 6937483481038649076}
   - component: {fileID: 1789164169152240510}
   - component: {fileID: 5485201036420825958}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Viewport
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -305,7 +304,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3363401863705628623}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: MapSelectPanel (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -346,7 +345,7 @@ GameObject:
   - component: {fileID: 7198606312948159945}
   - component: {fileID: 8678298388928529835}
   - component: {fileID: 7056500450785017516}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Content
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -449,7 +448,7 @@ GameObject:
   - component: {fileID: 8061939601525950695}
   - component: {fileID: 3492844265151867095}
   - component: {fileID: 1277279131402166458}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Handle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -524,7 +523,7 @@ GameObject:
   - component: {fileID: 2472582569349488839}
   - component: {fileID: 2740172776885483045}
   - component: {fileID: 8971364714098087907}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: speedGrowth
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -658,7 +657,7 @@ GameObject:
   - component: {fileID: 1723989042165972022}
   - component: {fileID: 1340670293392111033}
   - component: {fileID: 2820522651152010486}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: PlayerTypeDescription
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -792,7 +791,7 @@ GameObject:
   - component: {fileID: 8823166227427305386}
   - component: {fileID: 5617326103489587062}
   - component: {fileID: 2443481589882528879}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: maxStamina
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -926,7 +925,7 @@ GameObject:
   - component: {fileID: 4093286098552947683}
   - component: {fileID: 1476888201825951720}
   - component: {fileID: 7528210787857973540}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: maxBombCount
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1061,7 +1060,7 @@ GameObject:
   - component: {fileID: 3212897505493371881}
   - component: {fileID: 206895290010260005}
   - component: {fileID: 1317107929536473996}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Template
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1168,7 +1167,7 @@ GameObject:
   - component: {fileID: 6049292290721332047}
   - component: {fileID: 8603051039470341246}
   - component: {fileID: 2318992194181258772}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: speed
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1302,7 +1301,7 @@ GameObject:
   - component: {fileID: 7023260967173041425}
   - component: {fileID: 4944846863818646927}
   - component: {fileID: 5666583611118996645}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: bombFuseTimeGrowth
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1436,7 +1435,7 @@ GameObject:
   - component: {fileID: 6715048613932321889}
   - component: {fileID: 7761033949877251828}
   - component: {fileID: 2337259793045406798}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: bombRecoveryTimeGrowth
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1570,7 +1569,7 @@ GameObject:
   - component: {fileID: 1505154906182411321}
   - component: {fileID: 8905884085525404664}
   - component: {fileID: 9184000358991298001}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: bombFuseTime
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1702,7 +1701,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2905118471233099785}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Sliding Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1741,7 +1740,7 @@ GameObject:
   - component: {fileID: 3096842888528208906}
   - component: {fileID: 7003601763825668778}
   - component: {fileID: 7651616968229102383}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: NextBtn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1862,7 +1861,7 @@ GameObject:
   - component: {fileID: 8819401443468251391}
   - component: {fileID: 2993176832273847374}
   - component: {fileID: 3590306517869609964}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Scrollbar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1986,7 +1985,7 @@ GameObject:
   m_Component:
   - component: {fileID: 160796259890729733}
   - component: {fileID: 4731449682059246023}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Content
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2039,7 +2038,7 @@ GameObject:
   - component: {fileID: 7858662938590524329}
   - component: {fileID: 8752114605533192614}
   - component: {fileID: 7020045321115790329}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Scrollbar Vertical
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2165,7 +2164,7 @@ GameObject:
   - component: {fileID: 9159460742205163139}
   - component: {fileID: 2772101569286093210}
   - component: {fileID: 4509766359364977555}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: PrevBtn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2285,7 +2284,7 @@ GameObject:
   - component: {fileID: 1977793721303436702}
   - component: {fileID: 3912109001665149070}
   - component: {fileID: 7629398470644913955}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Handle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2360,7 +2359,7 @@ GameObject:
   - component: {fileID: 1647161968581494034}
   - component: {fileID: 2278421392911265188}
   - component: {fileID: 2601636205742645788}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: bombProper
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2492,7 +2491,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4347718289922226938}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Sliding Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2530,7 +2529,7 @@ GameObject:
   - component: {fileID: 2905533043531017315}
   - component: {fileID: 3092777368678167429}
   - component: {fileID: 5887432897059717927}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: bombRadiusGrowth
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2664,7 +2663,7 @@ GameObject:
   - component: {fileID: 7969703929225498098}
   - component: {fileID: 5216921778292275283}
   - component: {fileID: 3901176949056332335}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Item Checkmark
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2738,7 +2737,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3326906577458878707}
   - component: {fileID: 1509849559114880259}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Item
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2826,7 +2825,7 @@ GameObject:
   - component: {fileID: 1033393470421504194}
   - component: {fileID: 3037252301154139772}
   - component: {fileID: 228391825200300288}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: StaminaProper
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2960,7 +2959,7 @@ GameObject:
   - component: {fileID: 3440197154003605131}
   - component: {fileID: 76222840904754973}
   - component: {fileID: 4958309077247451209}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: MapSprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3035,7 +3034,7 @@ GameObject:
   - component: {fileID: 4683889292446203291}
   - component: {fileID: 3795497413577388486}
   - component: {fileID: 1141662002413680078}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: bombDamage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3169,7 +3168,7 @@ GameObject:
   - component: {fileID: 341115262910462363}
   - component: {fileID: 2724670289364845949}
   - component: {fileID: 7805722069944280045}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: PlayerTypeText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3303,7 +3302,7 @@ GameObject:
   - component: {fileID: 7014848632863807657}
   - component: {fileID: 2894875275015743638}
   - component: {fileID: 4059908583580604651}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: PlayerMoveConfigText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3437,7 +3436,7 @@ GameObject:
   - component: {fileID: 7040940216846655013}
   - component: {fileID: 4464351943054056118}
   - component: {fileID: 3811469446134970059}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: staminaDrainRate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3571,7 +3570,7 @@ GameObject:
   - component: {fileID: 7959484658459546487}
   - component: {fileID: 7696056183460831407}
   - component: {fileID: 737781227651053189}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: maxHpGrowth
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3704,7 +3703,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7118985921232708325}
   - component: {fileID: 8634112027558331351}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Item
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3792,7 +3791,7 @@ GameObject:
   - component: {fileID: 1372670132320653367}
   - component: {fileID: 5985261049772313977}
   - component: {fileID: 5868947597347619279}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3926,7 +3925,7 @@ GameObject:
   - component: {fileID: 2411889214980674375}
   - component: {fileID: 7793781079259464476}
   - component: {fileID: 5293926211223236949}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: bombRadius
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4060,7 +4059,7 @@ GameObject:
   - component: {fileID: 7227502694943889073}
   - component: {fileID: 5776365316519188173}
   - component: {fileID: 3258508099572722258}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Handle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4135,7 +4134,7 @@ GameObject:
   - component: {fileID: 2745678845267365932}
   - component: {fileID: 2442628705159741173}
   - component: {fileID: 6034101068491567768}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: speedMultiplier
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4270,7 +4269,7 @@ GameObject:
   - component: {fileID: 4769505009512402455}
   - component: {fileID: 6448363522132114141}
   - component: {fileID: 1751577390148006195}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Viewport
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4360,7 +4359,7 @@ GameObject:
   - component: {fileID: 1128868240931099459}
   - component: {fileID: 7313959670887829082}
   - component: {fileID: 1108255631257254715}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Scrollbar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4485,7 +4484,7 @@ GameObject:
   - component: {fileID: 7902749735027078519}
   - component: {fileID: 7206158126231240823}
   - component: {fileID: 4703711776553441250}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: bombCooldownGrowth
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4619,7 +4618,7 @@ GameObject:
   - component: {fileID: 3659861233695835639}
   - component: {fileID: 6175012384858625180}
   - component: {fileID: 4758855506821065237}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4753,7 +4752,7 @@ GameObject:
   - component: {fileID: 5724228515960797379}
   - component: {fileID: 4436773719734187142}
   - component: {fileID: 2480575979230668059}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: staminaGrowth
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4887,7 +4886,7 @@ GameObject:
   - component: {fileID: 5342364555759524333}
   - component: {fileID: 1678884742627927242}
   - component: {fileID: 7673525293604391498}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Item Label
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5021,7 +5020,7 @@ GameObject:
   - component: {fileID: 4567571937262038384}
   - component: {fileID: 5141106490644954918}
   - component: {fileID: 7686853060018348137}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: bombDamageGrowth
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5155,7 +5154,7 @@ GameObject:
   - component: {fileID: 2012676097136141624}
   - component: {fileID: 6010531449765257658}
   - component: {fileID: 5667134553016027600}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: maxBombCountGrowth
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5290,7 +5289,7 @@ GameObject:
   - component: {fileID: 8744919836672970687}
   - component: {fileID: 6978968496530907223}
   - component: {fileID: 1011919019157913013}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: StartGame
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5408,7 +5407,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4386922278913715927}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Sliding Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5446,7 +5445,7 @@ GameObject:
   - component: {fileID: 816998530568685703}
   - component: {fileID: 2567396456611676045}
   - component: {fileID: 4501453664183943994}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: MapInfoPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5580,7 +5579,7 @@ GameObject:
   - component: {fileID: 1055846708077076376}
   - component: {fileID: 4894044059088344182}
   - component: {fileID: 8031309388579335423}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Item Checkmark
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5655,7 +5654,7 @@ GameObject:
   - component: {fileID: 7234356649715622558}
   - component: {fileID: 9032809862901840382}
   - component: {fileID: 2958259164049707684}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Arrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5730,7 +5729,7 @@ GameObject:
   - component: {fileID: 7278552297754847214}
   - component: {fileID: 2436920346989975449}
   - component: {fileID: 2150242657552191118}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Item Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5804,7 +5803,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2298099242248958332}
   - component: {fileID: 887024248042780036}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Content
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5856,7 +5855,7 @@ GameObject:
   - component: {fileID: 1235347240823194481}
   - component: {fileID: 1800914077464336253}
   - component: {fileID: 7349445842033504456}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: maxHp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5990,7 +5989,7 @@ GameObject:
   - component: {fileID: 2764699109817015310}
   - component: {fileID: 1161995369156824572}
   - component: {fileID: 7948108204325728422}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6124,7 +6123,7 @@ GameObject:
   - component: {fileID: 3224578066187006486}
   - component: {fileID: 1198428451916470746}
   - component: {fileID: 8744396761852370105}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: bombCooldown
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6259,7 +6258,7 @@ GameObject:
   - component: {fileID: 2386027334545612131}
   - component: {fileID: 5142319150397489572}
   - component: {fileID: 7963330230888295313}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: PlayerTypeSelect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6397,7 +6396,7 @@ GameObject:
   - component: {fileID: 2899844127357407915}
   - component: {fileID: 7661804903599057043}
   - component: {fileID: 1962505960950255680}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: BaseProper
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6531,7 +6530,7 @@ GameObject:
   - component: {fileID: 2510299835917728086}
   - component: {fileID: 3508829383857039356}
   - component: {fileID: 8864490901240474621}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: maxLevel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6665,7 +6664,7 @@ GameObject:
   - component: {fileID: 3981216081126825716}
   - component: {fileID: 532128530860670897}
   - component: {fileID: 8019834689595493003}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Label
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6800,7 +6799,7 @@ GameObject:
   - component: {fileID: 1072875748780553338}
   - component: {fileID: 6583212610279335344}
   - component: {fileID: 5626575982072951127}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Template
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6907,7 +6906,7 @@ GameObject:
   - component: {fileID: 1217330011928783107}
   - component: {fileID: 8792950101698109981}
   - component: {fileID: 9023037731371453527}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: bombRecoveryTime
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7041,7 +7040,7 @@ GameObject:
   - component: {fileID: 8362726149469087748}
   - component: {fileID: 2186679245089049363}
   - component: {fileID: 2283641965819007550}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: staminaRegenRate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7176,7 +7175,7 @@ GameObject:
   - component: {fileID: 7615199551313322400}
   - component: {fileID: 8811283218871741811}
   - component: {fileID: 6447749386266482889}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Back
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7297,7 +7296,7 @@ GameObject:
   - component: {fileID: 2460253792635984106}
   - component: {fileID: 2586902477915487543}
   - component: {fileID: 470208525171587931}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Viewport
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7388,7 +7387,7 @@ GameObject:
   - component: {fileID: 4381497373360737030}
   - component: {fileID: 7559384701896576792}
   - component: {fileID: 591977076924836728}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: ProperInfo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7531,7 +7530,7 @@ GameObject:
   - component: {fileID: 3898286825457353536}
   - component: {fileID: 2196712191189447076}
   - component: {fileID: 1765642977517084733}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Item Label
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7665,7 +7664,7 @@ GameObject:
   - component: {fileID: 1634097830305032423}
   - component: {fileID: 7546700261362245213}
   - component: {fileID: 3265831991837197305}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: GrowthProper
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7799,7 +7798,7 @@ GameObject:
   - component: {fileID: 6316700299935824518}
   - component: {fileID: 5271386575329494908}
   - component: {fileID: 6059876755582845634}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Label
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7933,7 +7932,7 @@ GameObject:
   - component: {fileID: 1608145616310303673}
   - component: {fileID: 1891521780667216025}
   - component: {fileID: 3559845739819741808}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -8068,7 +8067,7 @@ GameObject:
   - component: {fileID: 4526777090993159639}
   - component: {fileID: 9132660049843723851}
   - component: {fileID: 114287954072217321}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: PlayerMoveConfig
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -8206,7 +8205,7 @@ GameObject:
   - component: {fileID: 60411174286880786}
   - component: {fileID: 7469062219021870852}
   - component: {fileID: 5082713902725255294}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Item Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -8281,7 +8280,7 @@ GameObject:
   - component: {fileID: 2766490727187045512}
   - component: {fileID: 2208461174017153647}
   - component: {fileID: 2525115566483348175}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: MoveConfigDescription
   m_TagString: Untagged
   m_Icon: {fileID: 0}

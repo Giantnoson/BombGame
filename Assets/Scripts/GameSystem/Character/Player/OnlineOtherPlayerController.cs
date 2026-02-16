@@ -3,17 +3,11 @@ using UnityEngine;
 
 namespace GameSystem.GameScene.MainMenu.Character.Player
 {
-    public class OnlineOtherPlayerController : PlayerController
+    public class OnlineOtherPlayerController : BaseOnlinePlayerController
     {
-        private string _playerId; // 其他玩家的ID
-        public string PlayerId
-        {
-            get => _playerId;
-            set => _playerId = value;
-        }
-        
         protected override void Awake()
         {
+            base.Awake();
             var characterController = GetComponent<CharacterController>();
             if (characterController != null) Destroy(characterController); // 移除CharacterController组件，避免物理碰撞干扰
             GameEventSystem.AddListener<MoveEvents.PlayerMoveEvent>(OnMoveEvent);

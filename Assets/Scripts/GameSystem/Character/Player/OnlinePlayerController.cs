@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace GameSystem.GameScene.MainMenu.Character.Player
 {
-    public class OnlinePlayerController : PlayerController
+    public class OnlinePlayerController : BaseOnlinePlayerController
     {
         private double syncInterval = 0.1;
         private double passTime;

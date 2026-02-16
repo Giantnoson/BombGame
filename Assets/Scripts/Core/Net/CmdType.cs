@@ -12,5 +12,8 @@
         public static readonly int BaseGameStartMatch = 0x0401;
         public static readonly int BaseGameCancelMatch = 0x0402;
         public static readonly int BaseGameMatchSuccess = 0x0403;
+
+        public static readonly int PutBomb = 0x0501;
+        public static readonly int BombExplode = 0x0502;
     }
 }

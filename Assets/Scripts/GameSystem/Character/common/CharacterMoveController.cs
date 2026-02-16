@@ -49,10 +49,24 @@ namespace GameSystem.GameScene.MainMenu.Character
                 else if (mapCamera.CompareTag("MainCamera"))
                 {
                     mainCamera = mapCamera;
+                    if (mainCamera != null)
+                    {
+                        Camera oldCam = Camera.main;
+
+                        if (oldCam != null)
+                        {
+                            oldCam.gameObject.SetActive(false);
+                        }
+                        mainCamera.gameObject.SetActive(true);
+                    }
                     isMainCameraExists = true;
                 }
 
-            if (mainCamera == null) Debug.LogWarning("未找到MainCamera");
+            if (mainCamera == null)
+            {
+                Debug.LogWarning("未找到MainCamera");
+            }
+            
             if (!isMiniMapExists)
                 Debug.Log("在PlayerMoveController中未找到MiniMapCamera");
             else

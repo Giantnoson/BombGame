@@ -1,4 +1,6 @@
-﻿using Config;
+﻿using System.Collections.Generic;
+using Config;
+using Core.Net;
 using GameSystem.GameScene.MainMenu.EventSystem;
 using UnityEngine;
 // 引入GameSystem命名空间，可能包含游戏相关的系统类
@@ -74,7 +76,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
         }
 
 
-        private void PutBomb()
+        protected virtual void PutBomb()
         {
             if (bombCooldown > 0 || bombCount == 0)
             {

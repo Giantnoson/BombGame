@@ -19,5 +19,23 @@ namespace GameSystem.GameScene.MainMenu.EventSystem
             public Vector3 ExplodePos; // 炸弹位置
             public Vector3 Position; // 放置位置
         }
+        
+        public class PutBombEvent : GameEvent
+        {
+            public string playerId; // 玩家ID
+            public Vector3 Position; // 放置位置
+            
+            public PutBombEvent(string playerId, Vector3 position)
+            {
+                this.playerId = playerId;
+                Position = position;
+            }
+        }
+        
+        public class BombExplodeEvent : GameEvent
+        {
+            public Vector3 Position; // 爆炸位置
+            public float Radius; // 爆炸范围
+        }
     }
 }

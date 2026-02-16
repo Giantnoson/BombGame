@@ -435,6 +435,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: UIController
       objectReference: {fileID: 0}
+    - target: {fileID: 7527392713793294780, guid: 5220de5fbbfec1045a941cb82873958d, type: 3}
+      propertyPath: m_TagString
+      value: Untagged
+      objectReference: {fileID: 0}
     - target: {fileID: 9188178152855914122, guid: 5220de5fbbfec1045a941cb82873958d, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5

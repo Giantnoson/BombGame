@@ -183,6 +183,14 @@ namespace Core.Net
                                 GameEventSystem.Broadcast(new MoveEvents.PlayerMoveEvent(movePlayerId, new Vector3(x, y, z), angle));
                             }
                         }
+                        else if (msg._cmd == CmdType.PutBomb)
+                        {
+                            string playerId = msg.GetString("id");
+                            float x = msg.GetInt("x") / 100f;
+                            float y = msg.GetInt("y") / 100f;
+                            float z = msg.GetInt("z") / 100f;
+                            GameEventSystem.Broadcast(new BombEvents.PutBombEvent(playerId, new Vector3(x, y, z)));
+                        }
                         else
                         {
                             if (!isConnected)

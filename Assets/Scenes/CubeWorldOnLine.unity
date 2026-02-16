@@ -4000,7 +4000,6 @@ MonoBehaviour:
   isSceneSuccessful: 0
   Character: {fileID: 3821600162565867855, guid: 881f440c06276ad4f97a8be5f51f5c9f, type: 3}
   OrthographicCamera: {fileID: 594121509}
-  DestructibleWall: {fileID: 678890175241948830, guid: e2568cfaf221b15489f343bb870c4e08, type: 3}
   playerCount: 0
   huds:
   - {fileID: 978384299}
