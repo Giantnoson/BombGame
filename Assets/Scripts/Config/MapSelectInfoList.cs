@@ -23,10 +23,25 @@ namespace Config
     [Serializable]
     public class MapSelectInfo
     {
+        /// <summary>
+        /// 地图名称
+        /// </summary>
         public string mapName;
+        /// <summary>
+        /// 地图描述
+        /// </summary>
         public string mapSceneName;
+        /// <summary>
+        /// 地图描述
+        /// </summary>
         public string mapDescription;
+        /// <summary>
+        /// 地图图片
+        /// </summary>
         public Sprite mapSprite;
+        /// <summary>
+        /// 地图ID
+        /// </summary>
         public int mapId;
     }
     

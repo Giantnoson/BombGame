@@ -33,12 +33,15 @@ namespace GameSystem.GameScene.MainMenu
         private SceneInfo _previousState;
         [SerializeField]
         private SceneInfo _loadingScene;
-        [SerializeField]
-        /// 当前加载的场景（使用HashSet提高查找性能）
+
+        [Header("场景管理")] [Tooltip("已加载的场景列表（使用HashSet提高查找性能）")] [SerializeField]
         private readonly HashSet<string> _loadedScenes = new HashSet<string>();
 
-        /// 持久化场景列表（使用HashSet提高查找性能）
+        [Tooltip("需要持久化的场景列表")] [SerializeField]
         private readonly HashSet<string> _persistentScenes = new HashSet<string>();
+        
+        [Tooltip("场景队列")] [SerializeField]
+        private Queue<SceneInfo> _sceneQueue = new Queue<SceneInfo>();
         
         /// 场景加载状态
         public bool IsSceneLoading { get; private set; }
@@ -178,7 +181,7 @@ namespace GameSystem.GameScene.MainMenu
                 if (sceneInfo.loadOnStartup)
                 {
                     if(sceneInfo != CurrentState) LoadScene(sceneInfo);
-
+                    //_sceneQueue.Enqueue(sceneInfo);
                     // 如果是持久化场景，添加到持久化场景列表
                     if (sceneInfo.isPersistent)
                     {
@@ -188,6 +191,15 @@ namespace GameSystem.GameScene.MainMenu
             }
         }
 
+
+        private void LoadScene()
+        {
+            while (_sceneQueue.Count > 0)
+            {
+                var sceneInfo = _sceneQueue.Dequeue();
+                LoadScene(sceneInfo);
+            }
+        }
 
         private void RegisterEventListeners()
         {
@@ -498,9 +510,12 @@ namespace GameSystem.GameScene.MainMenu
                 Debug.LogError("目标场景 " + sceneName +" 加载失败！");
                 yield break;
             }
+
+            // 禁用目标场景的激活，直到加载完成
+            targetSceneOperation.allowSceneActivation = false;
             
             // 等待目标场景加载完成
-            while (!targetSceneOperation.isDone)
+            while (targetSceneOperation.progress < 0.9f)
             {
                 // 更新加载进度
                 SceneLoadProgress = targetSceneOperation.progress;
@@ -537,6 +552,14 @@ namespace GameSystem.GameScene.MainMenu
             // 广播场景加载完成事件
             OnSceneLoadCompleted?.Invoke(sceneName);
             GameEventSystem.Broadcast(new GameEvents.SceneLoadCompletedEvent(sceneName));
+
+            targetSceneOperation.allowSceneActivation = true;
+            
+            // 等待目标场景激活完成
+            while (!targetSceneOperation.isDone)
+            {
+                yield return null;
+            }
             
             // 卸载过渡场景
             SceneManager.UnloadSceneAsync(_loadingScene.sceneName);
