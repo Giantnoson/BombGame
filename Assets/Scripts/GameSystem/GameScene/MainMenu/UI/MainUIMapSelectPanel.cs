@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Config;
+using GameSystem.GameScene.MessageScene;
 using GameSystem.UI;
 using TMPro;
 using UnityEngine;
@@ -31,12 +32,24 @@ namespace GameSystem.GameScene.MainMenu
         private void Start()
         {
             mapSelectInfoList = Resources.Load<MapSelectInfoList>("BaseConfig/MapSelectInfoList").mapSelectInfoList;
-            if (mapSelectInfoList == null || mapSelectInfoList.Count == 0)
+            if (mapSelectInfoList == null)
             {
-                Debug.LogError("MapSelectInfoList为Null或者为空");
+                Debug.LogError("MapSelectInfoList为Null");
+                GlobalMessageManager.Instance.SendTopMessage("地图选择信息列表为Null");
                 return;
             }
+            if (mapSelectInfoList.Count == 0)
+            {
+                Debug.LogError("MapSelectInfoList为内容为空");
+                GlobalMessageManager.Instance.SendTopMessage("地图选择信息列表只有一个");
+            }
 
+            if (mapSelectInfoList.Count == 1)
+            {
+                Debug.LogError("MapSelectInfoList内容仅仅为随机");
+                GlobalMessageManager.Instance.SendTopMessage("地图选择信息列表仅仅为随机");
+            }
+            
             mapIndex = 0;
             SetMapSelectInfo(mapIndex);
             
@@ -81,6 +94,10 @@ namespace GameSystem.GameScene.MainMenu
 
         private void OnContinueBtnClick()
         {
+            if (mapIndex == 0)
+            {
+                mapIndex = Random.Range(1, mapSelectInfoList.Count - 1);
+            }
             GameModeSelect.Instance.SetMap(mapSelectInfoList[mapIndex]);
             MainUIManager.Instance.ShowPanel(PanelSymbols.SinglePlayerPanel);
         }
