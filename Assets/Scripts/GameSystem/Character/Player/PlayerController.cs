@@ -24,7 +24,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
         public float beforeCameraHorizontal;
         public float beforeCameraVertical;
         public bool isStaminaUpdate;
-        private bool isCameraViewUpdate = false;
+        protected bool isCameraViewUpdate = false;
         [Header(" 玩家控制")]
         [Tooltip("水平移动")]
         public string sHorizontal;

@@ -559,7 +559,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -425, y: 250}
+  m_AnchoredPosition: {x: -350, y: 152.5}
   m_SizeDelta: {x: 100, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4761820173015367708
@@ -895,5 +895,4 @@ MonoBehaviour:
   createRoomBtn: {fileID: 7247493005923734547}
   joinRoomBtn: {fileID: 2132294963717904549}
   roomListContainer: {fileID: 622416770595372602}
-  roomEntryPrefab: {fileID: 5257192123835556978, guid: ead2ffb110f33bd4ea7703c80f87c303, type: 3}
   backBtn: {fileID: 8976631638870169412}

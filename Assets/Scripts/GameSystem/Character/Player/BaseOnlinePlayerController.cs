@@ -16,6 +16,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
         protected override void Awake()
         {
             GameEventSystem.AddListener<BombEvents.PutBombEvent>(OnPutBomb);
+            isCameraViewUpdate = true;
             // GameEventSystem.AddListener<BombEvents.BombExplodeEvent>(OnBombExplode);
         }
 

@@ -30,5 +30,10 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
                 }));
             }
         }
+        protected void Die()
+        {
+            base.Die();
+            Destroy(gameObject.GetComponent<CharacterController>());
+        }
     }
 }

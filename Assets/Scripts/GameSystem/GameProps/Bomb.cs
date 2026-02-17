@@ -60,7 +60,8 @@ namespace GameSystem.GameScene.MainMenu.GameProps
                 basePos += exportWay;
                 var hitColliders = Physics.OverlapBox(basePos, new Vector3(0.4f, 0.4f, 0.4f), Quaternion.identity);
                 foreach (var hitCollider in hitColliders)
-                    //print("碰撞到 tag = " + hitCollider.tag + " name = " + hitCollider.name + " pos= " + hitCollider.transform.position);
+                {
+                    print("碰撞到 tag = " + hitCollider.tag + " name = " + hitCollider.name + " pos= " + hitCollider.transform.position);
                     if (hitCollider.CompareTag(ObjectType.Player.ToString()))
                     {
                         var playerController = hitCollider.gameObject.GetComponent<PlayerController>();
@@ -118,6 +119,8 @@ namespace GameSystem.GameScene.MainMenu.GameProps
                         }
                     }
 
+                }
+                    
                 var explosionPos = basePos;
                 explosionPos.y = 0f;
                 ExplodePool.Instance.GetExplode(explosionPos, Quaternion.identity);

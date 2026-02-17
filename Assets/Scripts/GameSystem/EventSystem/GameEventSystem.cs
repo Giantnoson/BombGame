@@ -55,7 +55,7 @@ namespace GameSystem.GameScene.MainMenu.EventSystem
             if (!SEventLookups.ContainsKey(evt))
             {
                 // 创建新的处理方法，将GameEvent转换为具体事件类型T
-                Action<GameEvent> newAction = e => evt((T)e);
+                Action<GameEvent> newAction = delegate(GameEvent e) { evt((T)e); };
                 // 将监听器与处理方法关联
                 SEventLookups[evt] = newAction;
 

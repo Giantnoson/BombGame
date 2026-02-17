@@ -10,7 +10,9 @@ namespace GameSystem.GameScene.MainMenu
         public Button createRoomBtn;
         public Button joinRoomBtn; // Generic join or refresh
         public Transform roomListContainer;
+        /*
         public GameObject roomEntryPrefab; // Simple prefab with a button
+        */
         public Button backBtn;
 
         private void Start()
@@ -54,13 +56,13 @@ namespace GameSystem.GameScene.MainMenu
             }
 
             // Mock room list
-            for (int i = 1; i <= 3; i++)
+            /*for (int i = 1; i <= 3; i++)
             {
                 GameObject entry = Instantiate(roomEntryPrefab, roomListContainer);
                 int roomId = i;
                 entry.GetComponentInChildren<TMPro.TMP_Text>().text = $"Room #{roomId}";
                 entry.GetComponent<Button>().onClick.AddListener(() => JoinRoom(roomId));
-            }
+            }*/
         }
 
         private void JoinRoom(int roomId)

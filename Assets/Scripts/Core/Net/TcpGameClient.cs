@@ -33,8 +33,8 @@ namespace Core.Net
         private string username;
         private string password;
 
-        private string host = "localhost";
-        private int port = 25565;
+        private string host = "frp-any.com";
+        private int port = 51493;
         private bool isConnected;
 
         public void TcpStart(string uname, string pwd)

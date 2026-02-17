@@ -34,11 +34,11 @@ namespace GameSystem.GameScene.MainMenu
         [SerializeField]
         private SceneInfo _loadingScene;
         [SerializeField]
-        /// 当前加载的场景
-        private List<string> _loadedScenes = new();
-        [SerializeField]
-        /// 持久化场景列表
-        private List<string> _persistentScenes = new();
+        /// 当前加载的场景（使用HashSet提高查找性能）
+        private readonly HashSet<string> _loadedScenes = new HashSet<string>();
+
+        /// 持久化场景列表（使用HashSet提高查找性能）
+        private readonly HashSet<string> _persistentScenes = new HashSet<string>();
         
         /// 场景加载状态
         public bool IsSceneLoading { get; private set; }
@@ -180,7 +180,7 @@ namespace GameSystem.GameScene.MainMenu
                     if(sceneInfo != CurrentState) LoadScene(sceneInfo);
 
                     // 如果是持久化场景，添加到持久化场景列表
-                    if (sceneInfo.isPersistent && !_persistentScenes.Contains(sceneInfo.sceneName))
+                    if (sceneInfo.isPersistent)
                     {
                         _persistentScenes.Add(sceneInfo.sceneName);
                     }
@@ -247,6 +247,13 @@ namespace GameSystem.GameScene.MainMenu
         /// <param name="newState">新状态</param>
         public void ChangeGameState(SceneInfo newState)
         {
+            // 空值检查
+            if (newState == null)
+            {
+                Debug.LogError("新状态为空，无法改变游戏状态");
+                return;
+            }
+
             if (CurrentState == newState) return;
 
             var oldState = CurrentState;
@@ -257,25 +264,21 @@ namespace GameSystem.GameScene.MainMenu
             switch (newState.state)
             {
                 case GameState.MainMenu:
-                    Time.timeScale = 1f;
-                    IsGameActive = false;
-                    break;
                 case GameState.Loading:
                     Time.timeScale = 1f;
                     IsGameActive = false;
                     break;
+
                 case GameState.Playing:
                     Time.timeScale = 1f;
                     IsGameActive = true;
-                    if (oldState.state != GameState.Paused)
+                    // 如果从非暂停状态进入，加载当前关卡
+                    if (oldState.state != GameState.Paused && oldState.state != GameState.Playing)
                     {
-                        // 如果从非游戏状态进入，加载当前关卡
-                        if (oldState.state != GameState.Playing)
-                        {
-                            StartCoroutine(LoadSceneWithTransitionCoroutine(newState));
-                        }
+                        StartCoroutine(LoadSceneWithTransitionCoroutine(newState));
                     }
                     break;
+
                 case GameState.Paused:
                     Time.timeScale = 0f;
                     IsGameActive = false;
@@ -594,6 +597,12 @@ namespace GameSystem.GameScene.MainMenu
         /// <param name="sceneName">场景名称</param>
         public void UnloadScene(string sceneName)
         {
+            if (string.IsNullOrEmpty(sceneName))
+            {
+                Debug.LogError("场景名称为空，无法卸载");
+                return;
+            }
+
             if (_loadedScenes.Contains(sceneName))
             {
                 SceneManager.UnloadSceneAsync(sceneName);
