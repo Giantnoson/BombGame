@@ -1,4 +1,5 @@
-﻿using Core.Net;
+﻿using System.Collections.Generic;
+using Core.Net;
 using GameSystem.GameScene.MainMenu.EventSystem;
 using UnityEngine;
 
@@ -15,51 +16,50 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
         
         protected override void Awake()
         {
-            GameEventSystem.AddListener<BombEvents.PutBombEvent>(OnPutBomb);
             isCameraViewUpdate = true;
-            // GameEventSystem.AddListener<BombEvents.BombExplodeEvent>(OnBombExplode);
-        }
-
-        public void OnDisable()
-        {
-            GameEventSystem.RemoveListener<BombEvents.PutBombEvent>(OnPutBomb);
-            // GameEventSystem.RemoveListener<BombEvents.BombExplodeEvent>(OnBombExplode);
-        }
-
-        private void OnPutBomb(BombEvents.PutBombEvent evt)
-        {
-            Debug.Log("收到放置炸弹事件，玩家ID:" + evt.playerId + "位置:" + evt.Position + "当前玩家ID:" + PlayerId);
-            if (evt.playerId != PlayerId) return; // 只处理当前玩家的放置炸弹事件
-            bombCooldown = maxBombCooldown;
-            bombCount--;
-            var bombPos = evt.Position;
-
-            print("炸弹放置位置:" + bombPos);
-            GameEventSystem.Broadcast(new BombEvents.BombPlaceRequestEvent
+            TcpGameClient.RegisterMessageHandler(this, new List<DefaultHandler>
             {
-                Position = bombPos,
-                Id = id,
-                BombFuseTime = bombFuseTime,
-                BombRadius = bombRadius,
-                BombDamage = bombDamage
+                new(CmdType.PutBomb, msg =>
+                {
+                    string playerId = msg.GetString("id");
+                    if (playerId == PlayerId)
+                    {
+                        float x = msg.GetInt("x") / 100f;
+                        float y = msg.GetInt("y") / 100f;
+                        float z = msg.GetInt("z") / 100f;
+                        bombCooldown = maxBombCooldown;
+                        bombCount--;
+                        var bombPos = new Vector3(x, y, z);
+
+                        print("炸弹放置位置:" + bombPos);
+                        GameEventSystem.Broadcast(new BombEvents.BombPlaceRequestEvent
+                        {
+                            Position = bombPos,
+                            Id = id,
+                            BombFuseTime = bombFuseTime,
+                            BombRadius = bombRadius,
+                            BombDamage = bombDamage
+                        });
+                    }
+                }),
+                new (CmdType.Move, msg =>
+                {
+                    string movePlayerId = msg.GetString("id");
+                    if (movePlayerId == PlayerId)
+                    {
+                        float x = msg.GetInt("x") / 100f;
+                        float y = msg.GetInt("y") / 100f;
+                        float z = msg.GetInt("z") / 100f;
+                        float angle = msg.GetFloat("angle");
+                        transform.position = new Vector3(x, y, z); // 更新位置
+                        transform.rotation = Quaternion.Euler(0, angle, 0); // 更新旋转，假设只需要更新Y轴旋转
+                    }
+                })
             });
         }
-        
-        // private void OnBombExplode(BombEvents.BombExplodeEvent evt)
-        // {
-        //     
-        // }
-        //
 
         protected override void PutBomb()
         {
-            // if (bombCooldown > 0 || bombCount == 0)
-            // {
-            //     print("炸弹冷却或数量为0，放置失败");
-            //     return;
-            // }
-            
-
             TcpGameClient.SendMessage(new NetMessage(CmdType.PutBomb));
         }
     }

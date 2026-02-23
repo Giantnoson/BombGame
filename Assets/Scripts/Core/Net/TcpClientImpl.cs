@@ -136,7 +136,7 @@ namespace Core.Net
         }
 
         // 发送原始消息（会添加 4 字节长度前缀）
-        public void SendBytes(byte[] data)
+        private void SendBytes(byte[] data)
         {
             if (_client == null || !_client.Connected) throw new InvalidOperationException("Not connected");
             // length prefix big-endian

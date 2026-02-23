@@ -413,7 +413,7 @@ namespace GameSystem.GameScene.MainMenu.Character
         protected abstract void OnTakeDamage(CharacterTakeDamageEvent evt); // 玩家受伤事件
 
 
-        protected void Die()
+        protected virtual void Die()
         {
             GameEventSystem.RemoveListener<CharacterTakeDamageEvent>(OnTakeDamage);
             GameEventSystem.RemoveListener<CharacterDieEvent>(OnPlayerDie);

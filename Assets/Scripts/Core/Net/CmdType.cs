@@ -17,5 +17,8 @@
         public static readonly int BombExplode = 0x0502;
         
         public static readonly int StatusChange = 0x0601;
+        
+        public static readonly int ObstacleCreate = 0x0701;
+        public static readonly int ObstacleChange = 0x0702;
     }
 }
