@@ -169,6 +169,8 @@ namespace GameSystem.GameScene.MainMenu
             moveModeName.Add("空");
             moveModeList.Add(null);
             
+            
+            
             playerMoveSelect.ClearOptions();
             playerMoveSelect.AddOptions(moveModeName);
             playerMoveSelect.onValueChanged.AddListener(OnPlayerControlSelect);
@@ -341,7 +343,7 @@ namespace GameSystem.GameScene.MainMenu
                 playTypes.Add(CharacterType.Balance);
                 playerNames.Add($"Player{i + 1}");
                 playerIds.Add($"P{i + 1}");
-                playerMoveMode.Add(new PlayerControlConfig());
+                playerMoveMode.Add(CompareTemp);
                 playerHeadStr.Add("玩家" + i);
             }
             for (int i = playerCount; i < playerCount + enemyCount; i++)
@@ -349,7 +351,7 @@ namespace GameSystem.GameScene.MainMenu
                 playTypes.Add(CharacterType.Enemy);
                 playerNames.Add($"Enemy{(i - playerCount) + 1}");
                 playerIds.Add($"E{i - playerCount + 1}");
-                playerMoveMode.Add(new PlayerControlConfig());
+                playerMoveMode.Add(CompareTemp);
             }
             
             //角色类型初始化
