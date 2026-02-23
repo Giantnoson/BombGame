@@ -17,7 +17,7 @@ MonoBehaviour:
     state: 0
     isFlag: 0
     isAdditive: 0
-    isPersistent: 0
+    isPersistent: 1
     loadOnStartup: 1
   - sceneName: LoadingScene
     state: 1

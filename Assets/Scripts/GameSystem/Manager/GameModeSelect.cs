@@ -81,7 +81,7 @@ namespace GameSystem.GameScene.MainMenu
             Debug.Log($"[System] 开始游戏！\n加载的地图名称：{Map.mapName}\n加载的场景名称: {Map.mapSceneName}\n 玩家数量：{PlayerCount}\n NPC数量：{EnemyCount}");
             
             
-            var sceneInfo = GameFlowManager.Instance.Find(Map.mapSceneName);
+            var sceneInfo = GameFlowManager.Instance.FindState(Map.mapSceneName);
             if (sceneInfo == null)
             {
                 Debug.LogError("场景信息未找到");

@@ -76,6 +76,12 @@ namespace GameSystem.GameScene.MainMenu
         public int enemyCount = 0;
 
 
+        public override void Show()
+        {
+            base.Show();
+            OnResetClick();
+        }
+
         public void RefreshPlayerInfos()
         {
             //角色键位刷新
@@ -123,7 +129,8 @@ namespace GameSystem.GameScene.MainMenu
                 GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Error, "没有找到该角色键位列表");
                 Debug.LogError("没有找到该角色键位列表");
             }
-            moveModeList = x.playerMoveModeConfigs;
+            moveModeList.Clear();
+            moveModeList = new List<PlayerControlConfig>(x.playerMoveModeConfigs);
             for (int i = 0; i < playerCount; i++)
             {
                 playTypes.Add(CharacterType.Balance);
@@ -316,7 +323,8 @@ namespace GameSystem.GameScene.MainMenu
                 GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Error, "没有找到该角色键位列表");
                 Debug.LogError("没有找到该角色键位列表");
             }
-            moveModeList = x.playerMoveModeConfigs;
+            moveModeList.Clear();
+            moveModeList = new List<PlayerControlConfig>(x.playerMoveModeConfigs);
 
             for (int i = 0; i < isMoveModeSelect.Count; i++)
             {
