@@ -118,10 +118,10 @@ namespace GameSystem.GameScene.MainMenu
                 Debug.LogError("没有找到该角色键位列表");
             }
             moveModeList = x.playerMoveModeConfigs;
-            CompareTemp = moveModeList[0];
+            CompareTemp = moveModeList[OnlineConfig.Instance.defaultControllerId];
             for (int i = 0; i < playerCount; i++)
             {
-                playTypes.Add(CharacterType.Balance);
+                playTypes.Add(OnlineConfig.Instance.defaultPlayerType);
                 playerNames.Add($"Player{i + 1}");
                 playerIds.Add($"P{i + 1}");
                 playerMoveMode.Add(CompareTemp);

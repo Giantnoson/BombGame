@@ -1,4 +1,5 @@
 using System.Net.Sockets;
+using Config;
 using Core.Net;
 using GameSystem.UI;
 using UnityEngine;
@@ -17,8 +18,8 @@ namespace GameSystem.GameScene.MainMenu
 
         private void Start()
         {
-            usernameInput.text = "gql";
-            passwordInput.text = "123456";
+            usernameInput.text = OnlineConfig.Instance.defaultPlayerName;
+            passwordInput.text = OnlineConfig.Instance.defaultPlayerPassword;
             loginBtn.onClick.AddListener(OnLoginClick);
             backBtn.onClick.AddListener(OnBackClick);
         }

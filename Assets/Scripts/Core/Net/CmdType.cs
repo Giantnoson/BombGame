@@ -15,5 +15,7 @@
 
         public static readonly int PutBomb = 0x0501;
         public static readonly int BombExplode = 0x0502;
+        
+        public static readonly int StatusChange = 0x0601;
     }
 }

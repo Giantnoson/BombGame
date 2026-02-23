@@ -33,8 +33,8 @@ namespace Core.Net
         private string username;
         private string password;
 
-        private string host = "frp-any.com";
-        private int port = 51493;
+        private string host = OnlineConfig.Instance.host;
+        private int port = OnlineConfig.Instance.port;
         private bool isConnected;
 
         public void TcpStart(string uname, string pwd)
@@ -190,6 +190,11 @@ namespace Core.Net
                             float y = msg.GetInt("y") / 100f;
                             float z = msg.GetInt("z") / 100f;
                             GameEventSystem.Broadcast(new BombEvents.PutBombEvent(playerId, new Vector3(x, y, z)));
+                        }
+                        else if (msg._cmd == CmdType.StatusChange)
+                        {
+                            string playerId = msg.GetString("id");
+                            string status = msg.GetString("status");
                         }
                         else
                         {
