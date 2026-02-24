@@ -14,13 +14,14 @@ namespace GameSystem.GameScene.MainMenu
         public GameObject roomEntryPrefab; // Simple prefab with a button
         */
         public Button backBtn;
+        public Button RandomFitBtn;
 
         private void Start()
         {
             createRoomBtn.onClick.AddListener(OnCreateRoomClick);
             joinRoomBtn.onClick.AddListener(OnRefreshListClick);
             backBtn.onClick.AddListener(OnBackClick);
-
+            RandomFitBtn.onClick.AddListener(OnRandomFitClick);
         }
 
         public override void Show()
@@ -65,6 +66,10 @@ namespace GameSystem.GameScene.MainMenu
             }*/
         }
 
+        private void OnRandomFitClick()
+        {
+            MainUIManager.Instance.ShowPanel(PanelSymbols.MultiPlayerPlaySetPanel);
+        }
         private void JoinRoom(int roomId)
         {
             Debug.Log($"Joining Room {roomId}...");
