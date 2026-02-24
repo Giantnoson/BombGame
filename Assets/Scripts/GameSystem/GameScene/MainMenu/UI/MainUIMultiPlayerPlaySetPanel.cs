@@ -97,8 +97,9 @@ namespace GameSystem.GameScene.MainMenu
             
         }
         
-        private void OnEnable()
+        public override void Show()
         {
+            base.Show();
             mapSelectInfoList = MapSelectInfoList.LoadMapSelectInfoLists(MapSelectInfoList.OnLineConfig);
             if (mapSelectInfoList == null || mapSelectInfoList.Count == 0)
             {
@@ -117,7 +118,8 @@ namespace GameSystem.GameScene.MainMenu
                 GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Error, "没有找到该角色键位列表");
                 Debug.LogError("没有找到该角色键位列表");
             }
-            moveModeList = x.playerMoveModeConfigs;
+            moveModeList.Clear();
+            moveModeList = new List<PlayerControlConfig>(x.playerMoveModeConfigs);
             CompareTemp = moveModeList[OnlineConfig.Instance.defaultControllerId];
             for (int i = 0; i < playerCount; i++)
             {

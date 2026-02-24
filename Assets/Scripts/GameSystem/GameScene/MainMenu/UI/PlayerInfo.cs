@@ -52,18 +52,47 @@ namespace GameSystem.GameScene.MainMenu
                 removePlayer.gameObject.SetActive(true);
             }
         }
+
+        public void SetPlayerInfo(string playerNameText, CharacterType playerTypeText, string playerStatusText,
+            bool isRoomOwner)
+        {
+            this.playerNameText.text = playerNameText;
+            this.playerTypeText.text = playerTypeText.ToString();
+            this.playerStatusText.text = playerStatusText;
+            if (isRoomOwner)
+            {
+                transferRoomOwner.gameObject.SetActive(true);
+                AddListeners();
+            }
+            else
+            {
+                if (!transferRoomOwner.gameObject.activeSelf) return;
+                RemoveListeners();
+                transferRoomOwner.gameObject.SetActive(false);
+            }
+        }
         
         
         
         
-        public PlayerInfo(string playerNameText, bool isRoomOwner) : this(playerNameText,CharacterType.Balance,"准备中")
+        public PlayerInfo(string playerNameText, bool isRoomOwner) : this(playerNameText,CharacterType.Balance,"准备中",isRoomOwner)
         {
             
             this.playerNameText.text = playerNameText;
         }
 
-        public PlayerInfo(string playerNameText, CharacterType playerTypeText, string playerStatusText)
+        public PlayerInfo(string playerNameText, CharacterType playerTypeText, string playerStatusText, bool isRoomOwner)
         {
+            Init();
+            if (isRoomOwner)
+            {
+                AddListeners();
+                playerBtnTran.gameObject.SetActive(true);
+            }
+            else
+            {
+                playerBtnTran.gameObject.SetActive(false);
+            }
             this.playerNameText.text = playerNameText;
             this.playerTypeText.text = playerTypeText.ToString();
             this.playerStatusText.text = playerStatusText;
@@ -99,9 +128,20 @@ namespace GameSystem.GameScene.MainMenu
             {
                 Debug.LogError("transferRoomOwner为空");
             }
-            
         }
 
+        private void AddListeners()
+        {
+            removePlayer.onClick.AddListener(OnRemovePlayer);
+            transferRoomOwner.onClick.AddListener(OnTransferRoomOwner);
+        }
+
+        private void RemoveListeners()
+        {
+            removePlayer.onClick.RemoveAllListeners();
+            transferRoomOwner.onClick.RemoveAllListeners();
+        }
+        
         private void OnRemovePlayer()
         {
             Debug.Log("移除玩家");
@@ -111,8 +151,11 @@ namespace GameSystem.GameScene.MainMenu
         {
             Debug.Log("转让房主");
         }
-        
-        
+
+        private void OnDisable()
+        {
+            RemoveListeners();
+        }
         
         
         
