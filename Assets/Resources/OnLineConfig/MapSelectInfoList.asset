@@ -16,7 +16,7 @@ MonoBehaviour:
   - mapName: "\u968F\u673A"
     mapSceneName: "\u968F\u673A\u4E16\u754C"
     mapDescription: "\u968F\u673A\u9009\u62E9\u4E00\u4E2A\u4E16\u754C"
-    mapSprite: {fileID: 21300000, guid: 28dc135e7f2a558458786d69d3ad302b, type: 3}
+    mapSprite: {fileID: 21300000, guid: 28d09f5ccc78ceb4bbd06b6566aa7883, type: 3}
     mapId: 0
   - mapName: "\u65B9\u5757\u4E16\u754C"
     mapSceneName: CubeWorldOnLine
