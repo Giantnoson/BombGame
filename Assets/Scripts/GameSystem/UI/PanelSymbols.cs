@@ -12,7 +12,6 @@
         public static readonly PanelSymbol PauseScenePanel = new PanelSymbol { id = 7, name = "PauseScene" };
         public static readonly PanelSymbol SinglePlayerPanel = new PanelSymbol { id = 8, name = "SinglePlayerPanel" };
         public static readonly PanelSymbol MultiPlayerRoomPanel = new PanelSymbol { id = 9, name = "MultiPlayerRoomPanel" };
-        public static readonly PanelSymbol MultiPlayerMapSelectPanel = new PanelSymbol { id = 10, name = "MultiPlayerMapSelectPanel" };
         public static readonly PanelSymbol MultiPlayerPlaySetPanel = new PanelSymbol { id = 11, name = "MultiPlayerPlaySetPanel" };
     }
 }

@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5780dc6dd27450ba6269172bc623d31, type: 3}
   m_Name: OnlineConfig
   m_EditorClassIdentifier: 
-  host: frp-any.com
-  port: 51493
+  host: localhost
+  port: 25565
   defaultPlayerName: test
   defaultPlayerPassword: 123456
   defaultPlayerType: 1

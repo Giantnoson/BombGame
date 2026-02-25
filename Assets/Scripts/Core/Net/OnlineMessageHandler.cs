@@ -42,7 +42,7 @@ namespace Core.Net
                         var playerId = msg.GetString("playerId");
                         TcpGameClient.Instance.SetConnected(playerId);
                         Debug.Log($"Login successful, playerId={playerId}");
-                        MainUIManager.Instance.ShowPanel(PanelSymbols.MultiPlayerPlaySetPanel);
+                        MainUIManager.Instance.ShowPanel(PanelSymbols.MultiPlayerLobbyPanel);
                     }
                     else
                     {
@@ -50,11 +50,14 @@ namespace Core.Net
                         GlobalMessageManager.Instance.SendTopMessage($"Login failed: {msg.GetString("reason")}");
                     }
                 }),
-                new(CmdType.Exception,
-                    msg =>
-                    {
-                        GlobalMessageManager.Instance.SendTopMessage($"Login failed: {msg.GetString("reason")}");
-                    }),
+                new(CmdType.Exception, msg =>
+                {
+                    GlobalMessageManager.Instance.SendTopMessage(msg.GetString("msg"));
+                }),
+                new (CmdType.Alert, msg =>
+                {
+                    GlobalMessageManager.Instance.SendTopMessage(msg.GetString("msg"));
+                }),
                 new(CmdType.BaseGameMatchSuccess, msg =>
                 {
                     int mapId = msg.GetInt("mapId");

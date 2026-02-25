@@ -39,7 +39,7 @@ namespace GameSystem.GameScene
             return null;
         }
 
-        public void ShowPanel(PanelSymbol symbol, bool dontHide = false)
+        public void ShowPanel(PanelSymbol symbol, bool dontHide = false, Dictionary<string, string> parameters = null)
         {
             string panelName = symbol.name;
             if (!_panels.ContainsKey(panelName))
@@ -60,6 +60,7 @@ namespace GameSystem.GameScene
                     return;
                 }
                 RegisterPanel(newPanel);
+                newPanel.OnCreate(parameters);
             }
             if (_panels.TryGetValue(panelName, out UIBasePanel panel))
             {

@@ -1,80 +1,69 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using System.Collections.Generic;
-using Config;
-using GameSystem.GameScene.MainMenu;
+using Core.Net;
 using GameSystem.UI;
-using UnityEngine.SceneManagement;
 
 namespace GameSystem.GameScene.MainMenu
 {
     public class MainUIMultiplayerRoomPanel : UIBasePanel
     {
         public override PanelSymbol symbol => PanelSymbols.MultiPlayerRoomPanel;
-        public Transform playerListContainer;
-        public GameObject playerEntryPrefab;
         public Button startBtn;
         public Button leaveBtn;
-        
-        private bool _isHost = false;
-        private List<string> _players = new List<string>();
 
+        public GameObject playerInfoParent;
+        public GameObject playerInfoPrefab;
+
+        private string _roomId;
+        private string _roomName;
+        private Dictionary<string, RoomPlayerInfo> playerInfos;
+        private string _leaderId;
+        
         private void Start()
         {
+            TcpGameClient.RegisterMessageHandler(this, new List<DefaultHandler>
+            {
+                new (CmdType.BaseGameCurrentRoomChange, msg =>
+                {
+                    var rawPlayersInfo = msg.GetString("members");
+                    _leaderId = msg.GetString("leaderId");
+                    _roomId = msg.GetString("roomId"); 
+                    _roomName = msg.GetString("roomName");
+                    Debug.Log(rawPlayersInfo);
+                    foreach (var child in playerInfoParent.transform)
+                    {
+                        Destroy(((Transform) child).gameObject);
+                    }
+                    foreach (var rawInfo in rawPlayersInfo.Split("|"))
+                    {
+                        if (rawInfo == "") continue;
+                        var info = new RoomPlayerInfo(rawInfo);
+                        info.SetLeader(_leaderId);
+                        
+                        var obj = Instantiate(playerInfoPrefab);
+                        obj.transform.SetParent(playerInfoParent.transform);
+                        var playerInfo = obj.GetComponent<PlayerInfo>();
+                        playerInfo.SetRoomPlayerInfo(info);
+                    }
+                }),
+                new (CmdType.BaseGameLeaveRoom, msg =>
+                {
+                    MainUIManager.Instance.Back();
+                })
+            });
             startBtn.onClick.AddListener(OnStartClick);
             leaveBtn.onClick.AddListener(OnLeaveClick);
         }
 
-        public void SetAsHost(bool isHost)
-        {
-            _isHost = isHost;
-            startBtn.gameObject.SetActive(isHost);
-            _players.Clear();
-            UpdateUI();
-        }
-
-        public void AddPlayer(string name)
-        {
-            if (!_players.Contains(name))
-            {
-                _players.Add(name);
-                UpdateUI();
-            }
-        }
-
-        private void UpdateUI()
-        {
-            // Clear existing
-            foreach (Transform child in playerListContainer)
-            {
-                Destroy(child.gameObject);
-            }
-
-            // Populate
-            foreach (var player in _players)
-            {
-                GameObject entry = Instantiate(playerEntryPrefab, playerListContainer);
-                entry.GetComponentInChildren<TMP_Text>().text = player;
-            }
-        }
-
         private void OnStartClick()
         {
-            if (!_isHost) return;
-
-            Debug.Log("打开在线模式...");
-            if (GameModeSelect.Instance != null)
-            {
-                // TODO 在线模式启动
-                //GameModeSelect.Instance.SetGameMode(GameModeType.Online, GameState.Prepare, _players.Count, 0);
-            }
-            SceneManager.LoadScene("CubeWorld");
+            TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameReady));
         }
 
         private void OnLeaveClick()
         {
-            MainUIManager.Instance.Back();
+            TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameLeaveRoom));
         }
     }
 }

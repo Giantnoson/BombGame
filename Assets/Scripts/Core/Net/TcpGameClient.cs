@@ -52,6 +52,7 @@ namespace Core.Net
                     try
                     {
                         NetMessage msg = NetMessage.FromBytes(bytes);
+                        msg.PrintLog();
                         if (msg != null)
                         {
                             if (msg._cmd != CmdType.Login && !_isConnected)
@@ -59,7 +60,7 @@ namespace Core.Net
                                 Debug.LogWarning($"Received message before login, ignoring. cmd={msg._cmd}");
                                 return;
                             }
-                            foreach (var action in _messageHandlers.GetValueOrDefault(msg._cmd))
+                            foreach (var action in _messageHandlers.GetValueOrDefault(msg._cmd, new List<Action<NetMessage>>()))
                             {
                                 try
                                 {
@@ -119,13 +120,16 @@ namespace Core.Net
             }
             _messageHandlers[cmdType].Add(handler);
         }
-        
+
         public void UnregisterMessageHandler(int cmdType, Action<NetMessage> handler)
         {
-            if (_messageHandlers.TryGetValue(cmdType, out var messageHandler))
+            MainThreadDispatcher.Enqueue(() =>
             {
-                messageHandler.Remove(handler);
-            }
+                if (_messageHandlers.TryGetValue(cmdType, out var messageHandler))
+                {
+                    messageHandler.Remove(handler);
+                }
+            });
         }
 
         private void TryToLogin()

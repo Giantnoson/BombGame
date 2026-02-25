@@ -474,6 +474,7 @@ MonoBehaviour:
   playerBtnTran: {fileID: 7579644458612517555}
   removePlayer: {fileID: 9036582556112587555}
   transferRoomOwner: {fileID: 7421491036139251369}
+  isRoomOwner: 0
 --- !u!1 &2712573430404197677
 GameObject:
   m_ObjectHideFlags: 0

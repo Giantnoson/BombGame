@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Object = System.Object;
 
@@ -43,7 +44,7 @@ namespace Core.Net
             {
                 return _body[key].ToString();
             }
-            return null;
+            return "";
         }
         
         public int GetInt(string key)
@@ -132,6 +133,12 @@ namespace Core.Net
             }
             String formatString = String.Join(";", pairs);
             return System.Text.Encoding.UTF8.GetBytes(formatString);
+        }
+        
+        public void PrintLog()
+        {
+            string bodyStr = string.Join(", ", _body.Select(kv => $"{kv.Key}={kv.Value}"));
+            Debug.Log($"NetMessage: cmd={_cmd:X4}, body={{ {bodyStr} }}");
         }
     }
 }
