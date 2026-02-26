@@ -492,7 +492,7 @@ GameObject:
   - component: {fileID: 5922369731248736810}
   - component: {fileID: 4692523754778169201}
   m_Layer: 5
-  m_Name: MapInfoPanel
+  m_Name: MapNameText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1057,6 +1057,37 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startBtn: {fileID: 6834525600397844557}
   leaveBtn: {fileID: 6979788431125247726}
+  nextBtn: {fileID: 1329920856993736877}
+  prevBtn: {fileID: 8148196853488578367}
+  roomNameText: {fileID: 5316814292125034109}
+  mapSelectInfoList: []
+  mapIndex: 0
+  loadProper: {fileID: 6801715720354852408}
+  playerHeadStr: []
+  moveModeList: []
+  moveModeName: []
+  playerMoveSelect: {fileID: 3639782385494366916}
+  playerMoveDescription: {fileID: 2661228442456552571}
+  isMoveModeSelect: 00000000
+  CompareTemp:
+    moveHorizontal: 
+    moveVertical: 
+    putBomb: 0
+    description: 
+  playerTypeName: []
+  playTypesSelect: {fileID: 722635916679709412}
+  playTypesDescription: {fileID: 1777361566893893352}
+  playTypes: 
+  playerNames: []
+  playerIds: []
+  playerMoveMode: []
+  playerIndex: 0
+  playerCount: 0
+  mapDescription: 
+  mapSprite: {fileID: 0}
+  mapName: 
+  mapNameText: {fileID: 4692523754778169201}
+  mapImage: {fileID: 1666913390343799056}
   playerInfoParent: {fileID: 507076731697041903}
   playerInfoPrefab: {fileID: 2226400368017190863, guid: acf4e98b8aa33a44ebd340d7878269ec, type: 3}
 --- !u!1 &1686092210346577423
@@ -6989,8 +7020,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 6106017998059277358}
   m_HandleRect: {fileID: 7537059536565876845}
   m_Direction: 2
-  m_Value: 1
-  m_Size: 0.7848101
+  m_Value: 0.99999964
+  m_Size: 0.78481007
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:

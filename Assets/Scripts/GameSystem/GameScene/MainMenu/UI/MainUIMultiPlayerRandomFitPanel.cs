@@ -5,31 +5,28 @@ using Core.Net;
 using GameSystem.GameScene.MessageScene;
 using GameSystem.UI;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace GameSystem.GameScene.MainMenu
 {
-    public class MainUIPlaySetPanel : UIBasePanel
+    public class MainUIMultiPlayerRandomFitPanel : UIBasePanel
     {
-        public override PanelSymbol symbol => PanelSymbols.PlaySettingPanel;
+        public override PanelSymbol symbol => PanelSymbols.MultiPlayerRandomFitPanel;
         
         public static int MaxCharacterCount = 4;
         [Header("基础设置")]
-        [Tooltip("面板名称")]
         public Button nextBtn;
         public Button prevBtn;
-        public Button startBtn;
+        public Button matchingBtn;
         public Button backButton;
-        public Button ResetBtn;
         
+        [Header("地图相关")]
+        public List<MapSelectInfo> mapSelectInfoList;
+        public int mapIndex;
         
         [Tooltip("属性面板加载器")]
         public LoadProper loadProper;
-        [Tooltip("玩家头部信息显示")]
-        public TextMeshProUGUI playerHeadInfoText;
         public List<string> playerHeadStr = new List<string>();
         
         [Header("角色键位设置")]
@@ -41,7 +38,7 @@ namespace GameSystem.GameScene.MainMenu
         [Tooltip("角色键位描述")]
         public TextMeshProUGUI playerMoveDescription;
         public List<bool> isMoveModeSelect = new List<bool>{false,false,false,false};
-        public PlayerControlConfig CompareTemp = new PlayerControlConfig();
+        public PlayerControlConfig CompareTemp;
         
         [Header("角色类型设置")]
         [Tooltip("角色类型名称")]
@@ -50,15 +47,6 @@ namespace GameSystem.GameScene.MainMenu
         public TMP_Dropdown playTypesSelect;
         [Tooltip("角色类型描述")]
         public TextMeshProUGUI playTypesDescription;
-        
-        [Header("角色名称设置")]
-        [Tooltip("角色名称输入框")]
-        public TMP_InputField playerNamesInput;
-        
-        [Header("角色ID设置")]
-        [Tooltip("角色ID输入框")]
-        public TextMeshProUGUI playerIdText;
-        
         
         [Header("角色基础信息")]
         [Tooltip("角色类型列表")]
@@ -69,33 +57,25 @@ namespace GameSystem.GameScene.MainMenu
         public List<string> playerIds = new List<string>(MaxCharacterCount);
         [Tooltip("角色键位信息列表")]
         public List<PlayerControlConfig> playerMoveMode = new List<PlayerControlConfig>(MaxCharacterCount);
-        [Tooltip("角色基础信息列表")]
-        public List<CharacterBaseInfo> characterBaseInfos = new List<CharacterBaseInfo>(MaxCharacterCount);
         [Tooltip("当前索引")]
         public int playerIndex = 0;
         public int playerCount = 0;
-        public int enemyCount = 0;
 
+        public string mapDescription;
+        public Sprite mapSprite;
+        public string mapName;
+        public TextMeshProUGUI mapNameText;
+        public Image mapImage;
 
-        public override void Show()
-        {
-            base.Show();
-            OnResetClick();
-        }
-
-        public override void Hide()
-        {
-            base.Hide();
-            GetComponent<AutoRegister>().UnregisterAll();
-        }
-
+        private bool isMatching;
+        
         public void RefreshPlayerInfos()
         {
             //角色键位刷新
             if (playerMoveMode[playerIndex].putBomb == KeyCode.None)
             {
-                playerMoveDescription.text = "请选择一个键位配置";
-                playerMoveSelect.value = moveModeName.Count - 1;
+                playerMoveDescription.text = playerMoveMode[0].description;
+                playerMoveSelect.value = 0;
             }
             else
             {
@@ -104,7 +84,7 @@ namespace GameSystem.GameScene.MainMenu
             }
             
             //角色类型刷新
-            var x = Resources.Load<CharacterProper>("Character/" + playTypes[playerIndex].ToString());
+            var x = Resources.Load<CharacterProper>("Character/" + playTypes[playerIndex]);
             if (x == null)
             {
                 GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Error, "没有找到该角色属性");
@@ -114,21 +94,21 @@ namespace GameSystem.GameScene.MainMenu
             playTypesDescription.text = x.characterDescription;
             playTypesSelect.value = playerTypeName.FindIndex(index => index == playTypes[playerIndex].ToString());
             
-            //初始化序列显示
-            playerHeadInfoText.text = playerHeadStr[playerIndex];
-            
-            //角色ID刷新
-            playerIdText.text = playerIds[playerIndex];
-            
-            //角色名称刷新
-            playerNamesInput.text = playerNames[playerIndex];
-
         }
         
-        private void OnEnable()
+        private void InitInputInfo()
         {
-            playerCount = GameModeSelect.PlayerCount;
-            enemyCount = GameModeSelect.EnemyCount;
+            mapSelectInfoList = MapSelectInfoList.LoadMapSelectInfoLists(MapSelectInfoList.OnLineConfig);
+            if (mapSelectInfoList == null || mapSelectInfoList.Count == 0)
+            {
+                Debug.LogError("MapSelectInfoList为Null或者为空");
+                return;
+            }
+
+            mapIndex = 0;
+            SetMapSelectInfo(mapIndex);
+
+            playerCount = 1;
             //初始化角色ID
             var x = Resources.Load<PlayerControlList>("PlayerControl/PlayerControlList");
             if (x == null)
@@ -138,24 +118,22 @@ namespace GameSystem.GameScene.MainMenu
             }
             moveModeList.Clear();
             moveModeList = new List<PlayerControlConfig>(x.playerMoveModeConfigs);
+            CompareTemp = moveModeList[OnlineConfig.Instance.defaultControllerId];
             for (int i = 0; i < playerCount; i++)
             {
-                playTypes.Add(CharacterType.Balance);
+                playTypes.Add(OnlineConfig.Instance.defaultPlayerType);
                 playerNames.Add($"Player{i + 1}");
                 playerIds.Add($"P{i + 1}");
                 playerMoveMode.Add(CompareTemp);
                 playerHeadStr.Add($"玩家{i + 1}" );
             }
-            for (int i = playerCount; i < playerCount + enemyCount; i++)
+            for (int i = playerCount; i < playerCount; i++)
             {
                 playTypes.Add(CharacterType.Enemy);
                 playerNames.Add($"Enemy{(i - playerCount) + 1}");
                 playerIds.Add($"E{i - playerCount + 1}");
                 playerMoveMode.Add(CompareTemp);
             }
-            
-            
-
             
             //角色类型初始化
             playTypesSelect.ClearOptions();
@@ -176,23 +154,43 @@ namespace GameSystem.GameScene.MainMenu
             moveModeName.Add("空");
             moveModeList.Add(null);
             
-            
-            
             playerMoveSelect.ClearOptions();
             playerMoveSelect.AddOptions(moveModeName);
             playerMoveSelect.onValueChanged.AddListener(OnPlayerControlSelect);
-            playerMoveSelect.value = moveModeName.Count - 1;
-            playerNamesInput.text = playerNames[playerIndex];
+            playerMoveSelect.value = 0;
+        }
+        
+        public override void Show()
+        {
+            base.Show();
+            InitInputInfo();
             
-            playerNamesInput.onValueChanged.AddListener(OnPlayerNameInput);
             nextBtn.onClick.AddListener(OnNextBtnClick);
             prevBtn.onClick.AddListener(OnPrevBtnBtnClick);
-            startBtn.onClick.AddListener(OnStartClick);
+            matchingBtn.onClick.AddListener(OnStartClick);
             backButton.onClick.AddListener(OnBackClick);
-            ResetBtn.onClick.AddListener(OnResetClick);
-            
             
             RefreshPlayerInfos();
+            
+            matchingBtn.GetComponentInChildren<TextMeshProUGUI>().text = "开始匹配";
+        }
+
+        private void SetMapSelectInfo(int index)
+        {
+            if (index < 0)
+            {
+                Debug.LogError("index小于0");
+            }else if (index >= mapSelectInfoList.Count)
+            {
+                Debug.LogError("index大于等于mapSelectInfoList.Count");
+            }
+            mapIndex = index;
+            mapSprite = mapSelectInfoList[index].mapSprite;
+            mapDescription = mapSelectInfoList[index].mapDescription;
+            mapName = mapSelectInfoList[index].mapName;
+            mapImage.sprite = mapSprite;
+            mapNameText.text = mapName;
+            //mapDescriptionText.text = mapDescription;
         }
 
         private void OnPlayerNameInput(string value)
@@ -268,16 +266,16 @@ namespace GameSystem.GameScene.MainMenu
         
         public void OnNextBtnClick()
         {
-            playerIndex++;
-            playerIndex %= playerCount;
-            RefreshPlayerInfos();
+            mapIndex++;
+            mapIndex = mapIndex % mapSelectInfoList.Count;
+            SetMapSelectInfo(mapIndex);
         }
         
         public void OnPrevBtnBtnClick()
         {
-            playerIndex--;
-            playerIndex = (playerIndex + playerCount) % playerCount;
-            RefreshPlayerInfos();
+            mapIndex--;
+            mapIndex = (mapIndex + mapSelectInfoList.Count) % mapSelectInfoList.Count;
+            SetMapSelectInfo(mapIndex);
         }
         
         
@@ -288,104 +286,22 @@ namespace GameSystem.GameScene.MainMenu
 
         private void OnStartClick()
         {
-            //验游戏流处理器和模式选择器是否启动
-            if (GameFlowManager.Instance == null || GameModeSelect.Instance == null)
+            if (isMatching)
             {
-                GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Error, "没有找到GameFlowManager或GameFlowManager");
-                Debug.LogError("没有找到GameFlowManager或GameFlowManager");
+                isMatching = false;
+                matchingBtn.GetComponentInChildren<TextMeshProUGUI>().text = "开始匹配";
+                TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameCancelMatch));
                 return;
             }
-
-            //确认角色是否已经选择好启动配置
-            int count = 0;
-            for (int i = 0; i < moveModeName.Count - 1; i++)
+            TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameStartMatch, new Dictionary<string, object>
             {
-                if (isMoveModeSelect[i]) count++;
-            }
-
-            if (count != playerCount)
-            {
-                GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Warning, "请将玩家配置选择完整");
-                Debug.LogWarning("请将玩家配置选择完整");
-                return;
-            }
-            //加载配置到集合当中
-            characterBaseInfos.Clear();
-            for (int i = 0; i < playerCount + enemyCount; i++)
-            {
-                characterBaseInfos.Add(new CharacterBaseInfo(playTypes[i], playerNames[i], playerIds[i], playerMoveMode[i]));
-            }
-            GameModeSelect.CharacterBaseInfos = characterBaseInfos;
-            
-            GameModeSelect.Instance.StartGame();
-            MainUIManager.Instance.CloseAll();
+                {"id", mapSelectInfoList[mapIndex].mapId},
+                {"career", playerTypeName[playTypesSelect.value]},
+                {"controlConfig", moveModeList.IndexOf(playerMoveMode[playerIndex])}
+            }));
+            matchingBtn.GetComponentInChildren<TextMeshProUGUI>().text = "取消匹配";
+            isMatching = true;
         }
 
-        private void OnResetClick()
-        { 
-            playerCount = GameModeSelect.PlayerCount;
-            enemyCount = GameModeSelect.EnemyCount;
-            //初始化角色ID
-            var x = Resources.Load<PlayerControlList>("PlayerControl/PlayerControlList");
-            if (x == null)
-            {
-                GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Error, "没有找到该角色键位列表");
-                Debug.LogError("没有找到该角色键位列表");
-            }
-            moveModeList.Clear();
-            moveModeList = new List<PlayerControlConfig>(x.playerMoveModeConfigs);
-
-            for (int i = 0; i < isMoveModeSelect.Count; i++)
-            {
-                isMoveModeSelect[i] = false;
-            }
-            
-            playTypes.Clear();
-            playerNames.Clear();
-            playerIds.Clear();
-            playerMoveMode.Clear();
-            playerHeadStr.Clear();
-            for (int i = 0; i < playerCount; i++)
-            {
-                playTypes.Add(CharacterType.Balance);
-                playerNames.Add($"Player{i + 1}");
-                playerIds.Add($"P{i + 1}");
-                playerMoveMode.Add(CompareTemp);
-                playerHeadStr.Add("玩家" + i);
-            }
-            for (int i = playerCount; i < playerCount + enemyCount; i++)
-            {
-                playTypes.Add(CharacterType.Enemy);
-                playerNames.Add($"Enemy{(i - playerCount) + 1}");
-                playerIds.Add($"E{i - playerCount + 1}");
-                playerMoveMode.Add(CompareTemp);
-            }
-            
-            //角色类型初始化
-            playTypesSelect.ClearOptions();
-            playerTypeName = System.Enum.GetValues(typeof(CharacterType))
-                .Cast<CharacterType>()
-                .Select(v => v.ToString())
-                .ToList();
-            playTypesSelect.AddOptions(playerTypeName);
-            playTypesSelect.onValueChanged.AddListener(OnPlayTypeSelect);
-            
-            //角色键位初始化
-
-            moveModeName.Clear();
-            for (int i = 1; i <= moveModeList.Count; i++)
-            {
-                moveModeName.Add("移动配置" + i);
-            }
-            moveModeName.Add("空");
-            moveModeList.Add(null);
-            
-            playerMoveSelect.ClearOptions();
-            playerMoveSelect.AddOptions(moveModeName);
-            playerMoveSelect.onValueChanged.AddListener(OnPlayerControlSelect);
-            playerMoveSelect.value = moveModeName.Count - 1;
-            playerNamesInput.text = playerNames[playerIndex];
-            RefreshPlayerInfos();
-        }
     }
 }

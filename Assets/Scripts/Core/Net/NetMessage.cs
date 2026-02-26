@@ -138,7 +138,8 @@ namespace Core.Net
         public void PrintLog()
         {
             string bodyStr = string.Join(", ", _body.Select(kv => $"{kv.Key}={kv.Value}"));
-            Debug.Log($"NetMessage: cmd={_cmd:X4}, body={{ {bodyStr} }}");
+            //Debug.Log($"NetMessage: cmd={_cmd:X4}, body={{ {bodyStr} }}");
+            Debug.Log($"NetMessage: cmd={CmdType.TryToGetType(_cmd)}, body={{ {bodyStr} }}");
         }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Core.Net;
 using GameSystem.GameScene.MessageScene;
@@ -16,12 +17,13 @@ namespace GameSystem.GameScene.MainMenu
         /*
         public GameObject roomEntryPrefab; // Simple prefab with a button
         */
+        public Button matchingBtn;
         public Button backBtn;
         public GameObject roomListParent;
         public GameObject roomListPrefab;
         public TMP_InputField roomNameInput;
 
-        private void Start()
+        private void RegisterMessageHandler()
         {
             TcpGameClient.RegisterMessageHandler(this, new List<DefaultHandler>
             {
@@ -53,6 +55,7 @@ namespace GameSystem.GameScene.MainMenu
                         {
                             {"info", roomInfo}
                         });
+                        Hide();
                     }
                     else
                     {
@@ -60,26 +63,37 @@ namespace GameSystem.GameScene.MainMenu
                     }
                 })
             });
-            TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameReqRoomInfo));
-            createRoomBtn.onClick.AddListener(OnCreateRoomClick);
-            joinRoomBtn.onClick.AddListener(OnRefreshListClick);
-            backBtn.onClick.AddListener(OnBackClick);
+
         }
+
 
         public override void Show()
         {
             base.Show();
+            RegisterMessageHandler();
             RefreshRoomList();
+            createRoomBtn.onClick.AddListener(OnCreateRoomClick);
+            joinRoomBtn.onClick.AddListener(OnRefreshListClick);
+            backBtn.onClick.AddListener(OnBackClick);
+            matchingBtn.onClick.AddListener(OnMatchingClick);
+        }
+        
+        public override void Hide()
+        {
+            base.Hide();
+            GetComponent<AutoRegister>()?.UnregisterAll();
         }
 
         private void OnCreateRoomClick()
         {
-            TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameCreateRoom, new Dictionary<string, object>
-            {
-                {"roomName", roomNameInput.text}
-            }));
+            MainUIManager.Instance.ShowPanel(PanelSymbols.MultiPlayerPlaySetPanel,true);
         }
 
+        private void OnMatchingClick()
+        {
+            MainUIManager.Instance.ShowPanel(PanelSymbols.MultiPlayerRandomFitPanel,true);
+        }
+        
         private void OnRefreshListClick()
         {
             RefreshRoomList();

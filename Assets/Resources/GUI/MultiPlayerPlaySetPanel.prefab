@@ -173,8 +173,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nextBtn: {fileID: 7651616968229102383}
   prevBtn: {fileID: 4509766359364977555}
-  startBtn: {fileID: 1011919019157913013}
+  createRoomBtn: {fileID: 1011919019157913013}
   backButton: {fileID: 6447749386266482889}
+  roomNameInput: {fileID: 2095777800744683248}
   mapSelectInfoList: []
   mapIndex: 0
   loadProper: {fileID: 591977076924836728}
@@ -2488,7 +2489,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1277279131402166458}
   m_HandleRect: {fileID: 8061939601525950695}
   m_Direction: 2
-  m_Value: 1.0000004
+  m_Value: 0.9999997
   m_Size: 0.75949365
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -5967,7 +5968,7 @@ GameObject:
   - component: {fileID: 6978968496530907223}
   - component: {fileID: 1011919019157913013}
   m_Layer: 5
-  m_Name: StartGame
+  m_Name: CreateRoom
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using Config;
 using Core.Net;
 using GameSystem.GameScene.MessageScene;
 using GameSystem.UI;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,8 +21,9 @@ namespace GameSystem.GameScene.MainMenu
         [Tooltip("面板名称")]
         public Button nextBtn;
         public Button prevBtn;
-        public Button startBtn;
+        public Button createRoomBtn;
         public Button backButton;
+        public TMP_InputField roomNameInput;
         
         [Header("地图相关")]
         public List<MapSelectInfo> mapSelectInfoList;
@@ -67,8 +70,33 @@ namespace GameSystem.GameScene.MainMenu
         public string mapName;
         public TextMeshProUGUI mapNameText;
         public Image mapImage;
+        
+        
+        
+        private void RegisterMessageHandler()
+        {
+            TcpGameClient.RegisterMessageHandler(this, new List<DefaultHandler>
+            {
+                new (CmdType.BaseGameJoinRoom, msg =>
+                {
+                    string result = msg.GetString("result");
+                    if (result == "success")
+                    {
+                        string roomInfo = msg.GetString("info");
+                        MainUIManager.Instance.ShowPanel(PanelSymbols.MultiPlayerRoomPanel, parameters: new Dictionary<string, string>
+                        {
+                            {"info", roomInfo}
+                        });
+                        Hide();
+                    }
+                    else
+                    {
+                        GlobalMessageManager.Instance.SendTopMessage($"加入房间失败: {msg.GetString("reason")}");
+                    }
+                })
+            });
 
-        private bool isMatching;
+        }
         
         public void RefreshPlayerInfos()
         {
@@ -96,10 +124,9 @@ namespace GameSystem.GameScene.MainMenu
             playTypesSelect.value = playerTypeName.FindIndex(index => index == playTypes[playerIndex].ToString());
             
         }
-        
-        public override void Show()
+
+        private void InitInputInfo()
         {
-            base.Show();
             mapSelectInfoList = MapSelectInfoList.LoadMapSelectInfoLists(MapSelectInfoList.OnLineConfig);
             if (mapSelectInfoList == null || mapSelectInfoList.Count == 0)
             {
@@ -137,9 +164,6 @@ namespace GameSystem.GameScene.MainMenu
                 playerMoveMode.Add(CompareTemp);
             }
             
-            
-
-            
             //角色类型初始化
             playTypesSelect.ClearOptions();
             playerTypeName = System.Enum.GetValues(typeof(CharacterType))
@@ -163,15 +187,20 @@ namespace GameSystem.GameScene.MainMenu
             playerMoveSelect.AddOptions(moveModeName);
             playerMoveSelect.onValueChanged.AddListener(OnPlayerControlSelect);
             playerMoveSelect.value = 0;
+        }
+        
+        public override void Show()
+        {
+            base.Show();
+            RegisterMessageHandler();
+            InitInputInfo();
             
             nextBtn.onClick.AddListener(OnNextBtnClick);
             prevBtn.onClick.AddListener(OnPrevBtnBtnClick);
-            startBtn.onClick.AddListener(OnStartClick);
+            createRoomBtn.onClick.AddListener(OnCreateRoomClick);
             backButton.onClick.AddListener(OnBackClick);
             
             RefreshPlayerInfos();
-            
-            startBtn.GetComponentInChildren<TextMeshProUGUI>().text = "开始匹配";
         }
 
         private void SetMapSelectInfo(int index)
@@ -283,23 +312,12 @@ namespace GameSystem.GameScene.MainMenu
             MainUIManager.Instance.Back();
         }
 
-        private void OnStartClick()
+        private void OnCreateRoomClick()
         {
-            if (isMatching)
+            TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameCreateRoom, new Dictionary<string, object>
             {
-                isMatching = false;
-                startBtn.GetComponentInChildren<TextMeshProUGUI>().text = "开始匹配";
-                TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameCancelMatch));
-                return;
-            }
-            TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameStartMatch, new Dictionary<string, object>
-            {
-                {"id", mapSelectInfoList[mapIndex].mapId},
-                {"career", playerTypeName[playTypesSelect.value]},
-                {"controlConfig", moveModeList.IndexOf(playerMoveMode[playerIndex])}
+                {"roomName", roomNameInput.text}
             }));
-            startBtn.GetComponentInChildren<TextMeshProUGUI>().text = "取消匹配";
-            isMatching = true;
         }
 
     }

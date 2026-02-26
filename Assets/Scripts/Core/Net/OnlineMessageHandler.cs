@@ -52,11 +52,12 @@ namespace Core.Net
                 }),
                 new(CmdType.Exception, msg =>
                 {
-                    GlobalMessageManager.Instance.SendTopMessage(msg.GetString("msg"));
+                    GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Error,msg.GetString("msg"));
+                    
                 }),
                 new (CmdType.Alert, msg =>
                 {
-                    GlobalMessageManager.Instance.SendTopMessage(msg.GetString("msg"));
+                    GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Warning,msg.GetString("msg"));
                 }),
                 new(CmdType.BaseGameMatchSuccess, msg =>
                 {
