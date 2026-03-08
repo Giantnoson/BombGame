@@ -109,32 +109,107 @@ namespace Core.Net
         
         private static Dictionary<String, Object> BodyFromBytes(byte[] data)
         {
-            // 目前格式是 playerId=111234;userName=TestUser;score=1000 之类的字符串
-            String formatString = System.Text.Encoding.UTF8.GetString(data);
-            String[] pairs = formatString.Split(';');
+            // {"key2":{"subKey1":"subValue1","subKey2":"subValue2"},"key1":"value1","key3":"value3"}
+            // json字符串，只有嵌套和string类型的value
+            String formatString = System.Text.Encoding.UTF8.GetString(data).Trim();
             Dictionary<String, Object> body = new Dictionary<String, Object>();
-            foreach (String pair in pairs)
+            if (!(formatString.StartsWith("{") && formatString.EndsWith("}")))
             {
-                String[] keyValue = pair.Split('=');
-                if (keyValue.Length == 2)
+                Debug.LogError($"Invalid format string: {formatString}");
+                return body;
+            }
+            String content = formatString.Substring(1, formatString.Length - 2);
+            if (content == "")
+            {
+                return body;
+            }
+
+            while (content.Length > 0)
+            {
+                int keyEndIndex = content.IndexOf(":", StringComparison.Ordinal);
+                if (keyEndIndex == -1)
+                    throw new FormatException($"Invalid format string: {formatString}");
+                String key = content.Substring(0, keyEndIndex).Trim().Trim('"');
+                content = content.Substring(keyEndIndex + 1).Trim();
+                if (content.StartsWith("{"))
                 {
-                    body[keyValue[0]] = keyValue[1];
+                    int valueEndIndex = findMatchBraceIndex(0, content);
+                    String valueStr = content.Substring(0, valueEndIndex + 1);
+                    body[key] = BodyFromBytes(System.Text.Encoding.UTF8.GetBytes(valueStr));
+                    content = content.Substring(valueEndIndex + 2).Trim();
+                }
+                else
+                {
+                    int valueEndIndex = content.IndexOf(",", StringComparison.Ordinal);
+                    String valueStr;
+                    if (valueEndIndex == -1)
+                    {
+                        valueStr = content;
+                        content = "";
+                    }
+                    else
+                    {
+                        valueStr = content.Substring(0, valueEndIndex);
+                        content = content.Substring(valueEndIndex + 1).Trim();
+                    }
+                    body[key] = valueStr.Trim().Trim('"');
                 }
             }
             return body;
         }
-        
-        private byte[] BodyToBytes(Dictionary<String, Object> body)
+
+        private static int findMatchBraceIndex(int idx, String content)
         {
-            List<String> pairs = new List<String>();
-            foreach (KeyValuePair<String, Object> kv in body)
+            int braceCount = 0;
+            for (int i = idx; i < content.Length; i++)
             {
-                pairs.Add($"{kv.Key}={kv.Value}");
+                if (content[i] == '{')
+                {
+                    braceCount++;
+                }
+                else if (content[i] == '}')
+                {
+                    braceCount--;
+                    if (braceCount == 0)
+                    {
+                        return i;
+                    }
+                }
             }
-            String formatString = String.Join(";", pairs);
-            return System.Text.Encoding.UTF8.GetBytes(formatString);
+            throw new FormatException($"No matching brace found in content: {content}");
         }
         
+        private String DictionaryToJsonString(Dictionary<String, Object> dict)
+        {
+            string formatString = "{";
+            foreach (var kv in dict)
+            {
+                formatString += $"\"{kv.Key}\":";
+                if (kv.Value is Dictionary<String, Object> subDict)
+                {
+                    formatString += DictionaryToJsonString(subDict);
+                }
+                else
+                {
+                    formatString += $"\"{kv.Value}\"";
+                }
+
+                formatString += ",";
+            }
+
+            if (formatString.EndsWith(","))
+            {
+                formatString = formatString.Substring(0, formatString.Length - 1);
+            }
+
+            return formatString + "}";
+        }
+
+        private byte[] BodyToBytes(Dictionary<String, Object> body)
+        {
+            return System.Text.Encoding.UTF8.GetBytes(DictionaryToJsonString(body));
+        }
+
         public void PrintLog()
         {
             string bodyStr = string.Join(", ", _body.Select(kv => $"{kv.Key}={kv.Value}"));
