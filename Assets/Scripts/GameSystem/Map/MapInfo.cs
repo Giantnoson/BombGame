@@ -377,72 +377,48 @@ namespace GameSystem.GameScene.MainMenu.Map
         /// <returns>路径信息列表，如果找不到路径则返回null</returns>
         public PathInfo SearchPath(Vector2Int startPos, Vector2Int endPos, bool isThinkAboutExplosion)
         {
-            // 检查起点和终点是否在地图数据中
-            if (!MapData.ContainsKey(startPos) || !MapData.ContainsKey(endPos))
+            if (!MapData.ContainsKey(startPos) || !MapData.ContainsKey(endPos)) // 检查起点和终点是否在地图数据中
             {
                 Debug.LogError($"起始点{startPos}或终点{endPos}不存在");
                 return null;
             }
-
             // 初始化数据结构
-            //开放列表
-            var openList = new MinHeap<MapNode>(CompareNodeByF);
-            //闭合列表
-            var closeList = new HashSet<MapNode>();
-            //路径追溯
-            var cameFrom = new Dictionary<MapNode, MapNode>();
-            //从起点到当前节点的实际代价
-            var gScore = new Dictionary<MapNode, float>();
-            // 获取起点和终点节点
-            var startNode = MapData[startPos];
+            var openList = new MinHeap<MapNode>(CompareNodeByF); //开放列表
+            var closeList = new HashSet<MapNode>(); //闭合列表
+            var cameFrom = new Dictionary<MapNode, MapNode>(); //路径追溯
+            var gScore = new Dictionary<MapNode, float>(); //从起点到当前节点的实际代价
+            var startNode = MapData[startPos]; // 获取起点和终点节点
             var endNode = MapData[endPos];
-            // 初始化起点的g值和f值
-            gScore[startNode] = 0;
+            gScore[startNode] = 0; // 初始化起点的g值和f值
             startNode.F = Heuristic(startNode, endNode);
-            // 将起点加入开放列表
-            openList.Add(startNode);
+            openList.Add(startNode);  // 将起点加入开放列表
             while (openList.Count > 0)
             {
-                // 获取f值最小的节点
-                var currentNode = openList.Pop();
-
-
-                // 如果到达目标节点，构建并返回路径
-                if (currentNode == endNode)
+                var currentNode = openList.Pop(); // 获取f值最小的节点
+                if (currentNode == endNode) // 如果到达目标节点，构建并返回路径
                     return ReconstructPath(cameFrom, currentNode, startPos, endPos);
-                // 将当前节点加入关闭列表
-                closeList.Add(currentNode);
-                // 遍历当前节点的所有邻居
-                foreach (var neighbor in currentNode.MapNodes)
+                closeList.Add(currentNode); // 将当前节点加入关闭列表
+                foreach (var neighbor in currentNode.MapNodes) // 遍历当前节点的所有邻居
                 {
-                    // 如果邻居在关闭列表中，跳过
-                    if (closeList.Contains(neighbor))
-                        continue;
-
-                    if (!IsWalkable(neighbor.CurrentPos))
-                        continue;
-
-                    // 检查邻居是否在爆炸范围内，如果是则跳过（除非是终点）
+                    if (closeList.Contains(neighbor)) continue; // 如果邻居在关闭列表中，跳过
+                    if (!IsWalkable(neighbor.CurrentPos)) continue; //如果不可行走，跳过
                     if (isThinkAboutExplosion && neighbor != endNode &&
                         BombPos.Instance.IsInExportArea(GetRealCoord(neighbor.CurrentPos)))
-                        continue;
-
+                        continue; // 检查邻居是否在爆炸范围内，如果是则跳过（除非是终点）
                     // 计算从起点经过当前节点到邻居的代价
                     var neighborGScore = gScore[currentNode] + DistanceBetween(currentNode, neighbor);
                     // 如果邻居不在开放列表中，或者找到更好的路径
                     if (!openList.Contains(neighbor) || neighborGScore < gScore[neighbor])
                     {
-                        // 记录路径
-                        cameFrom[neighbor] = currentNode;
-                        // 更新g值和f值
-                        gScore[neighbor] = neighborGScore;
+                        cameFrom[neighbor] = currentNode; // 记录路径
+                        gScore[neighbor] = neighborGScore;// 更新g值和f值
                         neighbor.F = gScore[neighbor] + Heuristic(neighbor, endNode);
-                        // 如果邻居不在开放列表中，加入开放列表
-                        if (!openList.Contains(neighbor)) openList.Add(neighbor);
+                        //if (!openList.Contains(neighbor)) openList.Add(neighbor);// 如果邻居不在开放列表中，加入开放列表
+                        openList.Add(neighbor);// 如果邻居不在开放列表中，加入开放列表
+
                     }
                 }
             }
-
             // 无法找到路径
             return null;
         }

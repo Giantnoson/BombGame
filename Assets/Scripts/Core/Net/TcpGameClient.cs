@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Config;
+using GameSystem.GameScene.MessageScene;
 using Unity.VisualScripting;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -25,7 +26,8 @@ namespace Core.Net
                 return _instance;
             }
         }
-        
+
+        public static bool IsLogin = false;
         /// <summary>
         /// 设置连接状态和玩家ID
         /// </summary>
@@ -89,6 +91,7 @@ namespace Core.Net
                             if (msg._cmd != CmdType.Login && !_isConnected)
                             {
                                 Debug.LogWarning($"在登录前接受消息，忽略 cmd={CmdType.TryToGetType(msg._cmd)}");
+                                GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Warning,msg._body.GetString("msg"),5);
                                 return;
                             }
                             // 处理消息
@@ -102,7 +105,7 @@ namespace Core.Net
                                 }
                                 catch (Exception ex)
                                 {
-                                    Debug.LogError($"Error in message handler for cmd={msg._cmd}: {ex}");
+                                    Debug.LogError($"Error in message handler for cmd={msg._cmd} msg = {(msg.ToJsonString(msg._body))}: {ex}");
                                 }
                             }
                         }
@@ -113,8 +116,7 @@ namespace Core.Net
                     }
                 }
             };
-
-    // 连接到指定的主机和端口
+            // 连接到指定的主机和端口
             _tcp.Connect(_host, _port);
         }
 
@@ -203,7 +205,7 @@ namespace Core.Net
             if (_tcp == null) { Debug.LogWarning("TCP client is null"); return; }
 
             // 构建登录消息体
-            var body = new Dictionary<string, object>
+            var body = new NetDictionary()
             {
                 { "username", _username },
                 { "password", _password }
@@ -212,6 +214,8 @@ namespace Core.Net
             _tcp.SendMessage(msg);
         }
 
+        public bool IsConnected => _tcp != null && _tcp.IsConnected;
+        
         /// <summary>
         /// 发送网络消息
         /// </summary>

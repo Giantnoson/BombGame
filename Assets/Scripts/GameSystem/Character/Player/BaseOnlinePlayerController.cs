@@ -21,12 +21,12 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
             {
                 new(CmdType.PutBomb, msg =>
                 {
-                    string playerId = msg.GetString("id");
+                    string playerId = msg._body.GetString("id");
                     if (playerId == PlayerId)
                     {
-                        float x = msg.GetInt("x") / 100f;
-                        float y = msg.GetInt("y") / 100f;
-                        float z = msg.GetInt("z") / 100f;
+                        float x = msg._body.GetInt("x") / 100f;
+                        float y = msg._body.GetInt("y") / 100f;
+                        float z = msg._body.GetInt("z") / 100f;
                         bombCooldown = maxBombCooldown;
                         bombCount--;
                         var bombPos = new Vector3(x, y, z);
@@ -44,13 +44,13 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
                 }),
                 new (CmdType.Move, msg =>
                 {
-                    string movePlayerId = msg.GetString("id");
+                    string movePlayerId = msg._body.GetString("id");
                     if (movePlayerId == PlayerId)
                     {
-                        float x = msg.GetInt("x") / 100f;
-                        float y = msg.GetInt("y") / 100f;
-                        float z = msg.GetInt("z") / 100f;
-                        float angle = msg.GetFloat("angle");
+                        float x = msg._body.GetInt("x") / 100f;
+                        float y = msg._body.GetInt("y") / 100f;
+                        float z = msg._body.GetInt("z") / 100f;
+                        float angle = msg._body.GetFloat("angle");
                         transform.position = new Vector3(x, y, z); // 更新位置
                         transform.rotation = Quaternion.Euler(0, angle, 0); // 更新旋转，假设只需要更新Y轴旋转
                     }

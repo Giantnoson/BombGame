@@ -79,10 +79,10 @@ namespace GameSystem.GameScene.MainMenu
             {
                 new (CmdType.BaseGameJoinRoom, msg =>
                 {
-                    string result = msg.GetString("result");
+                    string result = msg._body.GetString("result");
                     if (result == "success")
                     {
-                        string roomInfo = msg.GetString("info");
+                        string roomInfo = msg._body.GetString("info");
                         MainUIManager.Instance.ShowPanel(PanelSymbols.MultiPlayerRoomPanel, parameters: new Dictionary<string, string>
                         {
                             {"info", roomInfo}
@@ -91,7 +91,7 @@ namespace GameSystem.GameScene.MainMenu
                     }
                     else
                     {
-                        GlobalMessageManager.Instance.SendTopMessage($"加入房间失败: {msg.GetString("reason")}");
+                        GlobalMessageManager.Instance.SendTopMessage($"加入房间失败: {msg._body.GetString("reason")}");
                     }
                 })
             });
@@ -314,7 +314,7 @@ namespace GameSystem.GameScene.MainMenu
 
         private void OnCreateRoomClick()
         {
-            TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameCreateRoom, new Dictionary<string, object>
+            TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameCreateRoom, new NetDictionary()
             {
                 {"roomName", roomNameInput.text}
             }));

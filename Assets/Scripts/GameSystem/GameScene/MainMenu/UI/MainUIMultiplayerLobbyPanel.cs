@@ -29,14 +29,14 @@ namespace GameSystem.GameScene.MainMenu
             {
                 new (CmdType.BaseGameReqRoomInfo, msg =>
                 {
-                    var rooms = msg.GetString("rooms");
+                    var rooms = msg._body.GetDictionary("rooms");
                     foreach (Transform child in roomListParent.transform)
                     {
                         Destroy(child.gameObject);
                     }
-                    foreach (var roomInfo in rooms.Split("%"))
+                    if(rooms == null) return;
+                    foreach (NetDictionary roomInfo in rooms.Values)
                     {
-                        if (roomInfo == "") continue;
                         var info = new RoomInfo(roomInfo);
                         
                         var obj = Instantiate(roomListPrefab);
@@ -47,10 +47,10 @@ namespace GameSystem.GameScene.MainMenu
                 }),
                 new (CmdType.BaseGameJoinRoom, msg =>
                 {
-                    string result = msg.GetString("result");
+                    string result = msg._body.GetString("result");
                     if (result == "success")
                     {
-                        string roomInfo = msg.GetString("info");
+                        string roomInfo = msg._body.GetString("info");
                         MainUIManager.Instance.ShowPanel(PanelSymbols.MultiPlayerRoomPanel, parameters: new Dictionary<string, string>
                         {
                             {"info", roomInfo}
@@ -59,7 +59,7 @@ namespace GameSystem.GameScene.MainMenu
                     }
                     else
                     {
-                        GlobalMessageManager.Instance.SendTopMessage($"加入房间失败: {msg.GetString("reason")}");
+                        GlobalMessageManager.Instance.SendTopMessage($"加入房间失败: {msg._body.GetString("reason")}");
                     }
                 })
             });

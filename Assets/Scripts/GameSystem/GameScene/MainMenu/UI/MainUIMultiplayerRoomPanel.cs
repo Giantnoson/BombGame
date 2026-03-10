@@ -71,8 +71,12 @@ namespace GameSystem.GameScene.MainMenu
         public Image mapImage;
         
         
+        
+        public List<PlayerInfo> playerInfoList;
         public GameObject playerInfoParent;
         public GameObject playerInfoPrefab;
+        
+        public RoomMessage roomMessage;
 
         private string _roomId;
         private string _roomName;
@@ -95,33 +99,54 @@ namespace GameSystem.GameScene.MainMenu
             {
                 new (CmdType.BaseGameCurrentRoomChange, msg =>
                 {
-                    var rawPlayersInfo = msg.GetString("members");
-                    _leaderId = msg.GetString("leaderId");
-                    _roomId = msg.GetString("roomId"); 
-                    _roomName = msg.GetString("roomName");
+                    var rawPlayersInfo = msg._body.GetDictionary("members");
+                    _leaderId = msg._body.GetString("leaderId");
+                    _roomId = msg._body.GetString("roomId"); 
+                    _roomName = msg._body.GetString("roomName");
+                    mapIndex = msg._body.GetInt("mapIndex");
+                    SetMapSelectInfo(mapIndex);
                     roomNameText.text = $"{_roomName}:{_roomId}";
-                    Debug.Log(rawPlayersInfo);
-                    foreach (var child in playerInfoParent.transform)
+                    
+                    int i = 0;
+                    foreach (NetDictionary rawInfo in rawPlayersInfo.Values)
+                    {
+                        /*var info = new RoomPlayerInfo(rawInfo);
+                        info.SetLeader(_leaderId);*/
+                        playerInfoList[i].gameObject.SetActive(true);
+                        playerInfoList[i].SetLeader(_leaderId);
+                        playerInfoList[i].SetRoomPlayerInfo(rawInfo);
+                        i++;
+                    }
+
+                    for (int j = i; j < MaxCharacterCount; j++)
+                    {
+                        playerInfoList[i++].gameObject.SetActive(false);
+                    }
+                    /*foreach (var child in playerInfoParent.transform)
                     {
                         Destroy(((Transform) child).gameObject);
                     }
                     foreach (var rawInfo in rawPlayersInfo.Split("|"))
                     {
                         if (rawInfo == "") continue;
-                        var info = new RoomPlayerInfo(rawInfo);
+                        var info = new RosomPlayerInfo(rawInfo);
                         info.SetLeader(_leaderId);
-                        
+
                         var obj = Instantiate(playerInfoPrefab);
                         obj.transform.SetParent(playerInfoParent.transform);
                         var playerInfo = obj.GetComponent<PlayerInfo>();
                         playerInfo.SetRoomPlayerInfo(info);
-                    }
+                    }*/
                 }),
                 new (CmdType.BaseGameLeaveRoom, msg =>
                 {
                     Debug.Log("退出房间");
                     MainUIManager.Instance.Back();
-                })
+                }),
+                new (CmdType.BaseGamePlayerSendMessage, msg =>
+                {
+                    roomMessage.AddMessage(msg._body.GetString("message"));
+                }),
             });
             startBtn.onClick.AddListener(OnStartClick);
             leaveBtn.onClick.AddListener(OnLeaveClick);
@@ -253,7 +278,7 @@ namespace GameSystem.GameScene.MainMenu
             loadProper.Load(x);
             playTypesDescription.text = x.characterDescription;
             playTypes[playerIndex] = x.playerType;
-            TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameChangeCareer, new Dictionary<string, object>
+            TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameChangeCareer, new NetDictionary()
             {
                 { "career", playerTypeName[index] }
             }));
@@ -312,16 +337,24 @@ namespace GameSystem.GameScene.MainMenu
         
         public void OnNextBtnClick()
         {
+            if(TcpGameClient.PlayerId != _leaderId) return;
             mapIndex++;
             mapIndex = mapIndex % mapSelectInfoList.Count;
-            SetMapSelectInfo(mapIndex);
+            TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameMapChange, new NetDictionary()
+            {
+                { "mapIndex", mapIndex }
+            }));
         }
         
         public void OnPrevBtnBtnClick()
         {
+            if(TcpGameClient.PlayerId != _leaderId) return;
             mapIndex--;
             mapIndex = (mapIndex + mapSelectInfoList.Count) % mapSelectInfoList.Count;
-            SetMapSelectInfo(mapIndex);
+            TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameMapChange, new NetDictionary()
+            {
+                { "mapIndex", mapIndex }
+            }));
         }
         
 

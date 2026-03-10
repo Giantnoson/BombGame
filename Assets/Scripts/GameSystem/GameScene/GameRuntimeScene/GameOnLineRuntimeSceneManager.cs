@@ -190,7 +190,7 @@ namespace GameSystem.GameScene.MainMenu.GameScene.GameRuntimeScene
                 print("游戏结束");
                 /*
                 CompleteScene(true);
-            */
+                */
             }
         }
 

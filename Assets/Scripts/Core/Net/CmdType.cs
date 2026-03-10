@@ -28,7 +28,7 @@ namespace Core.Net
         /// <summary>
         /// 系统消息命令
         /// </summary>
-        public const int INFO = 0x01FD;
+        public const int Info = 0x01FD;
 
         
 
@@ -92,6 +92,11 @@ namespace Core.Net
         /// </summary>
         public const int BaseGameChangeCareer = 0x040D;    // 更换职业命令
         
+        public const int BaseGameMapChange = 0x040E;        // 更改地图命令
+        
+        public const int BaseGamePlayerSendMessage = 0x040F; // 玩家发送消息
+        
+        public const int BaseGameStartGame = 0x0410;        // 开始游戏命令
 
 
         
@@ -185,6 +190,12 @@ namespace Core.Net
                     return nameof(ObstacleCreate);
                 case ObstacleChange:
                     return nameof(ObstacleChange);
+                case BaseGamePlayerSendMessage:
+                    return nameof(BaseGamePlayerSendMessage);
+                case BaseGameStartGame:
+                    return nameof(BaseGameStartGame);
+                case BaseGameMapChange:
+                    return nameof(BaseGameMapChange);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(cmd), cmd, "未知的cmd");
             }

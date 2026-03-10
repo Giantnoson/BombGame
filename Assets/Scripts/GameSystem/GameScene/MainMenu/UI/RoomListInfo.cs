@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Config;
 using Core.Net;
 using TMPro;
 using UnityEngine;
@@ -28,7 +29,7 @@ namespace GameSystem.GameScene.MainMenu
 
         private void OnJoinButtonClicked()
         {
-            TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameJoinRoom, new Dictionary<string, object>
+            TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameJoinRoom, new NetDictionary()
             {
                 {"roomId", roomInfo.RoomId}
             }));
@@ -41,26 +42,18 @@ namespace GameSystem.GameScene.MainMenu
             roomNameText.text = $"房间名称: {roomInfo.RoomName}";
             playerCountText.text = $"房间信息: {roomInfo.CurrentPlayers}/{roomInfo.MaxPlayers}人";
             hostPlayerText.text = $"房主名称: {roomInfo.HostPlayerName}";
-            mapNameText.text = $"地图: 暂无";
+            mapNameText.text = $"地图: {Resources.Load<MapSelectInfoList>(MapSelectInfoList.OnLineConfig).mapSelectInfoList[roomInfo.MapIndex].mapName}";
         }
     }
 
     public class RoomInfo
     {
-        public RoomInfo(string rawInfo)
+        public RoomInfo(NetDictionary rawInfo)
         {
-            foreach (var kv in rawInfo.Split("-"))
-            {
-                var pair = kv.Split("?");
-                if (pair.Length == 2)
-                {
-                    info.Add(pair[0], pair[1]);
-                }
-            }
-            
+            info = rawInfo;
         }
 
-        private WrappedDict info = new();
+        private NetDictionary info = new();
         
         public string RoomId => info.GetString("roomId");
         public string RoomName => info.GetString("roomName");
@@ -68,5 +61,6 @@ namespace GameSystem.GameScene.MainMenu
         public int MaxPlayers = 4; // 最大玩家数量
         public string HostPlayerName => info.GetString("leaderName");
         public string HostPlayerID => info.GetString("leaderId");
+        public int MapIndex => info.GetInt("mapIndex");
     }
 }

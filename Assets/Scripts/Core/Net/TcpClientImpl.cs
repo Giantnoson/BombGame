@@ -55,10 +55,8 @@ namespace Core.Net
                     await _client.ConnectAsync(_ip, _port).ConfigureAwait(false);
                     // 获取网络流
                     _stream = _client.GetStream();
-
                     // 触发连接成功回调
                     OnConnected?.Invoke();
-
                     // 开始读取循环
                     await ReadLoopAsync(_cts.Token).ConfigureAwait(false);
                 }
@@ -166,6 +164,8 @@ namespace Core.Net
 
             MainThreadDispatcher.Enqueue(() => OnClosed?.Invoke());
         }
+        
+        public bool IsConnected => _client != null && _client.Connected;
 
         /// <summary>
         /// 发送原始消息（会添加 4 字节长度前缀）

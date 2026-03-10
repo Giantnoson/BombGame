@@ -35,34 +35,51 @@ namespace Core.Net
         {
             TcpGameClient.RegisterMessageHandler(this, new List<DefaultHandler>
             {
+                new(CmdType.Heartbeat, msg =>
+                {
+                    if (msg._body.GetString("result") == "success")
+                    {
+                        //Debug.Log("Heartbeat success");
+                    }
+                    else
+                    {
+                        Debug.Log("Heartbeat failed");
+                        TcpGameClient.IsLogin = false;
+                    }
+                }),
                 new(CmdType.Login, msg =>
                 {
-                    if (msg.GetString("result") == "success")
+                    if (msg._body.GetString("result") == "success")
                     {
-                        var playerId = msg.GetString("playerId");
+                        var playerId = msg._body.GetString("playerId");
                         TcpGameClient.Instance.SetConnected(playerId);
                         Debug.Log($"Login successful, playerId={playerId}");
+                        TcpGameClient.IsLogin = true;
                         MainUIManager.Instance.ShowPanel(PanelSymbols.MultiPlayerLobbyPanel);
                     }
                     else
                     {
-                        Debug.Log($"login failed: {msg.GetString("reason")}");
-                        GlobalMessageManager.Instance.SendTopMessage($"Login failed: {msg.GetString("reason")}");
+                        Debug.Log($"login failed: {msg._body.GetString("reason")}");
+                        GlobalMessageManager.Instance.SendTopMessage($"Login failed: {msg._body.GetString("reason")}");
                     }
                 }),
                 new(CmdType.Exception, msg =>
                 {
-                    GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Error,msg.GetString("msg"));
+                    GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Error,msg._body.GetString("msg"));
                     
                 }),
                 new (CmdType.Alert, msg =>
                 {
-                    GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Warning,msg.GetString("msg"));
+                    GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Warning,msg._body.GetString("msg"));
+                }),
+                new (CmdType.Info, msg =>
+                {
+                    GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Normal,msg._body.GetString("msg"));
                 }),
                 new(CmdType.BaseGameMatchSuccess, msg =>
                 {
-                    int mapId = msg.GetInt("mapId");
-                    string playersInfo = msg.GetString("playersInfo");
+                    int mapId = msg._body.GetInt("mapId");
+                    string playersInfo = msg._body.GetString("playersInfo");
                     int idx = 0;
                     Debug.Log("Received match success message: mapId=" + mapId + ", playersInfo=" + playersInfo);
                     List<CharacterBaseInfo> players = new List<CharacterBaseInfo>();

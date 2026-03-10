@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 using Object = System.Object;
 
@@ -10,9 +11,9 @@ namespace Core.Net
     {
         public int _cmd;
         public byte[] _data = new byte[0];
-        public Dictionary<String, Object> _body = new Dictionary<String, Object>();
+        public NetDictionary _body = new NetDictionary();
 
-        public Dictionary<String, Object> Body
+        public NetDictionary Body
         {
             get { return _body; }
             set { 
@@ -21,7 +22,7 @@ namespace Core.Net
             }
         }
         
-        public NetMessage(int cmd, Dictionary<String, Object> body)
+        public NetMessage(int cmd, NetDictionary body)
         {
             this._cmd = cmd;
             this.Body = body;
@@ -32,55 +33,10 @@ namespace Core.Net
             this._cmd = cmd;
         }
         
-        public NetMessage Response(Dictionary<String, Object> body)
+        public NetMessage Response(NetDictionary body)
         {
             this.Body = body;
             return this;
-        }
-        
-        public string GetString(string key)
-        {
-            if (_body.ContainsKey(key))
-            {
-                return _body[key].ToString();
-            }
-            return "";
-        }
-        
-        public int GetInt(string key)
-        {
-            if (_body.ContainsKey(key))
-            {
-                if (int.TryParse(_body[key].ToString(), out int result))
-                {
-                    return result;
-                }
-            }
-            return 0;
-        }
-        
-        public float GetFloat(string key)
-        {
-            if (_body.ContainsKey(key))
-            {
-                if (float.TryParse(_body[key].ToString(), out float result))
-                {
-                    return result;
-                }
-            }
-            return 0f;
-        }
-        
-        public bool GetBool(string key)
-        {
-            if (_body.ContainsKey(key))
-            {
-                if (bool.TryParse(_body[key].ToString(), out bool result))
-                {
-                    return result;
-                }
-            }
-            return false;
         }
 
         public byte[] ToBytes()
@@ -107,12 +63,13 @@ namespace Core.Net
             return new NetMessage(cmdHost, BodyFromBytes(data));
         }
         
-        private static Dictionary<String, Object> BodyFromBytes(byte[] data)
+        private static NetDictionary BodyFromBytes(byte[] data)
         {
             // {"key2":{"subKey1":"subValue1","subKey2":"subValue2"},"key1":"value1","key3":"value3"}
             // json字符串，只有嵌套和string类型的value
             String formatString = System.Text.Encoding.UTF8.GetString(data).Trim();
-            Dictionary<String, Object> body = new Dictionary<String, Object>();
+            NetDictionary body = new NetDictionary();
+            
             if (!(formatString.StartsWith("{") && formatString.EndsWith("}")))
             {
                 Debug.LogError($"Invalid format string: {formatString}");
@@ -136,7 +93,7 @@ namespace Core.Net
                     int valueEndIndex = findMatchBraceIndex(0, content);
                     String valueStr = content.Substring(0, valueEndIndex + 1);
                     body[key] = BodyFromBytes(System.Text.Encoding.UTF8.GetBytes(valueStr));
-                    content = content.Substring(valueEndIndex + 2).Trim();
+                    content = (valueEndIndex + 2 >= content.Length) ? "" : content.Substring(valueEndIndex + 2).Trim();
                 }
                 else
                 {
@@ -179,13 +136,13 @@ namespace Core.Net
             throw new FormatException($"No matching brace found in content: {content}");
         }
         
-        private String DictionaryToJsonString(Dictionary<String, Object> dict)
+        private String DictionaryToJsonString(NetDictionary dict)
         {
             string formatString = "{";
             foreach (var kv in dict)
             {
                 formatString += $"\"{kv.Key}\":";
-                if (kv.Value is Dictionary<String, Object> subDict)
+                if (kv.Value is NetDictionary subDict)
                 {
                     formatString += DictionaryToJsonString(subDict);
                 }
@@ -205,16 +162,50 @@ namespace Core.Net
             return formatString + "}";
         }
 
-        private byte[] BodyToBytes(Dictionary<String, Object> body)
+        private byte[] BodyToBytes(NetDictionary body)
         {
             return System.Text.Encoding.UTF8.GetBytes(DictionaryToJsonString(body));
         }
 
+        public string ToJsonString(NetDictionary body)
+        {
+            var ret = new StringBuilder("{");
+    
+            foreach (var kv in body)
+            {
+                string k = kv.Key;
+                object v = kv.Value;
+
+                if (v is NetDictionary)
+                {
+                    // 如果值是 MessageBody 类型，递归调用 ToJsonString
+                    ret.Append($"\"{k}\":{ToJsonString(v as NetDictionary)}");
+                }
+                else
+                {
+                    // 否则，将值转换为字符串并加上双引号
+                    ret.Append($"\"{k}\":\"{v}\"");
+                }
+        
+                ret.Append(",");
+            }
+
+            // 如果字典不为空，删除最后一个逗号
+            if (body.Count > 0)
+            {
+                ret.Remove(ret.Length - 1, 1);
+            }
+
+            ret.Append("}");
+            return ret.ToString();
+        }
+
+        
+
         public void PrintLog()
         {
-            string bodyStr = string.Join(", ", _body.Select(kv => $"{kv.Key}={kv.Value}"));
             //Debug.Log($"NetMessage: cmd={_cmd:X4}, body={{ {bodyStr} }}");
-            Debug.Log($"NetMessage: cmd={CmdType.TryToGetType(_cmd)}, body={{ {bodyStr} }}");
+            Debug.Log($"NetMessage: cmd={CmdType.TryToGetType(_cmd)}, body={{ {ToJsonString(_body)} }}");
         }
     }
 }

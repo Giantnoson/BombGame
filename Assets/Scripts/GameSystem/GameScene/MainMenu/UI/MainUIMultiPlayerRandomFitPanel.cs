@@ -293,7 +293,7 @@ namespace GameSystem.GameScene.MainMenu
                 TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameCancelMatch));
                 return;
             }
-            TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameStartMatch, new Dictionary<string, object>
+            TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameStartMatch, new NetDictionary()
             {
                 {"id", mapSelectInfoList[mapIndex].mapId},
                 {"career", playerTypeName[playTypesSelect.value]},

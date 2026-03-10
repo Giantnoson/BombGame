@@ -21,7 +21,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
                 passTime = passTime - Time.deltaTime;
                 Vector3 playerPos = transform.position;
                 Vector3 playerRotation = transform.rotation.eulerAngles;
-                TcpGameClient.SendMessage(new NetMessage(CmdType.Move, new Dictionary<string, object>
+                TcpGameClient.SendMessage(new NetMessage(CmdType.Move, new NetDictionary()
                 {
                     {"x", playerPos.x * 100}, //乘以100是为了避免精度问题
                     {"y", playerPos.y * 100},
