@@ -105,7 +105,7 @@ namespace Core.Net
                                 }
                                 catch (Exception ex)
                                 {
-                                    Debug.LogError($"Error in message handler for cmd={msg._cmd} msg = {(msg.ToJsonString(msg._body))}: {ex}");
+                                    Debug.LogError($"Error in message handler for cmd={msg._cmd} msg = {msg._body.ToJsonString()}: {ex}");
                                 }
                             }
                         }

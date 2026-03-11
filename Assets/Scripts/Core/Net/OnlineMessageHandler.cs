@@ -76,79 +76,39 @@ namespace Core.Net
                 {
                     GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Normal,msg._body.GetString("msg"));
                 }),
-                new(CmdType.BaseGameMatchSuccess, msg =>
+                new(CmdType.EnterBaseGame, msg =>
                 {
                     int mapId = msg._body.GetInt("mapId");
-                    string playersInfo = msg._body.GetString("playersInfo");
+                    var playersInfo = msg._body.GetDictionary("playersInfo");
                     int idx = 0;
-                    Debug.Log("Received match success message: mapId=" + mapId + ", playersInfo=" + playersInfo);
+                    Debug.Log("Received match success message: mapId=" + mapId + ", playersInfo=" +
+                              NetMessage.DictionaryToJsonString(playersInfo));
                     List<CharacterBaseInfo> players = new List<CharacterBaseInfo>();
-                    playersInfo.Split("|").ToList().ForEach(info =>
-                    {
-                        Debug.Log("Parsing player info: " + info);
-                        string[] parts = info.Split(",");
-                        string career = "";
-                        string uname = "";
-                        string id = "";
-                        int controlConfig = -1;
-                        float x = -1;
-                        float y = -1;
-                        float z = -1;
-                        float angle = -1f;
-                        foreach (var part in parts)
-                        {
-                            string[] kv = part.Split(":");
-                            if (kv.Length == 2)
-                            {
-                                if (kv[0] == "career")
-                                {
-                                    career = kv[1];
-                                }
-                                else if (kv[0] == "uname")
-                                {
-                                    uname = kv[1];
-                                }
-                                else if (kv[0] == "id")
-                                {
-                                    id = kv[1];
-                                }
-                                else if (kv[0] == "controlConfig")
-                                {
-                                    controlConfig = int.Parse(kv[1]);
-                                }
-                                else if (kv[0] == "x")
-                                {
-                                    x = int.Parse(kv[1]) / 100f;
-                                }
-                                else if (kv[0] == "y")
-                                {
-                                    y = int.Parse(kv[1]) / 100f;
-                                }
-                                else if (kv[0] == "z")
-                                {
-                                    z = int.Parse(kv[1]) / 100f;
-                                }
-                                else if (kv[0] == "angle")
-                                {
-                                    angle = float.Parse(kv[1]);
-                                }
-                            }
-                        }
 
+                    foreach (KeyValuePair<string, object> keyValuePair in playersInfo)
+                    {
+                        var info = keyValuePair.Value as NetDictionary;
+                        Debug.Log("Parsing player info: "+ NetMessage.DictionaryToJsonString(info));
+                        string career = info.GetString("career");
+                        string uname = info.GetString("uname");
+                        string id = keyValuePair.Key;
+                        int controlConfig = info.GetInt("controlConfig");
+                        float x = info.GetInt("x") / 100f;
+                        float y = info.GetInt("y") / 100f;
+                        float z = info.GetInt("z") / 100f;
+                        float angle = info.GetFloat("angle");
+                        
                         Debug.Log("Parsed player info: career=" + career + ", uname=" + uname + ", id=" + id +
                                   ", controlConfig=" + controlConfig + ", idx=" + ", x=" + x + ", y=" + y + ", z=" + z +
                                   ", angle=" + angle);
-
                         if (!string.IsNullOrEmpty(career) && !string.IsNullOrEmpty(uname) && !string.IsNullOrEmpty(id))
                         {
                             PlayerControlConfig config = null;
                             if (id == TcpGameClient.PlayerId)
                             {
                                 config =
-                                    PlayerControlList.LoadMapSelectInfoLists(PlayerControlList.BaseConfig)[
-                                        controlConfig];
+                                    PlayerControlList.LoadMapSelectInfoLists(PlayerControlList.BaseConfig)[controlConfig];
                             }
-
                             players.Add(new CharacterBaseInfo(
                                 career,
                                 uname,
@@ -159,9 +119,9 @@ namespace Core.Net
                                 angle
                             ));
                         }
-
                         idx++;
-                    });
+                    }
+                    // TODO: 进入游戏
                     Debug.Log($"Entering scene {mapId}");
 
                     List<MapSelectInfo> mapSelectInfoList =

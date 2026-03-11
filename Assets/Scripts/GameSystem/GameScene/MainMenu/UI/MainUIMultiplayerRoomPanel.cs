@@ -84,6 +84,8 @@ namespace GameSystem.GameScene.MainMenu
         private string _leaderId;
 
         private bool isReady = false;
+        
+        private bool canStart = false;
 
         public override void Hide()
         {
@@ -95,6 +97,12 @@ namespace GameSystem.GameScene.MainMenu
         {
             base.Show();
             InitInputInfo();
+            startBtn.onClick.AddListener(OnStartClick);
+            leaveBtn.onClick.AddListener(OnLeaveClick);
+            nextBtn.onClick.AddListener(OnNextBtnClick);
+            prevBtn.onClick.AddListener(OnPrevBtnBtnClick);
+            RefreshPlayerInfos();
+            startBtn.GetComponentInChildren<TextMeshProUGUI>().text = "准备";
             TcpGameClient.RegisterMessageHandler(this, new List<DefaultHandler>
             {
                 new (CmdType.BaseGameCurrentRoomChange, msg =>
@@ -106,7 +114,8 @@ namespace GameSystem.GameScene.MainMenu
                     mapIndex = msg._body.GetInt("mapIndex");
                     SetMapSelectInfo(mapIndex);
                     roomNameText.text = $"{_roomName}:{_roomId}";
-                    
+
+                    int readyCount = 0;
                     int i = 0;
                     foreach (NetDictionary rawInfo in rawPlayersInfo.Values)
                     {
@@ -115,12 +124,27 @@ namespace GameSystem.GameScene.MainMenu
                         playerInfoList[i].gameObject.SetActive(true);
                         playerInfoList[i].SetLeader(_leaderId);
                         playerInfoList[i].SetRoomPlayerInfo(rawInfo);
+                        if (rawInfo.GetBool("isReady"))
+                        {
+                            readyCount++;
+                        }
                         i++;
                     }
 
                     for (int j = i; j < MaxCharacterCount; j++)
                     {
                         playerInfoList[i++].gameObject.SetActive(false);
+                    }
+
+                    if (rawPlayersInfo.Count == readyCount && TcpGameClient.PlayerId == _leaderId)
+                    {
+                        canStart = true;
+                        startBtn.GetComponentInChildren<TextMeshProUGUI>().text = "开始";
+                    }
+                    else
+                    {
+                        canStart = false;
+                        startBtn.GetComponentInChildren<TextMeshProUGUI>().text = isReady ? "取消准备" : "准备";
                     }
                     /*foreach (var child in playerInfoParent.transform)
                     {
@@ -148,12 +172,7 @@ namespace GameSystem.GameScene.MainMenu
                     roomMessage.AddMessage(msg._body.GetString("message"));
                 }),
             });
-            startBtn.onClick.AddListener(OnStartClick);
-            leaveBtn.onClick.AddListener(OnLeaveClick);
-            nextBtn.onClick.AddListener(OnNextBtnClick);
-            prevBtn.onClick.AddListener(OnPrevBtnBtnClick);
-            RefreshPlayerInfos();
-            startBtn.GetComponentInChildren<TextMeshProUGUI>().text = "准备";
+
         }
 
         
@@ -361,9 +380,16 @@ namespace GameSystem.GameScene.MainMenu
         
         private void OnStartClick()
         {
-            isReady = !isReady;
-            startBtn.GetComponentInChildren<TextMeshProUGUI>().text = isReady ? "取消准备" : "准备";
-            TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameReady));
+            if (canStart)
+            {
+                TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameStartGame));
+            }
+            else
+            {
+                isReady = !isReady;
+                startBtn.GetComponentInChildren<TextMeshProUGUI>().text = isReady ? "取消准备" : "准备";
+                TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameReady));
+            }
         }
 
         private void OnLeaveClick()

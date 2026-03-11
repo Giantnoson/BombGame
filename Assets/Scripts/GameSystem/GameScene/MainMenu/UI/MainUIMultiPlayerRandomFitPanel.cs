@@ -293,14 +293,17 @@ namespace GameSystem.GameScene.MainMenu
                 TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameCancelMatch));
                 return;
             }
-            TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameStartMatch, new NetDictionary()
+            else
             {
-                {"id", mapSelectInfoList[mapIndex].mapId},
-                {"career", playerTypeName[playTypesSelect.value]},
-                {"controlConfig", moveModeList.IndexOf(playerMoveMode[playerIndex])}
-            }));
-            matchingBtn.GetComponentInChildren<TextMeshProUGUI>().text = "取消匹配";
-            isMatching = true;
+                TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameStartMatch, new NetDictionary()
+                {
+                    {"id", mapSelectInfoList[mapIndex].mapId},
+                    {"career", playerTypeName[playTypesSelect.value]},
+                    {"controlConfig", moveModeList.IndexOf(playerMoveMode[playerIndex])}
+                }));
+                matchingBtn.GetComponentInChildren<TextMeshProUGUI>().text = "取消匹配";
+                isMatching = true;
+            }
         }
 
     }

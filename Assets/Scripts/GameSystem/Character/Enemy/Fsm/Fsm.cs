@@ -27,7 +27,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Enemy
         public override string CurrentStateName =>
             CurrentState != null ? CurrentState.GetType().ToString() : null; //当前状态名称} }
 
-        public string Name { get; protected set; } //Fsm名称
+        public new string Name { get; protected set; } //Fsm名称
 
         public T Owner { get; private set; }
 

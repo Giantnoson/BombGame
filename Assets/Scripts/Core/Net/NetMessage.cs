@@ -136,7 +136,7 @@ namespace Core.Net
             throw new FormatException($"No matching brace found in content: {content}");
         }
         
-        private String DictionaryToJsonString(NetDictionary dict)
+        public static String DictionaryToJsonString(NetDictionary dict)
         {
             string formatString = "{";
             foreach (var kv in dict)
@@ -166,46 +166,14 @@ namespace Core.Net
         {
             return System.Text.Encoding.UTF8.GetBytes(DictionaryToJsonString(body));
         }
-
-        public string ToJsonString(NetDictionary body)
-        {
-            var ret = new StringBuilder("{");
-    
-            foreach (var kv in body)
-            {
-                string k = kv.Key;
-                object v = kv.Value;
-
-                if (v is NetDictionary)
-                {
-                    // 如果值是 MessageBody 类型，递归调用 ToJsonString
-                    ret.Append($"\"{k}\":{ToJsonString(v as NetDictionary)}");
-                }
-                else
-                {
-                    // 否则，将值转换为字符串并加上双引号
-                    ret.Append($"\"{k}\":\"{v}\"");
-                }
         
-                ret.Append(",");
-            }
-
-            // 如果字典不为空，删除最后一个逗号
-            if (body.Count > 0)
-            {
-                ret.Remove(ret.Length - 1, 1);
-            }
-
-            ret.Append("}");
-            return ret.ToString();
-        }
 
         
 
         public void PrintLog()
         {
             //Debug.Log($"NetMessage: cmd={_cmd:X4}, body={{ {bodyStr} }}");
-            Debug.Log($"NetMessage: cmd={CmdType.TryToGetType(_cmd)}, body={{ {ToJsonString(_body)} }}");
+            Debug.Log($"NetMessage: cmd={CmdType.TryToGetType(_cmd)}, body={{ {_body.ToJsonString()} }}");
         }
     }
 }

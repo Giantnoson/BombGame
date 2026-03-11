@@ -86,7 +86,6 @@ namespace GameSystem.GameScene.MainMenu
         public override void Hide()
         {
             base.Hide();
-            GetComponent<AutoRegister>().UnregisterAll();
         }
 
         public void RefreshPlayerInfos()

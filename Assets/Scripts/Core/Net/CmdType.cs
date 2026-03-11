@@ -11,10 +11,7 @@ namespace Core.Net
         // 登录相关命令
         public const int Login = 0x0101;          // 登录命令
         public const int Heartbeat = 0x0102;      // 心跳命令，用于保持连接
-        public const int EnterGame = 0x0103;      // 进入游戏命令
-        public const int Logout = 0x0104;         // 登出命令
-        
-
+        public const int Logout = 0x0103;         // 登出命令
         
         // 系统相关命令
         /// <summary>
@@ -30,8 +27,9 @@ namespace Core.Net
         /// </summary>
         public const int Info = 0x01FD;
 
-        
-
+        // 场景相关命令
+        public const int EnterScene = 0x0201;      // 进入场景命令
+        public const int ExitScene = 0x0202;       // 退出场景命令
         
         // 移动相关命令
         public const int Move = 0x0301;           // 移动命令
@@ -50,7 +48,7 @@ namespace Core.Net
         /// <summary>
         /// 匹配成功命令
         /// </summary>
-        public const int BaseGameMatchSuccess = 0x0403;   // 匹配成功命令
+        public const int EnterBaseGame = 0x0403;   // 匹配成功命令
         /// <summary>
         /// 创建房间命令
         /// </summary>
@@ -91,11 +89,17 @@ namespace Core.Net
         /// 更换职业命令
         /// </summary>
         public const int BaseGameChangeCareer = 0x040D;    // 更换职业命令
-        
+        /// <summary>
+        /// 更改地图命令
+        /// </summary>
         public const int BaseGameMapChange = 0x040E;        // 更改地图命令
-        
+        /// <summary>
+        /// 玩家发送消息命令
+        /// </summary>
         public const int BaseGamePlayerSendMessage = 0x040F; // 玩家发送消息
-        
+        /// <summary>
+        /// 开始游戏命令
+        /// </summary>
         public const int BaseGameStartGame = 0x0410;        // 开始游戏命令
 
 
@@ -144,8 +148,6 @@ namespace Core.Net
                     return nameof(Login);
                 case Heartbeat:
                     return nameof(Heartbeat);
-                case EnterGame:
-                    return nameof(EnterGame);
                 case Logout:
                     return nameof(Logout);
                 case Exception:
@@ -158,8 +160,8 @@ namespace Core.Net
                     return nameof(BaseGameStartMatch);
                 case BaseGameCancelMatch:
                     return nameof(BaseGameCancelMatch);
-                case BaseGameMatchSuccess:
-                    return nameof(BaseGameMatchSuccess);
+                case EnterBaseGame:
+                    return nameof(EnterBaseGame);
                 case BaseGameCreateRoom:
                     return nameof(BaseGameCreateRoom);
                 case BaseGameJoinRoom:
@@ -196,6 +198,10 @@ namespace Core.Net
                     return nameof(BaseGameStartGame);
                 case BaseGameMapChange:
                     return nameof(BaseGameMapChange);
+                case EnterScene:
+                    return nameof(EnterScene);
+                case ExitScene:
+                    return nameof(ExitScene);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(cmd), cmd, "未知的cmd");
             }
