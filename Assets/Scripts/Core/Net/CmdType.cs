@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Core.Net
 {
@@ -134,6 +135,7 @@ namespace Core.Net
         /// </summary>
         public const int ObstacleChange = 0x0702; // 障碍物变更命令
 
+        private static Dictionary<int, string> cmdNameCache = new Dictionary<int, string>();
         /// <summary>
         /// 根据命令类型代码获取对应的命令名称
         /// </summary>
@@ -142,70 +144,26 @@ namespace Core.Net
         /// <exception cref="ArgumentOutOfRangeException">当传入未知的命令类型代码时抛出异常</exception>
         public static string TryToGetType(int cmd)
         {
-            switch (cmd)
+            if (cmdNameCache.TryGetValue(cmd, out var cachedName))
             {
-                case Login:
-                    return nameof(Login);
-                case Heartbeat:
-                    return nameof(Heartbeat);
-                case Logout:
-                    return nameof(Logout);
-                case Exception:
-                    return nameof(Exception);
-                case Alert:
-                    return nameof(Alert);
-                case Move:
-                    return nameof(Move);
-                case BaseGameStartMatch:
-                    return nameof(BaseGameStartMatch);
-                case BaseGameCancelMatch:
-                    return nameof(BaseGameCancelMatch);
-                case EnterBaseGame:
-                    return nameof(EnterBaseGame);
-                case BaseGameCreateRoom:
-                    return nameof(BaseGameCreateRoom);
-                case BaseGameJoinRoom:
-                    return nameof(BaseGameJoinRoom);
-                case BaseGameLeaveRoom:
-                    return nameof(BaseGameLeaveRoom);
-                case BaseGameCurrentRoomChange:
-                    return nameof(BaseGameCurrentRoomChange);
-                case BaseGameReqRoomInfo:
-                    return nameof(BaseGameReqRoomInfo);
-                case BaseGameKickPlayer:
-                    return nameof(BaseGameKickPlayer);
-                case BaseGameRemoveRoom:
-                    return nameof(BaseGameRemoveRoom);
-                case BaseGameLeaderChange:
-                    return nameof(BaseGameLeaderChange);
-                case BaseGameReady:
-                    return nameof(BaseGameReady);
-                case BaseGameChangeCareer:
-                    return nameof(BaseGameChangeCareer);
-                case PutBomb:
-                    return nameof(PutBomb);
-                case BombExplode:
-                    return nameof(BombExplode);
-                case StatusChange:
-                    return nameof(StatusChange);
-                case ObstacleCreate:
-                    return nameof(ObstacleCreate);
-                case ObstacleChange:
-                    return nameof(ObstacleChange);
-                case BaseGamePlayerSendMessage:
-                    return nameof(BaseGamePlayerSendMessage);
-                case BaseGameStartGame:
-                    return nameof(BaseGameStartGame);
-                case BaseGameMapChange:
-                    return nameof(BaseGameMapChange);
-                case EnterScene:
-                    return nameof(EnterScene);
-                case ExitScene:
-                    return nameof(ExitScene);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(cmd), cmd, "未知的cmd");
+                return cachedName;
             }
+            // 获取这个类所有const int字段的值和名称
+            var fields = typeof(CmdType).GetFields();
+            foreach (var field in fields)
+            {
+                if (field.FieldType == typeof(int))
+                {
+                    int value = (int)field.GetValue(null);
+                    if (value == cmd)
+                    {
+                        string name = field.Name;
+                        cmdNameCache[cmd] = name; // 缓存结果
+                        return name;
+                    }
+                }
+            }
+            return $"UnknownCmd(0x{cmd:X4})";
         }
-        
     }
 }
