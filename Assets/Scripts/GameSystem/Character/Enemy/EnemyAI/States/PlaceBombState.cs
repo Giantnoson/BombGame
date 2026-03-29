@@ -31,7 +31,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Enemy
         protected internal override void OnEnter(IFsm<EnemyAIController> fsm)
         {
             Debug.Log("进入放置炸弹状态");
-            Owner.StatusLog.Add(EnemyAIStates.PlaceBomb);
+            Owner.statusLog.Add(EnemyAIStates.PlaceBomb);
             Owner.StatusQueue.Enqueue(EnemyAIStates.PlaceBomb);
             Owner.StatusQueue.Dequeue();
             //Owner.isMoving = false;

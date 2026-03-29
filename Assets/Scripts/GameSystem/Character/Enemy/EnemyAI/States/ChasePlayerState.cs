@@ -15,7 +15,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Enemy
         protected internal override void OnEnter(IFsm<EnemyAIController> fsm)
         {
             Debug.Log("进入追击玩家状态");
-            Owner.StatusLog.Add(EnemyAIStates.ChasePlayer);
+            Owner.statusLog.Add(EnemyAIStates.ChasePlayer);
             Owner.StatusQueue.Enqueue(EnemyAIStates.ChasePlayer);
             Owner.StatusQueue.Dequeue();
             targetPlayer = Owner.GetNearestPlayer();

@@ -14,7 +14,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Enemy
         protected internal override void OnEnter(IFsm<EnemyAIController> fsm)
         {
             Debug.Log("进入路径等待状态");
-            Owner.StatusLog.Add(EnemyAIStates.PathWait);
+            Owner.statusLog.Add(EnemyAIStates.PathWait);
             Owner.StatusQueue.Enqueue(EnemyAIStates.PathWait);
             Owner.StatusQueue.Dequeue();
             //Owner.isMoving = false;

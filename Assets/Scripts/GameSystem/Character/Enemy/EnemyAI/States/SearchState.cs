@@ -35,7 +35,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Enemy
         protected internal override void OnEnter(IFsm<EnemyAIController> fsm)
         {
             Debug.Log("进入搜索状态");
-            Owner.StatusLog.Add(EnemyAIStates.Search);
+            Owner.statusLog.Add(EnemyAIStates.Search);
             Owner.StatusQueue.Enqueue(EnemyAIStates.Search);
             Owner.StatusQueue.Dequeue();
             hasTarget = false;

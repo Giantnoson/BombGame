@@ -18,7 +18,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Enemy
             Debug.Log("进入躲避爆炸状态");
             //Owner.isMoving = false;
             Owner.StopMove();
-            Owner.StatusLog.Add(EnemyAIStates.AvoidExplosion);
+            Owner.statusLog.Add(EnemyAIStates.AvoidExplosion);
             Owner.StatusQueue.Enqueue(EnemyAIStates.AvoidExplosion);
             Owner.StatusQueue.Dequeue();
             hasSafePosition = false;

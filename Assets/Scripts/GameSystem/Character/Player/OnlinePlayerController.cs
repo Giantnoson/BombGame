@@ -23,7 +23,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
          * 移动更新方法，重写自基类
          * 用于处理玩家移动和位置同步逻辑
          */
-        override protected void MoveUpdate()
+        protected override void MoveUpdate()
         {
             // 调用基类的移动更新方法
             base.MoveUpdate();
@@ -34,13 +34,10 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
             } 
             else
             {
-                // 当达到同步间隔时，发送位置信息
-                passTime = 0;
                 // 获取玩家当前位置
                 Vector3 playerPos = transform.position;
                 // 获取玩家当前旋转角度
                 Vector3 playerRotation = transform.rotation.eulerAngles;
-
                 // 检查当前位置和旋转角度是否发生变化
                 if (lastPos != playerPos || lastRot != playerRotation)
                 {
@@ -54,9 +51,12 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
                         {"z", playerPos.z * 100},
                         {"angle", playerRotation.y}, // 只同步Y轴旋转角度
                     }));
+                    // 当达到同步间隔时，发送位置信息后清空
+                    passTime = 0;
                 }
             }
         }
+        
         /**
          * 玩家死亡处理方法
          * 处理玩家死亡后的相关逻辑

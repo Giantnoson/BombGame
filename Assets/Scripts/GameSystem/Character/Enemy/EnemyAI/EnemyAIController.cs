@@ -23,7 +23,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Enemy
 
         [Header("状态")] public float stoppingDistance = 0.3f;
 
-        [Tooltip("状态记录")] public List<EnemyAIStates> StatusLog = new List<EnemyAIStates>();
+        [Tooltip("状态记录")] public List<EnemyAIStates> statusLog = new List<EnemyAIStates>();
 
         public bool isMoving;
 
@@ -65,7 +65,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Enemy
             if (characterController == null) characterController = gameObject.AddComponent<CharacterController>();
             
             // 初始化状态记录列表
-            if (StatusLog == null) StatusLog = new List<EnemyAIStates>();
+            if (statusLog == null) statusLog = new List<EnemyAIStates>();
             /*
             enemyAgent = GetComponent<NavMeshAgent>();
             */
@@ -160,7 +160,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Enemy
             );
 
             // 启动FSM，从Idle状态开始
-            StatusLog.Add(EnemyAIStates.Idle);
+            statusLog.Add(EnemyAIStates.Idle);
             StatusQueue.Enqueue(EnemyAIStates.Idle); //预存入两个，方便启动
             StatusQueue.Enqueue(EnemyAIStates.Idle);
             fsm.Start<IdleState>();

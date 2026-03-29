@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Config;
 using GameSystem.GameScene.MainMenu.GameProps;
@@ -40,6 +41,25 @@ namespace GameSystem.GameScene.MainMenu.Map
 
         [Tooltip("地图数据")] public Dictionary<Vector2Int, MapNode> _mapData = new();
 
+
+        public void MapToJosn()
+        {
+            // 将地图数据转换为可序列化的格式
+            var serializableMapData = new SerializableMapData(_mapData);
+    
+            // 转换为JSON字符串
+            var json = JsonUtility.ToJson(serializableMapData, true);
+    
+            // 打印JSON字符串
+            Debug.Log(json);
+    
+            // 可选：保存到文件
+            string filePath = Path.Combine(Application.persistentDataPath, "mapData.json");
+            File.WriteAllText(filePath, json);
+            Debug.Log($"地图数据已保存到: {filePath}");
+        }
+
+        
         // 对象池引用
         private MapNodePool _nodePool;
 
@@ -95,6 +115,7 @@ namespace GameSystem.GameScene.MainMenu.Map
         {
             if (Input.GetKeyDown(KeyCode.T)) PrintMap();
             if (Input.GetKeyDown(KeyCode.R)) ScanAllMap();
+            if (Input.GetKeyDown(KeyCode.Q)) MapToJosn();
 
             if (Input.GetKeyDown(KeyCode.F))
             {
@@ -774,6 +795,40 @@ namespace GameSystem.GameScene.MainMenu.Map
         }
 
         #endregion
+        
+        [Serializable]
+        public class SerializableMapNode
+        {
+            public int x;
+            public int y;
+            public List<string> tags;
+            public List<Vector2Int> neighbors;
+    
+            public SerializableMapNode(Vector2Int pos, List<TagType> tags, List<Vector2Int> neighbors)
+            {
+                this.x = pos.x;
+                this.y = pos.y;
+                this.tags = tags.Select(t => t.ToString()).ToList();
+                this.neighbors = neighbors;
+            }
+        }
+
+        [Serializable]
+        public class SerializableMapData
+        {
+            public List<SerializableMapNode> nodes;
+    
+            public SerializableMapData(Dictionary<Vector2Int, MapNode> mapData)
+            {
+                nodes = new List<SerializableMapNode>();
+                foreach (var kvp in mapData)
+                {
+                    var neighborPositions = kvp.Value.MapNodes.Select(n => n.CurrentPos).ToList();
+                    nodes.Add(new SerializableMapNode(kvp.Key, kvp.Value.CurrentTag.ToList(), neighborPositions));
+                }
+            }
+        }
+
     }
 
 
@@ -905,4 +960,6 @@ namespace GameSystem.GameScene.MainMenu.Map
             Step = step;
         }
     }
+    
+    
 }

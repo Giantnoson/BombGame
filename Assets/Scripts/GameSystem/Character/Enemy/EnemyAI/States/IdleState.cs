@@ -19,7 +19,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Enemy
         {
             Debug.Log("进入闲置状态");
             Owner.StatusQueue.Enqueue(EnemyAIStates.Idle);
-            Owner.StatusLog.Add(EnemyAIStates.Idle);
+            Owner.statusLog.Add(EnemyAIStates.Idle);
             Owner.StatusQueue.Dequeue();
             //Owner.isMoving = false;
             hasDestructibleBlock = false;

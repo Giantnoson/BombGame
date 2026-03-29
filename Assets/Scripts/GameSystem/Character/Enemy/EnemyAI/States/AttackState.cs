@@ -22,7 +22,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Enemy
         protected internal override void OnEnter(IFsm<EnemyAIController> fsm)
         {
             Debug.Log("进入攻击状态");
-            Owner.StatusLog.Add(EnemyAIStates.Attack);
+            Owner.statusLog.Add(EnemyAIStates.Attack);
             Owner.StatusQueue.Enqueue(EnemyAIStates.Attack);
             Owner.StatusQueue.Dequeue();
             //Owner.isMoving = false;
