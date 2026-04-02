@@ -79,7 +79,7 @@ namespace GameSystem.GameScene.MainMenu.Map
         
                 // 添加标签
                 var tagsList = new NetDictionary();
-                foreach (var tag in kvp.Value.TagObject)
+                foreach (var tag in kvp.Value.CurrentTagOb)
                 {
                     var tagData = new NetDictionary();
                     tagData["type"] =tag.Key.ToString();
@@ -244,7 +244,7 @@ namespace GameSystem.GameScene.MainMenu.Map
 
                 if (TagMap.ContainsKey(_hitColliders[k].tag))
                 {
-                    node.CurrentTag.Add(TagMap[_hitColliders[k].tag]); //添加标签
+                    //node.CurrentTag.Add(TagMap[_hitColliders[k].tag]); //添加标签
                     var baseObject = _hitColliders[k].GetComponent<BaseObject>();
                     if (baseObject == null)
                     {
@@ -255,13 +255,17 @@ namespace GameSystem.GameScene.MainMenu.Map
                     {
                         baseObject.Id = $"{_hitColliders[k].tag}{_count++}";
                     }
-                    node.TagObject.Add(TagMap[_hitColliders[k].tag], baseObject);
+                    node.CurrentTagOb.Add(TagMap[_hitColliders[k].tag], baseObject);
 
                     flag = true;
                 }
             }
 
-            if (!flag) node.CurrentTag.Add(TagType.Nothing); //添加标签
+            if (!flag)
+            {
+                //node.CurrentTag.Add(TagType.Nothing); //添加标签
+                node.CurrentTagOb.Add(TagType.Nothing, null);
+            }
             MapData.Add(key, node); //添加节点
         }
 
@@ -294,17 +298,17 @@ namespace GameSystem.GameScene.MainMenu.Map
             v3Pos.y = startY;
             var flag = false;
             // 清空现有标签
-            node.CurrentTag.Clear();
+            //node.CurrentTag.Clear();
 
             var colliderCount = Physics.OverlapBoxNonAlloc(v3Pos, new Vector3(0.4f, 0.4f, 0.4f), _hitColliders);
             for (var k = 0; k < colliderCount; k++)
                 if (TagMap.ContainsKey(_hitColliders[k].tag))
                 {
-                    node.CurrentTag.Add(TagMap[_hitColliders[k].tag]); //添加标签
+                    //node.CurrentTag.Add(TagMap[_hitColliders[k].tag]); //添加标签
                     flag = true;
                 }
 
-            if (!flag) node.CurrentTag.Add(TagType.Nothing); //添加标签
+            //if (!flag) node.CurrentTag.Add(TagType.Nothing); //添加标签
         }
 
         /// <summary>
@@ -316,7 +320,7 @@ namespace GameSystem.GameScene.MainMenu.Map
         {
             var v3Pso = GetRealCoord(pos);
             var flag = false;
-            node.CurrentTag.Clear();
+            //node.CurrentTag.Clear();
 
             var colliderCount = Physics.OverlapBoxNonAlloc(v3Pso, new Vector3(0.4f, 0.4f, 0.4f), _hitColliders);
             for (var i = 0; i < colliderCount; i++)
@@ -327,11 +331,11 @@ namespace GameSystem.GameScene.MainMenu.Map
                         if (GetVirtualCoord(_hitColliders[i].transform.position) != pos)
                             continue;
 
-                    node.CurrentTag.Add(TagMap[_hitColliders[i].tag]);
+                    //node.CurrentTag.Add(TagMap[_hitColliders[i].tag]);
                     flag = true;
                 }
 
-            if (!flag) node.CurrentTag.Add(TagType.Nothing); //添加标签
+            //if (!flag) node.CurrentTag.Add(TagType.Nothing); //添加标签
         }
 
         #endregion
@@ -403,11 +407,10 @@ namespace GameSystem.GameScene.MainMenu.Map
         public bool CompareTag(Vector2Int pos, TagType type)
         {
             if (!_mapData.ContainsKey(pos)) return false;
-            ScanPoint(pos, MapData[pos]);
-            foreach (var tagType in MapData[pos].CurrentTag)
+            // ScanPoint(pos, MapData[pos]);
+            foreach (var tagType in MapData[pos].CurrentTagOb.Keys)
                 if (tagType == type)
                     return true;
-
             return false;
         }
 
@@ -437,8 +440,8 @@ namespace GameSystem.GameScene.MainMenu.Map
                 return false;
             }
 
-            ScanPoint(pos, MapData[pos]);
-            foreach (var tagType in MapData[pos].CurrentTag)
+            //ScanPoint(pos, MapData[pos]);
+            foreach (var tagType in MapData[pos].CurrentTagOb.Keys)
                 if (types.Contains(tagType))
                     return true;
             return false;
@@ -569,7 +572,7 @@ namespace GameSystem.GameScene.MainMenu.Map
             var targetInfo = new TargetInfo
             {
                 Pos = endPos,
-                Type = MapData[endPos].CurrentTag.Count > 0 ? MapData[endPos].CurrentTag.First() : TagType.Nothing
+                Type = MapData[endPos].CurrentTagOb.Count > 0 ? MapData[endPos].CurrentTagOb.First().Key : TagType.Nothing
             };
             return new PathInfo(startPos, targetInfo, path);
         }
@@ -921,7 +924,7 @@ namespace GameSystem.GameScene.MainMenu.Map
                 foreach (var kvp in mapData)
                 {
                     var neighborPositions = kvp.Value.NeighborNodes.Select(n => n.CurrentPos).ToList();
-                    nodes.Add(new SerializableMapNode(kvp.Key, kvp.Value.TagObject.ToList(), neighborPositions));
+                    nodes.Add(new SerializableMapNode(kvp.Key, kvp.Value.CurrentTagOb.ToList(), neighborPositions));
                 }
             }
         }
