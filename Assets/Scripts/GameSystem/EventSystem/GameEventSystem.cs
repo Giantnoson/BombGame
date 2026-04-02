@@ -6,6 +6,9 @@ namespace GameSystem.GameScene.MainMenu.EventSystem
 {
     public class GameEvent
     {
+        /// <summary>
+        /// 事件拥有者Id/事件Id
+        /// </summary>
         public string Id;
     }
 

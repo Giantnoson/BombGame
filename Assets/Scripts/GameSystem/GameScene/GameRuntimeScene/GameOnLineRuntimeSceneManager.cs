@@ -157,7 +157,7 @@ namespace GameSystem.GameScene.MainMenu.GameScene.GameRuntimeScene
             {
                 //创建玩家移动控制器
                 var controller = playerController.AddComponent<CharacterMoveController>();
-                controller.Init(playerController.id);
+                controller.Init(playerController.Id);
             }
             
             //启用预制体

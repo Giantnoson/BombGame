@@ -38,13 +38,13 @@ namespace GameSystem.GameScene.MainMenu.GameProps
         private void OnTriggerExit(Collider other)
         {
             if (other.CompareTag(nameof(ObjectType.Player)) &&
-                other.gameObject.GetComponent<PlayerController>()?.id == ownerId)
+                other.gameObject.GetComponent<PlayerController>()?.Id == ownerId)
             {
                 //print("玩家离开炸弹范围，取消触发");
                 GetComponent<Collider>().isTrigger = false;
             }
             else if (other.CompareTag(nameof(ObjectType.Enemy)) &&
-                     other.gameObject.GetComponent<EnemyAIController>()?.id == ownerId)
+                     other.gameObject.GetComponent<EnemyAIController>()?.Id == ownerId)
             {
                 print("敌人离开炸弹范围，取消触发");
                 GetComponent<Collider>().isTrigger = false;
@@ -65,7 +65,7 @@ namespace GameSystem.GameScene.MainMenu.GameProps
                     if (hitCollider.CompareTag(ObjectType.Player.ToString()))
                     {
                         var playerController = hitCollider.gameObject.GetComponent<PlayerController>();
-                        if (hitPlayers.Contains(playerController.id))
+                        if (hitPlayers.Contains(playerController.Id))
                         {
                             print("玩家已经受到伤害，跳过");
                             continue;
@@ -74,15 +74,15 @@ namespace GameSystem.GameScene.MainMenu.GameProps
                         GameEventSystem.Broadcast(new CharacterTakeDamageEvent
                         {
                             Id = ownerId,
-                            HitId = hitCollider.gameObject.GetComponent<PlayerController>().id,
+                            HitId = hitCollider.gameObject.GetComponent<PlayerController>().Id,
                             Damage = bombDamage
                         });
-                        hitPlayers.Add(playerController.id);
+                        hitPlayers.Add(playerController.Id);
                     }
                     else if (hitCollider.CompareTag(ObjectType.Enemy.ToString()))
                     {
                         var enemyAIController = hitCollider.gameObject.GetComponent<EnemyAIController>();
-                        if (hitPlayers.Contains(enemyAIController.id))
+                        if (hitPlayers.Contains(enemyAIController.Id))
                         {
                             print("敌人已经受到伤害，跳过");
                             continue;
@@ -91,10 +91,10 @@ namespace GameSystem.GameScene.MainMenu.GameProps
                         GameEventSystem.Broadcast(new CharacterTakeDamageEvent
                         {
                             Id = ownerId,
-                            HitId = enemyAIController.id,
+                            HitId = enemyAIController.Id,
                             Damage = bombDamage
                         });
-                        hitPlayers.Add(enemyAIController.id);
+                        hitPlayers.Add(enemyAIController.Id);
                     }
                     else if (hitCollider.CompareTag(ObjectType.Destructible.ToString()))
                     {
@@ -142,7 +142,7 @@ namespace GameSystem.GameScene.MainMenu.GameProps
                 if (hitCollider.CompareTag(ObjectType.Player.ToString()))
                 {
                     var playerController = hitCollider.gameObject.GetComponent<PlayerController>();
-                    if (hitPlayers.Contains(playerController.id))
+                    if (hitPlayers.Contains(playerController.Id))
                     {
                         print("玩家已经受到伤害，跳过");
                         continue;
@@ -151,15 +151,15 @@ namespace GameSystem.GameScene.MainMenu.GameProps
                     GameEventSystem.Broadcast(new CharacterTakeDamageEvent
                     {
                         Id = ownerId,
-                        HitId = hitCollider.gameObject.GetComponent<PlayerController>().id,
+                        HitId = hitCollider.gameObject.GetComponent<PlayerController>().Id,
                         Damage = bombDamage
                     });
-                    hitPlayers.Add(playerController.id);
+                    hitPlayers.Add(playerController.Id);
                 }
                 else if (hitCollider.CompareTag(ObjectType.Enemy.ToString()))
                 {
                     var enemyAIController = hitCollider.gameObject.GetComponent<EnemyAIController>();
-                    if (hitPlayers.Contains(enemyAIController.id))
+                    if (hitPlayers.Contains(enemyAIController.Id))
                     {
                         print("敌人已经受到伤害，跳过");
                         continue;
@@ -168,10 +168,10 @@ namespace GameSystem.GameScene.MainMenu.GameProps
                     GameEventSystem.Broadcast(new CharacterTakeDamageEvent
                     {
                         Id = ownerId,
-                        HitId = enemyAIController.id,
+                        HitId = enemyAIController.Id,
                         Damage = bombDamage
                     });
-                    hitPlayers.Add(enemyAIController.id);
+                    hitPlayers.Add(enemyAIController.Id);
                 }
                 else if (hitCollider.CompareTag(ObjectType.Destructible.ToString()))
                 {
@@ -180,7 +180,7 @@ namespace GameSystem.GameScene.MainMenu.GameProps
                         PlayerId = ownerId,
                         Exp = 10
                     });
-                    hitCollider.gameObject.SetActive(false);
+                    hitCollider.gameObject.GetComponent<Destructible>().Disable();
                 }
                 else if (hitCollider.CompareTag(ObjectType.Wall.ToString()))
                 {
@@ -189,7 +189,10 @@ namespace GameSystem.GameScene.MainMenu.GameProps
                 }
                 else if (hitCollider.CompareTag(ObjectType.Bomb.ToString()))
                 {
-                    if (hitCollider.gameObject != gameObject) hitCollider.gameObject.GetComponent<Bomb>().Explode();
+                    if (hitCollider.gameObject != gameObject)
+                    {
+                        hitCollider.gameObject.GetComponent<Bomb>().Explode();
+                    }
                 }
 
             var explosionPos = bombPos;

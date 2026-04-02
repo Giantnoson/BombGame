@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Config;
+using Core.Net;
 using GameSystem.GameScene.MainMenu.GameProps;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -30,6 +31,9 @@ namespace GameSystem.GameScene.MainMenu.Map
         [Tooltip("调试起点")] [SerializeField] public Vector2Int TStart;
 
         [Tooltip("调试终点")] [SerializeField] public Vector2Int TEnd;
+
+        private int _count = 0;
+        
 
         private readonly Vector2Int[] _direction =
             { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
@@ -59,6 +63,55 @@ namespace GameSystem.GameScene.MainMenu.Map
             Debug.Log($"地图数据已保存到: {filePath}");
         }
 
+        public void MapToNetwork()
+        {
+    
+            // 创建消息体字典
+            var body = new NetDictionary();
+    
+            // 添加地图数据
+            var mapDataDict = new NetDictionary();
+            foreach (var kvp in _mapData)
+            {
+                var nodeData = new NetDictionary();
+                nodeData["x"] = kvp.Key.x;
+                nodeData["y"] = kvp.Key.y;
+        
+                // 添加标签
+                var tagsList = new NetDictionary();
+                foreach (var tag in kvp.Value.TagObject)
+                {
+                    var tagData = new NetDictionary();
+                    tagData["type"] =tag.Key.ToString();
+                    tagData["id"] = tag.Value.Id;
+                    tagsList[tag.Value.Id] = tagData;
+                }
+                nodeData["tags"] = tagsList;
+        
+                // 添加邻居
+                var neighborsList = new NetDictionary();
+                int index = 0;
+                foreach (var neighbor in kvp.Value.NeighborNodes)
+                {
+                    var neighborData = new NetDictionary();
+                    neighborData["x"] = neighbor.CurrentPos.x;
+                    neighborData["y"] = neighbor.CurrentPos.y;
+                    neighborsList[index.ToString()] = neighborData;
+                    index++;
+                }
+                nodeData["neighbors"] = neighborsList;
+        
+                mapDataDict[$"{kvp.Key.x}_{kvp.Key.y}"] = nodeData;
+            }
+    
+            body["mapData"] = mapDataDict;
+            
+            // 可选：保存到文件
+            string filePath = Path.Combine(Application.persistentDataPath, "netMapJson.json");
+            File.WriteAllText(filePath, body.ToJsonString());
+            Debug.Log($"地图数据已保存到: {filePath}");
+        }
+
         
         // 对象池引用
         private MapNodePool _nodePool;
@@ -83,17 +136,17 @@ namespace GameSystem.GameScene.MainMenu.Map
                 var poolObj = new GameObject("MapNodePool");
                 _nodePool = poolObj.AddComponent<MapNodePool>();
             }
-            // scanInfoConfig = Resources.Load<MapScanInfoConfig>("Scene/" + gameObject.scene.name + "/MapScanInfoConfig");
-            // if (scanInfoConfig == null)
-            // {
-            //     Debug.LogError("未找到MapInfoConfig");
-            // }
-            // else
-            // {
-            //     TagList = scanInfoConfig.tagList;
-            //     offsetDistance = scanInfoConfig.offsetDistance;
-            //     startY = scanInfoConfig.startY;
-            // }
+            scanInfoConfig = Resources.Load<MapScanInfoConfig>("Scene/" + gameObject.scene.name + "/MapScanInfoConfig");
+            if (scanInfoConfig == null)
+            {
+                Debug.LogError("未找到MapInfoConfig");
+            }
+            else
+            {
+                TagList = scanInfoConfig.tagList;
+                offsetDistance = scanInfoConfig.offsetDistance;
+                startY = scanInfoConfig.startY;
+            }
         }
 
         private void Start()
@@ -116,6 +169,7 @@ namespace GameSystem.GameScene.MainMenu.Map
             if (Input.GetKeyDown(KeyCode.T)) PrintMap();
             if (Input.GetKeyDown(KeyCode.R)) ScanAllMap();
             if (Input.GetKeyDown(KeyCode.Q)) MapToJosn();
+            if (Input.GetKeyDown(KeyCode.Z)) MapToNetwork();
 
             if (Input.GetKeyDown(KeyCode.F))
             {
@@ -191,6 +245,18 @@ namespace GameSystem.GameScene.MainMenu.Map
                 if (TagMap.ContainsKey(_hitColliders[k].tag))
                 {
                     node.CurrentTag.Add(TagMap[_hitColliders[k].tag]); //添加标签
+                    var baseObject = _hitColliders[k].GetComponent<BaseObject>();
+                    if (baseObject == null)
+                    {
+                        Debug.LogError("Target 不存在 BaseObjetc");
+                    }
+                    baseObject.VirtualPosition = GetVirtualCoord(baseObject.transform.position);
+                    if(!_hitColliders[k].CompareTag(nameof(TagType.Player)) && !_hitColliders[k].CompareTag(nameof(TagType.Enemy)))
+                    {
+                        baseObject.Id = $"{_hitColliders[k].tag}{_count++}";
+                    }
+                    node.TagObject.Add(TagMap[_hitColliders[k].tag], baseObject);
+
                     flag = true;
                 }
             }
@@ -419,7 +485,7 @@ namespace GameSystem.GameScene.MainMenu.Map
                 if (currentNode == endNode) // 如果到达目标节点，构建并返回路径
                     return ReconstructPath(cameFrom, currentNode, startPos, endPos);
                 closeList.Add(currentNode); // 将当前节点加入关闭列表
-                foreach (var neighbor in currentNode.MapNodes) // 遍历当前节点的所有邻居
+                foreach (var neighbor in currentNode.NeighborNodes) // 遍历当前节点的所有邻居
                 {
                     if (closeList.Contains(neighbor)) continue; // 如果邻居在关闭列表中，跳过
                     if (!IsWalkable(neighbor.CurrentPos)) continue; //如果不可行走，跳过
@@ -575,7 +641,7 @@ namespace GameSystem.GameScene.MainMenu.Map
                 var current = que.Dequeue();
 
                 var currentNode = MapData[current];
-                foreach (var currentNodeMapNode in currentNode.MapNodes)
+                foreach (var currentNodeMapNode in currentNode.NeighborNodes)
                 {
                     if (visited.Contains(currentNodeMapNode.CurrentPos)) continue;
                     if (CompareTag(currentNodeMapNode.CurrentPos, tagTypes) &&
@@ -630,7 +696,7 @@ namespace GameSystem.GameScene.MainMenu.Map
                 {
                     var current = que.Dequeue();
                     var currentNode = MapData[current];
-                    foreach (var currentNodeMapNode in currentNode.MapNodes)
+                    foreach (var currentNodeMapNode in currentNode.NeighborNodes)
                     {
                         if (visited.Contains(currentNodeMapNode.CurrentPos)) continue;
                         if (CompareTag(currentNodeMapNode.CurrentPos, tagTypes) && !BombPos.Instance.IsInExportArea(
@@ -690,7 +756,7 @@ namespace GameSystem.GameScene.MainMenu.Map
                 count++;
                 var current = que.Dequeue();
                 var currentNode = MapData[current];
-                foreach (var currentNodeMapNode in currentNode.MapNodes)
+                foreach (var currentNodeMapNode in currentNode.NeighborNodes)
                 {
                     if (visited.Contains(currentNodeMapNode.CurrentPos)) continue;
                     if (CompareTag(currentNodeMapNode.CurrentPos, tagTypes) && !BombPos.Instance.IsInExportArea(
@@ -739,7 +805,7 @@ namespace GameSystem.GameScene.MainMenu.Map
                 {
                     var current = que.Dequeue();
                     var currentNode = MapData[current];
-                    foreach (var currentNodeMapNode in currentNode.MapNodes)
+                    foreach (var currentNodeMapNode in currentNode.NeighborNodes)
                     {
                         if (visited.Contains(currentNodeMapNode.CurrentPos)) continue;
                         if (CompareTag(currentNodeMapNode.CurrentPos, tagTypes) && !BombPos.Instance.IsInExportArea(
@@ -797,19 +863,50 @@ namespace GameSystem.GameScene.MainMenu.Map
         #endregion
         
         [Serializable]
+        public class SerializableTag
+        {
+            public string tagType;  // 使用字符串存储 TagType
+            public string objectId; // 存储 BaseObject 的 Id
+    
+            public SerializableTag(TagType type, string id)
+            {
+                tagType = type.ToString();
+                objectId = id;
+            }
+        }
+
+        [Serializable]
+        public class SerializableVector2Int
+        {
+            public int x;
+            public int y;
+    
+            public SerializableVector2Int(Vector2Int pos)
+            {
+                x = pos.x;
+                y = pos.y;
+            }
+    
+            public Vector2Int ToVector2Int()
+            {
+                return new Vector2Int(x, y);
+            }
+        }
+
+        [Serializable]
         public class SerializableMapNode
         {
             public int x;
             public int y;
-            public List<string> tags;
-            public List<Vector2Int> neighbors;
+            public List<SerializableTag> tags;
+            public List<SerializableVector2Int> neighbors;
     
-            public SerializableMapNode(Vector2Int pos, List<TagType> tags, List<Vector2Int> neighbors)
+            public SerializableMapNode(Vector2Int pos, List<KeyValuePair<TagType, BaseObject>> tags, List<Vector2Int> neighbors)
             {
                 this.x = pos.x;
                 this.y = pos.y;
-                this.tags = tags.Select(t => t.ToString()).ToList();
-                this.neighbors = neighbors;
+                this.tags = tags.Select(t => new SerializableTag(t.Key, t.Value.Id)).ToList();
+                this.neighbors = neighbors.Select(n => new SerializableVector2Int(n)).ToList();
             }
         }
 
@@ -823,11 +920,12 @@ namespace GameSystem.GameScene.MainMenu.Map
                 nodes = new List<SerializableMapNode>();
                 foreach (var kvp in mapData)
                 {
-                    var neighborPositions = kvp.Value.MapNodes.Select(n => n.CurrentPos).ToList();
-                    nodes.Add(new SerializableMapNode(kvp.Key, kvp.Value.CurrentTag.ToList(), neighborPositions));
+                    var neighborPositions = kvp.Value.NeighborNodes.Select(n => n.CurrentPos).ToList();
+                    nodes.Add(new SerializableMapNode(kvp.Key, kvp.Value.TagObject.ToList(), neighborPositions));
                 }
             }
         }
+
 
     }
 

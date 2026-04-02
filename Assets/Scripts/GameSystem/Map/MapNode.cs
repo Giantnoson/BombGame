@@ -18,19 +18,21 @@ namespace GameSystem.GameScene.MainMenu.Map
         ///     存放当前所处地的tag列表
         /// </summary>
         private HashSet<TagType> _currentTag = new();
+        
+        private Dictionary<TagType, BaseObject> _tagObject = new();
 
         /// <summary>
         ///     存放图的节点
         /// </summary>
-        private List<MapNode> _mapNodes = new();
+        private List<MapNode> _neighborNodes = new();
 
         /// <summary>
         ///     存放图的节点
         /// </summary>
-        public List<MapNode> MapNodes
+        public List<MapNode> NeighborNodes
         {
-            get => _mapNodes;
-            set => _mapNodes = value;
+            get => _neighborNodes;
+            set => _neighborNodes = value;
         }
 
         /// <summary>
@@ -40,6 +42,12 @@ namespace GameSystem.GameScene.MainMenu.Map
         {
             get => _currentPos;
             set => _currentPos = value;
+        }
+
+        public Dictionary<TagType, BaseObject> TagObject
+        {
+            get => _tagObject;
+            set => _tagObject = value;
         }
 
         /// <summary>
@@ -57,12 +65,12 @@ namespace GameSystem.GameScene.MainMenu.Map
 
         public int GetNeighborCount()
         {
-            return MapNodes.Count;
+            return NeighborNodes.Count;
         }
 
         public void AddNeighbor(MapNode node)
         {
-            MapNodes.Add(node);
+            NeighborNodes.Add(node);
         }
     }
 }

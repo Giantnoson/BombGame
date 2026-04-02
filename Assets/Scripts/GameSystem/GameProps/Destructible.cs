@@ -2,9 +2,14 @@
 {
     public class Destructible : BaseObject
     {
-        private void Awake()
+        public void Enable()
         {
-            id = gameObject.GetInstanceID().ToString();
+            gameObject.SetActive(true);
+        }
+
+        public void Disable()
+        {
+            gameObject.SetActive(false);
         }
     }
 }

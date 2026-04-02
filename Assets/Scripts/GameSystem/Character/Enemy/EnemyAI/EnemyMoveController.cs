@@ -231,7 +231,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Enemy
             // 将移动向量从角色本地坐标系转换到世界坐标系
             moveDirection =
                 transform.TransformDirection((nextTargetPos - owner.ToSearchPos(owner.transform.position)).normalized);
-            GameEventSystem.Broadcast(new CharacterMoveEvent.UpdateMoveDirectionEvent(owner.id, moveDirection));
+            GameEventSystem.Broadcast(new CharacterMoveEvent.UpdateMoveDirectionEvent(owner.Id, moveDirection));
         }
 
         /// <summary>
@@ -240,7 +240,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Enemy
         public void StopMoving()
         {
             moveDirection = Vector3.zero;
-            GameEventSystem.Broadcast(new CharacterMoveEvent.UpdateMoveDirectionEvent(owner.id, moveDirection));
+            GameEventSystem.Broadcast(new CharacterMoveEvent.UpdateMoveDirectionEvent(owner.Id, moveDirection));
         }
     }
 }

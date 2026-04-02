@@ -7,7 +7,7 @@ namespace GameSystem.GameScene.MainMenu.Character
     public abstract class BaseState : BaseObject, IState
     {
         
-                #region 模板相关
+        #region 模板相关
 
         [Tooltip("角色类型")] public CharacterType characterType;
 

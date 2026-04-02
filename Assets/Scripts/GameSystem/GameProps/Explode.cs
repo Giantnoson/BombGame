@@ -6,10 +6,10 @@ namespace GameSystem.GameScene.MainMenu.GameProps
     {
         public float destroyTime = 0.5f;
 
-        private void Awake()
-        {
-            id = gameObject.GetInstanceID().ToString();
-        }
+        // private void Awake()
+        // {
+        //     id = gameObject.GetInstanceID().ToString();
+        // }
 
         private void OnEnable()
         {
