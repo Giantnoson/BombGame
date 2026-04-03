@@ -18,7 +18,7 @@ namespace GameSystem.GameScene.MainMenu.GameProps
 
         private void ReturnToPool()
         {
-            ExplodePool.Instance.ReturnExplode(gameObject);
+            ExplodePool.Instance.ReturnExplode(this);
         }
     }
 }

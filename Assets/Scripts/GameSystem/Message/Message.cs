@@ -55,7 +55,7 @@ namespace GameSystem.GameScene.MessageScene
 
         private void ReturnMessage()
         {
-            MessagePool.Instance.ReturnObject(gameObject);
+            MessagePool.Instance.ReturnObject(this);
         }
     }
 }

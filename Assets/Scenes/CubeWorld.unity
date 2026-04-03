@@ -2864,7 +2864,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d795dad0ea958ff4aae049743a5fe04f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefab: {fileID: 8857640016115560336, guid: 6a406fb3676b0d9499fc5951fdea6345, type: 3}
+  prefab: {fileID: 8151600609157678865, guid: 6a406fb3676b0d9499fc5951fdea6345, type: 3}
   initialPoolSize: 20
   poolExpandSize: 10
   maxPoolSize: 100
@@ -2880,7 +2880,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a9a78f25131e814ea9c65b86baac346, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefab: {fileID: 5991135260994405010, guid: bf9ce1b1da22378409e7b15911c6caa6, type: 3}
+  prefab: {fileID: 2758469392703581020, guid: bf9ce1b1da22378409e7b15911c6caa6, type: 3}
   initialPoolSize: 20
   poolExpandSize: 10
   maxPoolSize: 100
@@ -4735,6 +4735,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: N001
+  virtualPosition: {x: 0, y: 0}
   characterType: 0
   characterProper: {fileID: 0}
   globalProper: {fileID: 0}
@@ -4766,7 +4767,7 @@ MonoBehaviour:
   chaseRange: 8
   attackRange: 3
   stoppingDistance: 0.3
-  StatusLog: 
+  statusLog: 
   isMoving: 0
   isDead: 0
   bombPos: {fileID: 0}
@@ -6895,6 +6896,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: N003
+  virtualPosition: {x: 0, y: 0}
   characterType: 0
   characterProper: {fileID: 0}
   globalProper: {fileID: 0}
@@ -6926,7 +6928,7 @@ MonoBehaviour:
   chaseRange: 8
   attackRange: 3
   stoppingDistance: 1
-  StatusLog: 
+  statusLog: 
   isMoving: 0
   isDead: 0
   bombPos: {fileID: 0}
@@ -7864,6 +7866,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: N002
+  virtualPosition: {x: 0, y: 0}
   characterType: 0
   characterProper: {fileID: 0}
   globalProper: {fileID: 0}
@@ -7895,7 +7898,7 @@ MonoBehaviour:
   chaseRange: 8
   attackRange: 3
   stoppingDistance: 1
-  StatusLog: 
+  statusLog: 
   isMoving: 0
   isDead: 0
   bombPos: {fileID: 0}

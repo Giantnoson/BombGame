@@ -21,7 +21,7 @@ namespace GameSystem.GameScene.MainMenu.Pool
             }
         }
 
-        public  GameObject GetMessage()
+        public  Message GetMessage()
         {
             return base.GetObjectFromPool();
         }

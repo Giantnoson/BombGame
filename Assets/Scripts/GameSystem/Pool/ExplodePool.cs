@@ -47,13 +47,13 @@ namespace GameSystem.GameScene.MainMenu.Pool
             var explosion = GetObjectFromPool();
             explosion.transform.position = position;
             explosion.transform.rotation = rotation;
-            explosion.SetActive(true);
+            explosion.gameObject.SetActive(true);
 
             // 添加位置到已放置位置集合
             placedExplodePositions.Add(position);
         }
 
-        public void ReturnExplode(GameObject explode)
+        public void ReturnExplode(Explode explode)
         {
             // 从已放置位置集合中移除
             placedExplodePositions.Remove(explode.transform.position);

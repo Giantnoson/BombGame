@@ -9,7 +9,7 @@ namespace GameSystem.GameScene.MainMenu.Pool
     /// <typeparam name="T">对象类型，必须继承自MonoBehaviour</typeparam>
     public abstract class ObjectPool<T> : MonoBehaviour where T : MonoBehaviour
     {
-        [Header("对象池设置")] [Tooltip("对象预制体")] public GameObject prefab;
+        [Header("对象池设置")] [Tooltip("对象预制体")] public T prefab;
 
         [Tooltip("初始池大小")] [SerializeField] protected int initialPoolSize = 20;
 
@@ -17,7 +17,7 @@ namespace GameSystem.GameScene.MainMenu.Pool
 
         [Tooltip("最大池大小")] [SerializeField] protected int maxPoolSize = 100;
 
-        protected Queue<GameObject> objectPool = new();
+        protected Queue<T> objectPool = new();
         protected Transform poolContainer;
 
         protected virtual void Awake()
@@ -66,7 +66,7 @@ namespace GameSystem.GameScene.MainMenu.Pool
             for (var i = 0; i < initialPoolSize; i++)
             {
                 var obj = CreateNewObject();
-                obj.SetActive(false);
+                obj.gameObject.SetActive(false);
                 objectPool.Enqueue(obj);
             }
         }
@@ -74,7 +74,7 @@ namespace GameSystem.GameScene.MainMenu.Pool
         /// <summary>
         ///     创建新的对象
         /// </summary>
-        protected virtual GameObject CreateNewObject()
+        protected virtual T CreateNewObject()
         {
             return Instantiate(prefab, poolContainer);
         }
@@ -82,9 +82,9 @@ namespace GameSystem.GameScene.MainMenu.Pool
         /// <summary>
         ///     从对象池中获取对象
         /// </summary>
-        protected virtual GameObject GetObjectFromPool()
+        protected virtual T GetObjectFromPool()
         {
-            GameObject obj;
+            T obj;
 
             if (objectPool.Count > 0)
             {
@@ -104,7 +104,7 @@ namespace GameSystem.GameScene.MainMenu.Pool
                 for (var i = 0; i < expandCount - 1; i++)
                 {
                     var newObj = CreateNewObject();
-                    newObj.SetActive(false);
+                    newObj.gameObject.SetActive(false);
                     objectPool.Enqueue(newObj);
                 }
 
@@ -117,10 +117,10 @@ namespace GameSystem.GameScene.MainMenu.Pool
         /// <summary>
         ///     将对象返回到对象池
         /// </summary>
-        public virtual void ReturnObject(GameObject obj)
+        public virtual void ReturnObject(T obj)
         {
             ResetObject(obj);
-            obj.SetActive(false);
+            obj.gameObject.SetActive(false);
             obj.transform.SetParent(poolContainer);
 
             // 检查是否超过最大池大小
@@ -133,7 +133,7 @@ namespace GameSystem.GameScene.MainMenu.Pool
         /// <summary>
         ///     重置对象状态
         /// </summary>
-        protected virtual void ResetObject(GameObject obj)
+        protected virtual void ResetObject(T obj)
         {
             // 子类可以重写此方法以实现特定的重置逻辑
         }

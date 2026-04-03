@@ -2,6 +2,7 @@
 using Config;
 using Core.Net;
 using GameSystem.GameScene.MainMenu.EventSystem;
+using GameSystem.GameScene.MainMenu.Map;
 using UnityEngine;
 // 引入GameSystem命名空间，可能包含游戏相关的系统类
 
@@ -33,10 +34,15 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
         [Tooltip("放置炸弹")]
         public KeyCode sputBomb;
 
+        public Vector2Int beforeV2IPos;
+        public Vector2Int currentV2IPos;
+        
         #endregion
 
         protected virtual void Awake()
         {
+            beforeV2IPos = MapInfo.Instance.GetVirtualCoord(transform.position);
+            currentV2IPos = new Vector2Int(beforeV2IPos.x, beforeV2IPos.y);
             isCameraViewUpdate = GameModeSelect.PlayerCount == 1;
         }
 
@@ -48,6 +54,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
             BombUpdate();
             MoveUpdate();
             CameraViewUpdate();
+            V2IUpdate();
         }
 
         private void CameraViewUpdate()
@@ -75,6 +82,15 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
             beforeMoveDirection = moveDirection;
         }
 
+        protected virtual void V2IUpdate()
+        {
+            currentV2IPos = MapInfo.Instance.GetVirtualCoord(transform.position);
+            if (beforeV2IPos != currentV2IPos)
+            {
+                MapInfo.Instance.UpdateItem(currentV2IPos, beforeV2IPos, this, TagType.Player);
+                beforeV2IPos = currentV2IPos;
+            }
+        }
 
         protected virtual void PutBomb()
         {
@@ -85,7 +101,6 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
             }
 
             bombCooldown = maxBombCooldown;
-            bombCount--;
             var bombPos = transform.position;
 
             print("炸弹放置位置:" + bombPos);
@@ -95,7 +110,11 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
                 Id = id,
                 BombFuseTime = bombFuseTime,
                 BombRadius = bombRadius,
-                BombDamage = bombDamage
+                BombDamage = bombDamage,
+                CallBack = x =>
+                {
+                    if (x) bombCount--;
+                }
             });
         }
 

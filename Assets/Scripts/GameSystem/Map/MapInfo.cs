@@ -5,7 +5,6 @@ using System.Linq;
 using Config;
 using Core.Net;
 using GameSystem.GameScene.MainMenu.GameProps;
-using JetBrains.Annotations;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -13,6 +12,8 @@ namespace GameSystem.GameScene.MainMenu.Map
 {
     public class MapInfo : MonoBehaviour
     {
+        public static MapInfo Instance { get; private set; }
+        
         [Header("地图扫描设置")] [Tooltip("扫描起始参照点")]
         public float startY = 0.5f; // 扫描的起始Y坐标
 
@@ -82,9 +83,9 @@ namespace GameSystem.GameScene.MainMenu.Map
                 foreach (var tag in kvp.Value.CurrentTagOb)
                 {
                     var tagData = new NetDictionary();
-                    tagData["type"] =tag.Key.ToString();
-                    tagData["id"] = tag.Value.Id;
-                    tagsList[tag.Value.Id] = tagData;
+                    tagData["type"] =tag.Value.ToString();
+                    tagData["id"] = tag.Key.Id;
+                    tagsList[tag.Key.Id] = tagData;
                 }
                 nodeData["tags"] = tagsList;
         
@@ -129,6 +130,14 @@ namespace GameSystem.GameScene.MainMenu.Map
 
         private void Awake()
         {
+            if (Instance == null)
+            {
+                Instance = this;
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
             // 获取或创建对象池
             _nodePool = FindObjectOfType<MapNodePool>();
             if (_nodePool == null)
@@ -184,6 +193,7 @@ namespace GameSystem.GameScene.MainMenu.Map
             if (_nodePool != null)
                 foreach (var node in MapData.Values)
                     _nodePool.Return(node);
+            Instance = null;
         }
 
         private void PrintMap()
@@ -232,7 +242,7 @@ namespace GameSystem.GameScene.MainMenu.Map
             if (MapData.ContainsKey(key)) return;
             var node = _nodePool.Get();
             node.CurrentPos = key;
-            var flag = false;
+            // var flag = false;
             var colliderCount = Physics.OverlapBoxNonAlloc(v3Pos, new Vector3(0.4f, 0.4f, 0.4f), _hitColliders);
             for (var k = 0; k < colliderCount; k++)
             {
@@ -255,17 +265,16 @@ namespace GameSystem.GameScene.MainMenu.Map
                     {
                         baseObject.Id = $"{_hitColliders[k].tag}{_count++}";
                     }
-                    node.CurrentTagOb.Add(TagMap[_hitColliders[k].tag], baseObject);
-
-                    flag = true;
+                    node.CurrentTagOb.Add(baseObject, TagMap[_hitColliders[k].tag]);
+                    // flag = true;
                 }
             }
 
-            if (!flag)
-            {
-                //node.CurrentTag.Add(TagType.Nothing); //添加标签
-                node.CurrentTagOb.Add(TagType.Nothing, null);
-            }
+            // if (!flag)
+            // {
+            //     //node.CurrentTag.Add(TagType.Nothing); //添加标签
+            //     node.CurrentTagOb.Add(TagType.Nothing, null);
+            // }
             MapData.Add(key, node); //添加节点
         }
 
@@ -408,7 +417,11 @@ namespace GameSystem.GameScene.MainMenu.Map
         {
             if (!_mapData.ContainsKey(pos)) return false;
             // ScanPoint(pos, MapData[pos]);
-            foreach (var tagType in MapData[pos].CurrentTagOb.Keys)
+            if (type == TagType.Nothing && MapData[pos].CurrentTagOb.Count == 0)
+            {
+                return true;
+            }
+            foreach (var tagType in MapData[pos].CurrentTagOb.Values)
                 if (tagType == type)
                     return true;
             return false;
@@ -441,7 +454,7 @@ namespace GameSystem.GameScene.MainMenu.Map
             }
 
             //ScanPoint(pos, MapData[pos]);
-            foreach (var tagType in MapData[pos].CurrentTagOb.Keys)
+            foreach (var tagType in MapData[pos].CurrentTagOb.Values)
                 if (types.Contains(tagType))
                     return true;
             return false;
@@ -572,7 +585,7 @@ namespace GameSystem.GameScene.MainMenu.Map
             var targetInfo = new TargetInfo
             {
                 Pos = endPos,
-                Type = MapData[endPos].CurrentTagOb.Count > 0 ? MapData[endPos].CurrentTagOb.First().Key : TagType.Nothing
+                Type = MapData[endPos].CurrentTagOb.Count > 0 ? MapData[endPos].CurrentTagOb.First().Value : TagType.Nothing
             };
             return new PathInfo(startPos, targetInfo, path);
         }
@@ -864,14 +877,120 @@ namespace GameSystem.GameScene.MainMenu.Map
         }
 
         #endregion
+
+        #region 同步地图数据
+
+        public Dictionary<BaseObject, TagType> GetMapDataTarget(Vector3 pos)
+        {
+            return GetMapDataTarget(GetVirtualCoord(pos));
+        } 
+        
+        public Dictionary<BaseObject, TagType> GetMapDataTarget(Vector2Int pos)
+        {
+            _mapData.TryGetValue(pos, out var mapNode);
+            if (mapNode == null)
+            {
+                return null;
+            }
+            return _mapData[pos].GetTarget();
+        }
+
+        public bool AddItem(Vector3 pos, BaseObject item, TagType type)
+        {
+            return AddItem(GetVirtualCoord(pos), item, type);
+        }
+
+        
+        public bool AddItem(Vector2Int pos, BaseObject item, TagType type)
+        {
+            if (_mapData.TryGetValue(pos, out var mapNode))
+            {
+                return mapNode.AddItem(item, type);
+            }
+            else
+            {
+                Debug.LogWarning("此位置不存在" + pos);
+                return false;
+            }
+        }
+
+        public bool HasTag(Vector3 pos, TagType type)
+        {
+            return HasTag(GetVirtualCoord(pos), type);
+        }
+        
+        public bool HasTag(Vector2Int pos, TagType type)
+        {
+            if (!_mapData.TryGetValue(pos, out var mapNode))
+            {
+                Debug.LogWarning("此位置不存在" + pos);
+                return false;  
+            }
+            return mapNode.HasTarget(type);
+        }
+        
+        public List<BaseObject> GetItem(Vector2Int pos, TagType type)
+        {
+            if (!_mapData.TryGetValue(pos, out var mapNode))
+            {
+                Debug.LogWarning("此位置不存在" + pos);
+                return null;
+            }
+            return mapNode.GetItem(type);
+        }
+
+        public bool RemoveItem(Vector3 pos, BaseObject item)
+        {
+            return RemoveItem(GetVirtualCoord(pos), item);
+        }
+        
+        public bool RemoveItem(Vector2Int pos, BaseObject item)
+        {
+            if (!_mapData.TryGetValue(pos, out var mapNode))
+            {
+                Debug.LogWarning("此位置不存在" + pos);
+                return false;
+            }
+            return mapNode.RemoveItem(item);
+        }
+
+        public bool UpdateItem(Vector3 newPos, Vector3 oldPos, BaseObject item, TagType type)
+        {
+            return UpdateItem(GetVirtualCoord(newPos), GetVirtualCoord(oldPos), item, type);
+        }
+        
+        public bool UpdateItem(Vector2Int newPos, Vector2Int oldPos, BaseObject item, TagType type)
+        {
+            if (!IsValidPosition(newPos) || !IsValidPosition(oldPos))
+            {
+                Debug.LogError("不合法的位置: " + newPos + " 或 " + oldPos);
+                return false;
+            }
+
+            if (newPos == oldPos)
+            {
+                Debug.LogWarning("位置相同，无需更新");
+                return AddItem(newPos, item, type);
+            }
+
+            if (!RemoveItem(oldPos, item))
+            {
+                Debug.LogError("无法移除旧位置的项目: " + oldPos);
+            }
+            return AddItem(newPos, item, type);
+        }
+        
+        
+        
+        #endregion
         
         [Serializable]
         public class SerializableTag
         {
-            public string tagType;  // 使用字符串存储 TagType
             public string objectId; // 存储 BaseObject 的 Id
+            public string tagType;  // 使用字符串存储 TagType
     
-            public SerializableTag(TagType type, string id)
+            public SerializableTag(string id, TagType type)
             {
                 tagType = type.ToString();
                 objectId = id;
@@ -904,11 +1023,11 @@ namespace GameSystem.GameScene.MainMenu.Map
             public List<SerializableTag> tags;
             public List<SerializableVector2Int> neighbors;
     
-            public SerializableMapNode(Vector2Int pos, List<KeyValuePair<TagType, BaseObject>> tags, List<Vector2Int> neighbors)
+            public SerializableMapNode(Vector2Int pos, List<KeyValuePair<BaseObject, TagType>> tags, List<Vector2Int> neighbors)
             {
                 this.x = pos.x;
                 this.y = pos.y;
-                this.tags = tags.Select(t => new SerializableTag(t.Key, t.Value.Id)).ToList();
+                this.tags = tags.Select(t => new SerializableTag(t.Key.Id, t.Value)).ToList();
                 this.neighbors = neighbors.Select(n => new SerializableVector2Int(n)).ToList();
             }
         }
@@ -928,139 +1047,5 @@ namespace GameSystem.GameScene.MainMenu.Map
                 }
             }
         }
-
-
     }
-
-
-    /// <summary>
-    ///     路径信息
-    /// </summary>
-    public class PathInfo
-    {
-        //移动相关
-        /// <summary>
-        ///     总步数
-        /// </summary>
-        public readonly int Count;
-
-        public readonly List<Vector2Int> Path;
-
-        /// <summary>
-        ///     当前步数
-        /// </summary>
-        public int CurrentStep;
-
-        //基本信息
-        public Vector2Int StartPos;
-        public TargetInfo TargetInfo;
-
-
-        public PathInfo(Vector2Int startPos, [NotNull] TargetInfo targetInfo, [NotNull] List<Vector2Int> path)
-        {
-            StartPos = startPos;
-            TargetInfo = targetInfo ?? throw new ArgumentNullException(nameof(targetInfo));
-            Path = path ?? throw new ArgumentNullException(nameof(path));
-            Count = path.Count;
-            CurrentStep = 0;
-        }
-
-        public PathInfo()
-        {
-        }
-
-        public bool NowPath(out Vector2Int nowPos)
-        {
-            if (CurrentStep < Count)
-            {
-                nowPos = Path[CurrentStep];
-                return true;
-            }
-
-            nowPos = Vector2Int.down;
-            return false;
-        }
-
-        public Vector2Int NowPath()
-        {
-            if (CurrentStep < Count) return Path[CurrentStep];
-
-            return Vector2Int.down;
-        }
-
-        public bool Next(out Vector2Int nextPos)
-        {
-            if (CurrentStep < Count - 1)
-            {
-                nextPos = Path[++CurrentStep];
-                return true;
-            }
-
-            nextPos = Vector2Int.down;
-            return false;
-        }
-
-        public Vector2Int Next()
-        {
-            if (CurrentStep < Count - 1) return Path[++CurrentStep];
-            return Vector2Int.down;
-        }
-
-        public bool GetNextPaths(int step, out List<Vector2Int> path)
-        {
-            if (CurrentStep >= Count)
-            {
-                path = null;
-                return false;
-            }
-
-            if (CurrentStep + step < Count)
-                path = Path.GetRange(CurrentStep, step);
-            else
-                path = Path.GetRange(CurrentStep, Count - CurrentStep);
-            return true;
-        }
-
-        public Vector2Int GetEndPos()
-        {
-            return Path[Count - 1];
-        }
-
-        public Vector2Int GetStartPos()
-        {
-            return Path[0];
-        }
-
-        public bool IsEnd()
-        {
-            return CurrentStep == Count - 1;
-        }
-    }
-
-    /// <summary>
-    ///     目标信息
-    /// </summary>
-    public class TargetInfo
-    {
-        public Vector2Int Pos;
-        public TagType Type;
-    }
-
-    public class TargetStepInfo
-    {
-        public Vector2Int Pos;
-        public int Step;
-
-        public TargetStepInfo()
-        {
-        }
-
-        public TargetStepInfo(Vector2Int pos, int step)
-        {
-            Pos = pos;
-            Step = step;
-        }
-    }
-    
-    
 }

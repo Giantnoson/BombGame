@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Config;
 using GameSystem.GameScene.MainMenu.EventSystem;
+using GameSystem.GameScene.MainMenu.Map;
 using GameSystem.GameScene.MainMenu.Pool;
 using UnityEngine;
 
@@ -29,19 +30,14 @@ namespace GameSystem.GameScene.MainMenu.GameProps
 
         private void OnPlaceRequest(BombEvents.BombPlaceRequestEvent evt)
         {
+            if (MapInfo.Instance.HasTag(evt.Position, TagType.Bomb))
+            {
+                print("炸弹放置失败，位置有障碍物");
+                evt.CallBack?.Invoke(false);
+                return;
+            }
             evt.Position.x = Mathf.Ceil(evt.Position.x) - 0.5f;
             evt.Position.z = Mathf.Ceil(evt.Position.z) - 0.5f;
-            evt.Position.y = 0.5f;
-            var len = Physics.OverlapBoxNonAlloc(evt.Position, new Vector3(0.4f, 0.4f, 0.4f), hitColliders);
-            if (len > 0)
-                for (int i = 0; i < len; i++)
-                {
-                    if (hitColliders[i].gameObject.CompareTag(nameof(ObjectType.Wall)))
-                    {
-                        print("炸弹放置失败，位置有障碍物");
-                        return;
-                    }
-                }
             evt.Position.y = 0f;
             print("收到放置炸弹请求，位置：" + evt.Position + "，拥有者：" + evt.Id);
             // 检查该位置是否已有炸弹
@@ -51,29 +47,30 @@ namespace GameSystem.GameScene.MainMenu.GameProps
                 evt.CallBack?.Invoke(false);
                 return;
             }
-
-            // 放置炸弹
-            var bombInstance = BombPool.Instance.GetBomb();
-            bombInstance.gameObject.transform.position = evt.Position;
-            bombInstance.gameObject.transform.rotation = Quaternion.identity;
             
-            var bombComponent = bombInstance.GetComponent<Bomb>();
-            if (bombComponent != null)
+            // 放置炸弹
+            var bomb = BombPool.Instance.GetBomb();
+            if (bomb != null)
             {
-                bombComponent.ownerId = evt.Id;
-                bombComponent.putPosition = evt.Position;
-                bombComponent.bombFuseTime = evt.BombFuseTime;
-                bombComponent.bombRadius = evt.BombRadius;
-                bombComponent.bombDamage = evt.BombDamage;
+                bomb.gameObject.transform.position = evt.Position;
+                bomb.gameObject.transform.rotation = Quaternion.identity;
+                bomb.ownerId = evt.Id;
+                bomb.putPosition = evt.Position;
+                bomb.bombFuseTime = evt.BombFuseTime;
+                bomb.bombRadius = evt.BombRadius;
+                bomb.bombDamage = evt.BombDamage;
             }
             else
             {
                 Debug.LogError("炸弹预制体上没有Bomb组件");
                 evt.CallBack?.Invoke(false);
             }
-            bombInstance.SetActive(true);
+            bomb.gameObject.SetActive(true);
+
+            
+            MapInfo.Instance.AddItem(evt.Position, bomb, TagType.Bomb);
             // 记录位置
-            placedBombPositions.Add(bombComponent.putPosition);
+            placedBombPositions.Add(bomb.putPosition);
             evt.CallBack?.Invoke(true);
         }
 

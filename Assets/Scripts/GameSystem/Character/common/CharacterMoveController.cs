@@ -31,7 +31,9 @@ namespace GameSystem.GameScene.MainMenu.Character
         private float mouseY;
 
         private Vector3 moveDirection = Vector3.zero;
-
+        
+        
+        
         [Tooltip("角色移动速度")] public float a { get; set; } // SimpleMove 的速度单位是 米/秒
 
 
@@ -77,6 +79,7 @@ namespace GameSystem.GameScene.MainMenu.Character
         {
             if (isDie) return;
             // 鼠标水平旋转控制（左右看）
+            
             mouseX *= mouseSensitivity;
             // 鼠标垂直旋转控制（上下看）
             mouseY *= mouseSensitivity;

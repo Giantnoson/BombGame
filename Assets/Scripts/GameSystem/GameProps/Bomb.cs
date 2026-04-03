@@ -3,6 +3,7 @@ using Config;
 using GameSystem.GameScene.MainMenu.Character.Enemy;
 using GameSystem.GameScene.MainMenu.Character.Player;
 using GameSystem.GameScene.MainMenu.EventSystem;
+using GameSystem.GameScene.MainMenu.Map;
 using GameSystem.GameScene.MainMenu.Pool;
 using UnityEngine;
 // UnityEditor命名空间只能在编辑器脚本中使用，已移除
@@ -21,13 +22,14 @@ namespace GameSystem.GameScene.MainMenu.GameProps
 
         [Tooltip("炸弹爆炸范围")] public float bombRadius = 5f;
 
+        [Tooltip("是否爆炸")] public bool isExplode = false;    
 
         private readonly HashSet<string> hitPlayers = new HashSet<string>(); // 用于记录已经爆炸伤害过的玩家
 
-        private void Awake()
-        {
-            id = gameObject.GetInstanceID().ToString();
-        }
+        // private void Awake()
+        // {
+        //     id = gameObject.GetInstanceID().ToString();
+        // }
 
         private void OnEnable()
         {
@@ -52,73 +54,62 @@ namespace GameSystem.GameScene.MainMenu.GameProps
         }
 
 
-        private void CreateExplosion(Vector3 basePos, Vector3 exportWay)
+        private void CreateExplosion(Vector3 basePos, Vector3 exportWay, List<KeyValuePair<BaseObject, TagType>> removeList, List<KeyValuePair<BaseObject, TagType>> invokeList)
         {
             print("开始执行爆炸操作,爆炸传播方向：" + exportWay);
             for (var i = 1; i < bombRadius; i++)
             {
                 basePos += exportWay;
-                var hitColliders = Physics.OverlapBox(basePos, new Vector3(0.4f, 0.4f, 0.4f), Quaternion.identity);
-                foreach (var hitCollider in hitColliders)
+                var mapDataTarget = MapInfo.Instance.GetMapDataTarget(basePos);
+                if(mapDataTarget == null) return;
+                foreach (var tagType in mapDataTarget)
                 {
-                    print("碰撞到 tag = " + hitCollider.tag + " name = " + hitCollider.name + " pos= " + hitCollider.transform.position);
-                    if (hitCollider.CompareTag(ObjectType.Player.ToString()))
+                    switch (tagType.Value)
                     {
-                        var playerController = hitCollider.gameObject.GetComponent<PlayerController>();
-                        if (hitPlayers.Contains(playerController.Id))
-                        {
-                            print("玩家已经受到伤害，跳过");
-                            continue;
-                        }
-
-                        GameEventSystem.Broadcast(new CharacterTakeDamageEvent
-                        {
-                            Id = ownerId,
-                            HitId = hitCollider.gameObject.GetComponent<PlayerController>().Id,
-                            Damage = bombDamage
-                        });
-                        hitPlayers.Add(playerController.Id);
+                        case TagType.Bomb:
+                            if (gameObject != tagType.Key.gameObject)
+                            {
+                                print("碰撞到其他炸弹，触发其他炸弹爆炸");
+                                invokeList.Add(tagType);
+                            }
+                            break;
+                        case TagType.Player:
+                            if (hitPlayers.Contains(tagType.Key.Id))
+                            {
+                                print("玩家已经受到伤害，跳过");
+                                break;
+                            }
+                            GameEventSystem.Broadcast(new CharacterTakeDamageEvent
+                            {
+                                Id = ownerId,
+                                HitId = tagType.Key.Id,
+                                Damage = bombDamage
+                            });
+                            hitPlayers.Add(tagType.Key.Id);
+                            break;
+                        case TagType.Enemy:
+                            if (hitPlayers.Contains(tagType.Key.Id))
+                            {
+                                print("敌人已经受到伤害，跳过");
+                                break;
+                            }
+                            GameEventSystem.Broadcast(new CharacterTakeDamageEvent
+                            {
+                                Id = ownerId,
+                                HitId = tagType.Key.Id,
+                                Damage = bombDamage
+                            });
+                            hitPlayers.Add(tagType.Key.Id);
+                            break;
+                        case TagType.Destructible:
+                            GameEventSystem.Broadcast(new ExpAddEvent
+                            {
+                                PlayerId = ownerId,
+                                Exp = 10
+                            });
+                            removeList.Add(tagType);
+                            break;
                     }
-                    else if (hitCollider.CompareTag(ObjectType.Enemy.ToString()))
-                    {
-                        var enemyAIController = hitCollider.gameObject.GetComponent<EnemyAIController>();
-                        if (hitPlayers.Contains(enemyAIController.Id))
-                        {
-                            print("敌人已经受到伤害，跳过");
-                            continue;
-                        }
-
-                        GameEventSystem.Broadcast(new CharacterTakeDamageEvent
-                        {
-                            Id = ownerId,
-                            HitId = enemyAIController.Id,
-                            Damage = bombDamage
-                        });
-                        hitPlayers.Add(enemyAIController.Id);
-                    }
-                    else if (hitCollider.CompareTag(ObjectType.Destructible.ToString()))
-                    {
-                        GameEventSystem.Broadcast(new ExpAddEvent
-                        {
-                            PlayerId = ownerId,
-                            Exp = 10
-                        });
-                        Destroy(hitCollider.gameObject);
-                    }
-                    else if (hitCollider.CompareTag(ObjectType.Wall.ToString()))
-                    {
-                        print("碰撞到墙体，退出");
-                        return;
-                    }
-                    else if (hitCollider.CompareTag(ObjectType.Bomb.ToString()))
-                    {
-                        if (hitCollider.gameObject != gameObject)
-                        {
-                            print("碰撞到其他炸弹，触发其他炸弹爆炸");
-                            hitCollider.gameObject.GetComponent<Bomb>().Explode();
-                        }
-                    }
-
                 }
                     
                 var explosionPos = basePos;
@@ -130,79 +121,95 @@ namespace GameSystem.GameScene.MainMenu.GameProps
         public void Explode()
         {
             CancelInvoke("Explode");
+            isExplode = true;
+            List<KeyValuePair<BaseObject, TagType>> removeList = new List<KeyValuePair<BaseObject, TagType>>();
+            List<KeyValuePair<BaseObject, TagType>> invokeList = new List<KeyValuePair<BaseObject, TagType>>();
+            
             GetComponent<Collider>().enabled = false; //关闭碰撞体，防止重复调用
             // TODO： 添加爆炸逻辑
             var bombPos = transform.position;
             bombPos.x = Mathf.Ceil(bombPos.x) - 0.5f;
             bombPos.z = Mathf.Ceil(bombPos.z) - 0.5f;
             bombPos.y = 0.5f;
-            var hitColliders = Physics.OverlapBox(bombPos, new Vector3(0.4f, 0.4f, 0.4f), Quaternion.identity);
-            foreach (var hitCollider in hitColliders)
-                //print("碰撞到 tag = " + hitCollider.tag + " name = " + hitCollider.name + " pos= " + hitCollider.transform.position);
-                if (hitCollider.CompareTag(ObjectType.Player.ToString()))
-                {
-                    var playerController = hitCollider.gameObject.GetComponent<PlayerController>();
-                    if (hitPlayers.Contains(playerController.Id))
-                    {
-                        print("玩家已经受到伤害，跳过");
-                        continue;
-                    }
-
-                    GameEventSystem.Broadcast(new CharacterTakeDamageEvent
-                    {
-                        Id = ownerId,
-                        HitId = hitCollider.gameObject.GetComponent<PlayerController>().Id,
-                        Damage = bombDamage
-                    });
-                    hitPlayers.Add(playerController.Id);
+            var mapDataTarget = MapInfo.Instance.GetMapDataTarget(bombPos);
+            foreach (var tagType in mapDataTarget)
+            {
+                switch (tagType.Value) 
+                { 
+                    case TagType.Bomb: 
+                        if (gameObject != tagType.Key.gameObject) 
+                        { 
+                            print("碰撞到其他炸弹，触发其他炸弹爆炸"); 
+                            invokeList.Add(tagType);
+                        } 
+                        break;
+                    case TagType.Player: 
+                        if (hitPlayers.Contains(tagType.Key.Id)) 
+                        { 
+                            print("玩家已经受到伤害，跳过"); 
+                            break;
+                        } 
+                        GameEventSystem.Broadcast(new CharacterTakeDamageEvent
+                        { 
+                            Id = ownerId, 
+                            HitId = tagType.Key.Id, 
+                            Damage = bombDamage
+                        }); 
+                        hitPlayers.Add(tagType.Key.Id); 
+                        break;
+                    case TagType.Enemy: 
+                        if (hitPlayers.Contains(tagType.Key.Id)) 
+                        { 
+                            print("敌人已经受到伤害，跳过"); 
+                            break;
+                        } 
+                        GameEventSystem.Broadcast(new CharacterTakeDamageEvent 
+                        { 
+                            Id = ownerId, 
+                            HitId = tagType.Key.Id, 
+                            Damage = bombDamage
+                        }); 
+                        hitPlayers.Add(tagType.Key.Id); 
+                        break;
+                    case TagType.Destructible: 
+                        GameEventSystem.Broadcast(new ExpAddEvent 
+                        { 
+                            PlayerId = ownerId, 
+                            Exp = 10
+                        });
+                        removeList.Add(tagType);
+                        break;
+                    default:
+                        Debug.LogError("未知的TagType: " + tagType.Value);
+                        break;
                 }
-                else if (hitCollider.CompareTag(ObjectType.Enemy.ToString()))
-                {
-                    var enemyAIController = hitCollider.gameObject.GetComponent<EnemyAIController>();
-                    if (hitPlayers.Contains(enemyAIController.Id))
-                    {
-                        print("敌人已经受到伤害，跳过");
-                        continue;
-                    }
-
-                    GameEventSystem.Broadcast(new CharacterTakeDamageEvent
-                    {
-                        Id = ownerId,
-                        HitId = enemyAIController.Id,
-                        Damage = bombDamage
-                    });
-                    hitPlayers.Add(enemyAIController.Id);
-                }
-                else if (hitCollider.CompareTag(ObjectType.Destructible.ToString()))
-                {
-                    GameEventSystem.Broadcast(new ExpAddEvent
-                    {
-                        PlayerId = ownerId,
-                        Exp = 10
-                    });
-                    hitCollider.gameObject.GetComponent<Destructible>().Disable();
-                }
-                else if (hitCollider.CompareTag(ObjectType.Wall.ToString()))
-                {
-                    print("碰撞到墙体，退出");
-                    return;
-                }
-                else if (hitCollider.CompareTag(ObjectType.Bomb.ToString()))
-                {
-                    if (hitCollider.gameObject != gameObject)
-                    {
-                        hitCollider.gameObject.GetComponent<Bomb>().Explode();
-                    }
-                }
-
+            }
+            
             var explosionPos = bombPos;
             explosionPos.y = 0f;
             ExplodePool.Instance.GetExplode(explosionPos, Quaternion.identity);
-            CreateExplosion(bombPos, Vector3.forward);
-            CreateExplosion(bombPos, Vector3.back);
-            CreateExplosion(bombPos, Vector3.left);
-            CreateExplosion(bombPos, Vector3.right);
-            BombPool.Instance.ReturnBomb(gameObject);
+            CreateExplosion(bombPos, Vector3.forward, removeList, invokeList);
+            CreateExplosion(bombPos, Vector3.back, removeList, invokeList);
+            CreateExplosion(bombPos, Vector3.left, removeList, invokeList);
+            CreateExplosion(bombPos, Vector3.right, removeList, invokeList);
+
+            foreach (var tagType in removeList)
+            {
+                MapInfo.Instance.RemoveItem(tagType.Key.transform.position, tagType.Key);
+                tagType.Key.gameObject.SetActive(false);
+            }
+
+
+            foreach (var tagType in invokeList)
+            {
+                var x = tagType.Key.GetComponent<Bomb>();
+                if (!x.isExplode)
+                {
+                    x.Explode();
+                }
+            }
+            BombPool.Instance.ReturnBomb(this);
+            MapInfo.Instance.RemoveItem(transform.position, this);
             GameEventSystem.Broadcast(new BombEvents.BombDestroyEvent
             {
                 Position = putPosition,

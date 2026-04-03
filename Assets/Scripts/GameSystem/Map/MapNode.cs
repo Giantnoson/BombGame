@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Config;
 using UnityEngine;
 
@@ -19,7 +20,7 @@ namespace GameSystem.GameScene.MainMenu.Map
         /// </summary>
         // private HashSet<TagType> _currentTag = new();
         
-        private Dictionary<TagType, BaseObject> _currentCurrentTagOb = new();
+        private Dictionary<BaseObject, TagType> _currentTagOb = new();
 
         /// <summary>
         ///     存放图的节点
@@ -44,10 +45,10 @@ namespace GameSystem.GameScene.MainMenu.Map
             set => _currentPos = value;
         }
 
-        public Dictionary<TagType, BaseObject> CurrentTagOb
+        public Dictionary<BaseObject, TagType> CurrentTagOb
         {
-            get => _currentCurrentTagOb;
-            set => _currentCurrentTagOb = value;
+            get => _currentTagOb;
+            set => _currentTagOb = value;
         }
 
         // /// <summary>
@@ -72,5 +73,41 @@ namespace GameSystem.GameScene.MainMenu.Map
         {
             NeighborNodes.Add(node);
         }
+
+        public bool AddItem(BaseObject item, TagType type)
+        {
+            return _currentTagOb.TryAdd(item, type);
+        }
+
+        public bool HasType(TagType type)
+        {
+            return _currentTagOb.ContainsValue(type);
+        }
+
+        public bool HasItem(BaseObject item)
+        {
+            return _currentTagOb.ContainsKey(item);
+        }
+
+        public List<BaseObject> GetItem(TagType type)
+        {
+            return _currentTagOb.Where(x => x.Value == type).Select(x => x.Key).ToList();
+        }
+
+        public bool RemoveItem(BaseObject item)
+        {
+            return _currentTagOb.Remove(item);
+        }
+
+        public bool HasTarget(TagType type)
+        {
+            return _currentTagOb.Any(x => x.Value == type);
+        }
+
+        public Dictionary<BaseObject, TagType> GetTarget()
+        {
+            return _currentTagOb;
+        }
+        
     }
 }

@@ -28,7 +28,6 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
                         float y = msg._body.GetInt("y") / 100f;
                         float z = msg._body.GetInt("z") / 100f;
                         bombCooldown = maxBombCooldown;
-                        bombCount--;
                         var bombPos = new Vector3(x, y, z);
 
                         print("炸弹放置位置:" + bombPos);
@@ -38,7 +37,11 @@ namespace GameSystem.GameScene.MainMenu.Character.Player
                             Id = id,
                             BombFuseTime = bombFuseTime,
                             BombRadius = bombRadius,
-                            BombDamage = bombDamage
+                            BombDamage = bombDamage,
+                            CallBack = a =>
+                            {
+                                if (a) bombCount--;
+                            }
                         });
                     }
                 }),

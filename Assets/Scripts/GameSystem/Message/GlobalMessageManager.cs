@@ -63,7 +63,7 @@ namespace GameSystem.GameScene.MessageScene
             }
             var x = MessagePool.Instance.GetMessage();
             x.GetComponent<Message>().SetMessage(message);
-            x.SetActive(true);
+            x.gameObject.SetActive(true);
             x.transform.SetParent(topMessagePrefab.transform);
         }
         
@@ -77,7 +77,7 @@ namespace GameSystem.GameScene.MessageScene
             if (defaultMessageLevel > level)
                 return;
             var x = MessagePool.Instance.GetMessage();
-            x.SetActive(true);
+            x.gameObject.SetActive(true);
             switch (level)
             {
                 case MessageLevel.Normal:
@@ -125,7 +125,7 @@ namespace GameSystem.GameScene.MessageScene
                     return;
             }
             var x = MessagePool.Instance.GetMessage();
-            x.SetActive(true);
+            x.gameObject.SetActive(true);
             x.GetComponent<Message>().SetMessage(message);
             x.transform.SetParent(leftButtonMessagePrefab.transform);
         }
@@ -135,7 +135,7 @@ namespace GameSystem.GameScene.MessageScene
             if (defaultMessageLevel > level)
                 return;
             var x = MessagePool.Instance.GetMessage();
-            x.SetActive(true);
+            x.gameObject.SetActive(true);
             switch (level)
             {
                 case MessageLevel.Normal:

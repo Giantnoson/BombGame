@@ -70,7 +70,7 @@ namespace GameSystem.GameScene.MainMenu.Character.Enemy
             enemyAgent = GetComponent<NavMeshAgent>();
             */
             bombPos = FindAnyObjectByType<BombPos>();
-            MapInfo = FindAnyObjectByType<MapInfo>();
+            MapInfo = MapInfo.Instance;
             MoveController = GetComponent<EnemyMoveController>();
             /*if (enemyAgent == null)
             {
