@@ -89,6 +89,15 @@ namespace GameSystem.GameScene
             }
         }
 
+        public void BackForDontHide()
+        {
+            if (_panelStack.Count > 1)
+            {
+                UIBasePanel current = _panelStack.Peek();
+                current.Show();
+            }
+        }
+
         public void CloseAll()
         {
             foreach (var panel in _panels.Values)

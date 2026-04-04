@@ -9578,6 +9578,26 @@ PrefabInstance:
       propertyPath: m_Name
       value: DestructibleWall
       objectReference: {fileID: 0}
+    - target: {fileID: 4922178842692453721, guid: e2568cfaf221b15489f343bb870c4e08, type: 3}
+      propertyPath: m_TagString
+      value: Untagged
+      objectReference: {fileID: 0}
+    - target: {fileID: 7672007851239174766, guid: e2568cfaf221b15489f343bb870c4e08, type: 3}
+      propertyPath: m_Size.x
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7672007851239174766, guid: e2568cfaf221b15489f343bb870c4e08, type: 3}
+      propertyPath: m_Size.y
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7672007851239174766, guid: e2568cfaf221b15489f343bb870c4e08, type: 3}
+      propertyPath: m_Size.z
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7672007851239174766, guid: e2568cfaf221b15489f343bb870c4e08, type: 3}
+      propertyPath: m_Center.y
+      value: 0.4
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

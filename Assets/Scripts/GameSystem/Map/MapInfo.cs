@@ -289,63 +289,63 @@ namespace GameSystem.GameScene.MainMenu.Map
         }
 
 
-        /// <summary>
-        ///     更新所有地图数据
-        /// </summary>
-        public void UpdateMapForAll()
-        {
-            foreach (var node in _mapData) ScanPoint(node.Key, node.Value);
-        }
-
-        /// <summary>
-        ///     扫描指定位置，重用传入的节点对象
-        /// </summary>
-        /// <param name="v3Pos">扫描位置</param>
-        /// <param name="node">要重用的节点对象</param>
-        public void ScanPoint(Vector3 v3Pos, MapNode node)
-        {
-            v3Pos.y = startY;
-            var flag = false;
-            // 清空现有标签
-            //node.CurrentTag.Clear();
-
-            var colliderCount = Physics.OverlapBoxNonAlloc(v3Pos, new Vector3(0.4f, 0.4f, 0.4f), _hitColliders);
-            for (var k = 0; k < colliderCount; k++)
-                if (TagMap.ContainsKey(_hitColliders[k].tag))
-                {
-                    //node.CurrentTag.Add(TagMap[_hitColliders[k].tag]); //添加标签
-                    flag = true;
-                }
-
-            //if (!flag) node.CurrentTag.Add(TagType.Nothing); //添加标签
-        }
-
-        /// <summary>
-        ///     扫描指定位置，重用传入的节点对象
-        /// </summary>
-        /// <param name="pos">扫描位置</param>
-        /// <param name="node">要重用的节点对象</param>
-        public void ScanPoint(Vector2Int pos, MapNode node)
-        {
-            var v3Pso = GetRealCoord(pos);
-            var flag = false;
-            //node.CurrentTag.Clear();
-
-            var colliderCount = Physics.OverlapBoxNonAlloc(v3Pso, new Vector3(0.4f, 0.4f, 0.4f), _hitColliders);
-            for (var i = 0; i < colliderCount; i++)
-                if (TagMap.ContainsKey(_hitColliders[i].tag))
-                {
-                    if (_hitColliders[i].CompareTag(nameof(TagType.Player)) ||
-                        _hitColliders[i].CompareTag(nameof(TagType.Enemy)))
-                        if (GetVirtualCoord(_hitColliders[i].transform.position) != pos)
-                            continue;
-
-                    //node.CurrentTag.Add(TagMap[_hitColliders[i].tag]);
-                    flag = true;
-                }
-
-            //if (!flag) node.CurrentTag.Add(TagType.Nothing); //添加标签
-        }
+        // /// <summary>
+        // ///     更新所有地图数据
+        // /// </summary>
+        // public void UpdateMapForAll()
+        // {
+        //     foreach (var node in _mapData) ScanPoint(node.Key, node.Value);
+        // }
+        //
+        // /// <summary>
+        // ///     扫描指定位置，重用传入的节点对象
+        // /// </summary>
+        // /// <param name="v3Pos">扫描位置</param>
+        // /// <param name="node">要重用的节点对象</param>
+        // public void ScanPoint(Vector3 v3Pos, MapNode node)
+        // {
+        //     v3Pos.y = startY;
+        //     var flag = false;
+        //     // 清空现有标签
+        //     //node.CurrentTag.Clear();
+        //
+        //     var colliderCount = Physics.OverlapBoxNonAlloc(v3Pos, new Vector3(0.4f, 0.4f, 0.4f), _hitColliders);
+        //     for (var k = 0; k < colliderCount; k++)
+        //         if (TagMap.ContainsKey(_hitColliders[k].tag))
+        //         {
+        //             //node.CurrentTag.Add(TagMap[_hitColliders[k].tag]); //添加标签
+        //             flag = true;
+        //         }
+        //
+        //     //if (!flag) node.CurrentTag.Add(TagType.Nothing); //添加标签
+        // }
+        //
+        // /// <summary>
+        // ///     扫描指定位置，重用传入的节点对象
+        // /// </summary>
+        // /// <param name="pos">扫描位置</param>
+        // /// <param name="node">要重用的节点对象</param>
+        // public void ScanPoint(Vector2Int pos, MapNode node)
+        // {
+        //     var v3Pso = GetRealCoord(pos);
+        //     var flag = false;
+        //     //node.CurrentTag.Clear();
+        //
+        //     var colliderCount = Physics.OverlapBoxNonAlloc(v3Pso, new Vector3(0.4f, 0.4f, 0.4f), _hitColliders);
+        //     for (var i = 0; i < colliderCount; i++)
+        //         if (TagMap.ContainsKey(_hitColliders[i].tag))
+        //         {
+        //             if (_hitColliders[i].CompareTag(nameof(TagType.Player)) ||
+        //                 _hitColliders[i].CompareTag(nameof(TagType.Enemy)))
+        //                 if (GetVirtualCoord(_hitColliders[i].transform.position) != pos)
+        //                     continue;
+        //
+        //             //node.CurrentTag.Add(TagMap[_hitColliders[i].tag]);
+        //             flag = true;
+        //         }
+        //
+        //     //if (!flag) node.CurrentTag.Add(TagType.Nothing); //添加标签
+        // }
 
         #endregion
 

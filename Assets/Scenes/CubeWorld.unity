@@ -2830,6 +2830,7 @@ GameObject:
   - component: {fileID: 539890431}
   - component: {fileID: 539890433}
   - component: {fileID: 539890432}
+  - component: {fileID: 539890434}
   m_Layer: 0
   m_Name: Container
   m_TagString: Untagged
@@ -2924,6 +2925,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   initialPoolSize: 100
   maxPoolSize: 500
+--- !u!114 &539890434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 539890425}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81809a0e307e435e834e6cd62645d939, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefab: {fileID: 8453214138560767781, guid: 95956bc595a94aa4da83064c0df526ec, type: 3}
+  initialPoolSize: 20
+  poolExpandSize: 10
+  maxPoolSize: 100
 --- !u!1001 &576028903
 PrefabInstance:
   m_ObjectHideFlags: 0

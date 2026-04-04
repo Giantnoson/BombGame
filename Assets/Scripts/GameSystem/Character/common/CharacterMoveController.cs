@@ -31,11 +31,6 @@ namespace GameSystem.GameScene.MainMenu.Character
         private float mouseY;
 
         private Vector3 moveDirection = Vector3.zero;
-        
-        
-        
-        [Tooltip("角色移动速度")] public float a { get; set; } // SimpleMove 的速度单位是 米/秒
-
 
         private void Start()
         {

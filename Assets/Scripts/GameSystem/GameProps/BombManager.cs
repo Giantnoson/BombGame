@@ -10,9 +10,6 @@ namespace GameSystem.GameScene.MainMenu.GameProps
     public class BombManager : MonoBehaviour
     {
         private readonly HashSet<Vector3> placedBombPositions = new();
-
-        private Collider[] hitColliders = new Collider[20];
-        
         
         private void OnEnable()
         {

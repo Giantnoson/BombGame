@@ -196,7 +196,7 @@ namespace GameSystem.GameScene.MainMenu.GameProps
             foreach (var tagType in removeList)
             {
                 MapInfo.Instance.RemoveItem(tagType.Key.transform.position, tagType.Key);
-                tagType.Key.gameObject.SetActive(false);
+                DestructiblePool.Instance.ReturnDestructible(tagType.Key as Destructible);
             }
 
 

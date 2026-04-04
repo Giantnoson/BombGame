@@ -309,7 +309,8 @@ namespace GameSystem.GameScene.MainMenu
         
         private void OnBackClick()
         {
-            MainUIManager.Instance.Back();
+            MainUIManager.Instance.BackForDontHide();
+            Hide();
         }
 
         private void OnCreateRoomClick()

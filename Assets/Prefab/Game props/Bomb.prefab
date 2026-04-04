@@ -131,11 +131,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: 
+  virtualPosition: {x: 0, y: 0}
   ownerId: 0
   putPosition: {x: 0, y: 0, z: 0}
   bombFuseTime: 3
   bombDamage: 40
   bombRadius: 3
+  isExplode: 0
 --- !u!54 &4707988065531435106
 Rigidbody:
   m_ObjectHideFlags: 0
