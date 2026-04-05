@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using Config;
-using GameSystem.GameScene.MainMenu.Map;
+using GameSystem.Character.Enemy.Fsm;
+using GameSystem.Map;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu.Character.Enemy
+namespace GameSystem.Character.Enemy.EnemyAI.States
 {
     /// <summary>
     ///     闲置状态 - 扫描周围环境

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu.Pool
+namespace GameSystem.Pool
 {
     /// <summary>
     ///     通用对象池基类，提供基本的对象池功能

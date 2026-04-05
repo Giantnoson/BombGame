@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Config;
+using GameSystem.GameScene;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu.Map
+namespace GameSystem.Map
 {
     [Serializable]
     public class MapNode
@@ -74,40 +75,75 @@ namespace GameSystem.GameScene.MainMenu.Map
             NeighborNodes.Add(node);
         }
 
+
+        #region 添加item
+
         public bool AddItem(BaseObject item, TagType type)
         {
             return _currentTagOb.TryAdd(item, type);
         }
-
-        public bool HasType(TagType type)
-        {
-            return _currentTagOb.ContainsValue(type);
-        }
-
+        
+        #endregion
+        
+        #region 查询item
+        
         public bool HasItem(BaseObject item)
         {
             return _currentTagOb.ContainsKey(item);
         }
 
+        public bool HasItem(string itemId)
+        {
+            return _currentTagOb.Any(x => x.Key.Id == itemId);
+        }
+        #endregion
+
+        #region 获取item
+        
         public List<BaseObject> GetItem(TagType type)
         {
             return _currentTagOb.Where(x => x.Value == type).Select(x => x.Key).ToList();
         }
 
+        public bool TryGetItem(string itemId, out BaseObject item)
+        {
+            item = _currentTagOb.FirstOrDefault(x => x.Key.Id == itemId).Key;
+            return item != null;
+        }
+        
+        #endregion
+
+        #region 移除item
+
         public bool RemoveItem(BaseObject item)
         {
             return _currentTagOb.Remove(item);
         }
-
-        public bool HasTarget(TagType type)
+        
+        public bool RemoveItem(string itemId)
         {
-            return _currentTagOb.Any(x => x.Value == type);
+            return _currentTagOb.Remove(_currentTagOb.FirstOrDefault(x => x.Key.Id == itemId).Key);
         }
 
-        public Dictionary<BaseObject, TagType> GetTarget()
+        #endregion
+        
+        
+        public bool HasTag(TagType type)
+        {
+            return _currentTagOb.ContainsValue(type);
+        }
+        
+        public Dictionary<BaseObject, TagType> GetTargetDic()
         {
             return _currentTagOb;
         }
+        
+        public bool GetTargetDic(string itemId, out KeyValuePair<BaseObject, TagType> kvp)
+        {
+            kvp = _currentTagOb.FirstOrDefault(x => x.Key.Id == itemId);
+            return kvp.Key != null;
+        }
+        
         
     }
 }

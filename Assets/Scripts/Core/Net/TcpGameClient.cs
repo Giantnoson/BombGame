@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Config;
-using GameSystem.GameScene.MessageScene;
+using GameSystem.Message;
 using Unity.VisualScripting;
 using UnityEngine;
 using Object = UnityEngine.Object;

@@ -1,8 +1,11 @@
-using GameSystem.GameScene.MainMenu.EventSystem;
+using GameSystem.EventSystem;
+using GameSystem.EventSystem.Event;
+using GameSystem.GameScene.MainMenu;
+using GameSystem.Manager;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace GameSystem.GameScene.MainMenu.GameScene
+namespace GameSystem.GameScene
 {
     /// <summary>
     ///     示例游戏场景管理器

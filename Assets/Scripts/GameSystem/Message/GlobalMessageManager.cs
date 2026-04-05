@@ -1,7 +1,7 @@
-﻿using GameSystem.GameScene.MainMenu.Pool;
+﻿using GameSystem.Pool;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MessageScene
+namespace GameSystem.Message
 {
     public class GlobalMessageManager : MonoBehaviour
     {

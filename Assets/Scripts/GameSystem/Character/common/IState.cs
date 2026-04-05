@@ -1,4 +1,4 @@
-﻿namespace GameSystem.GameScene.MainMenu.Character
+﻿namespace GameSystem.Character.common
 {
     public interface IState
     {

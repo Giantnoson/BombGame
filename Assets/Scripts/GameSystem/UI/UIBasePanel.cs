@@ -1,8 +1,7 @@
 using System.Collections.Generic;
-using GameSystem.UI;
 using UnityEngine;
 
-namespace GameSystem.GameScene
+namespace GameSystem.UI
 {
     public abstract class UIBasePanel : MonoBehaviour
     {

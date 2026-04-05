@@ -4,11 +4,12 @@ using System.IO;
 using System.Linq;
 using Config;
 using Core.Net;
-using GameSystem.GameScene.MainMenu.GameProps;
+using GameSystem.GameProps;
+using GameSystem.GameScene;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace GameSystem.GameScene.MainMenu.Map
+namespace GameSystem.Map
 {
     public class MapInfo : MonoBehaviour
     {
@@ -880,20 +881,7 @@ namespace GameSystem.GameScene.MainMenu.Map
 
         #region 同步地图数据
 
-        public Dictionary<BaseObject, TagType> GetMapDataTarget(Vector3 pos)
-        {
-            return GetMapDataTarget(GetVirtualCoord(pos));
-        } 
-        
-        public Dictionary<BaseObject, TagType> GetMapDataTarget(Vector2Int pos)
-        {
-            _mapData.TryGetValue(pos, out var mapNode);
-            if (mapNode == null)
-            {
-                return null;
-            }
-            return _mapData[pos].GetTarget();
-        }
+
 
         public bool AddItem(Vector3 pos, BaseObject item, TagType type)
         {
@@ -926,7 +914,7 @@ namespace GameSystem.GameScene.MainMenu.Map
                 Debug.LogWarning("此位置不存在" + pos);
                 return false;  
             }
-            return mapNode.HasTarget(type);
+            return mapNode.HasTag(type);
         }
         
         public List<BaseObject> GetItem(Vector2Int pos, TagType type)
@@ -978,6 +966,21 @@ namespace GameSystem.GameScene.MainMenu.Map
                 Debug.LogError("无法移除旧位置的项目: " + oldPos);
             }
             return AddItem(newPos, item, type);
+        }
+        
+        public Dictionary<BaseObject, TagType> GetMapDataTarget(Vector3 pos)
+        {
+            return GetMapDataTarget(GetVirtualCoord(pos));
+        } 
+        
+        public Dictionary<BaseObject, TagType> GetMapDataTarget(Vector2Int pos)
+        {
+            _mapData.TryGetValue(pos, out var mapNode);
+            if (mapNode == null)
+            {
+                return null;
+            }
+            return _mapData[pos].GetTargetDic();
         }
         
         

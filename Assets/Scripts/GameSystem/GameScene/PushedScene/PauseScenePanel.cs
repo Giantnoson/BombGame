@@ -1,6 +1,7 @@
 ﻿using System;
 using Config;
 using GameSystem.GameScene.MainMenu;
+using GameSystem.Manager;
 using GameSystem.UI;
 using UnityEngine;
 using UnityEngine.UI;

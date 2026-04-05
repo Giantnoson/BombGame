@@ -1,6 +1,7 @@
+using GameSystem.Character.Enemy.Fsm;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu.Character.Enemy
+namespace GameSystem.Character.Enemy.EnemyAI.States
 {
     /// <summary>
     ///     放置炸弹状态 - 在合适位置放置炸弹

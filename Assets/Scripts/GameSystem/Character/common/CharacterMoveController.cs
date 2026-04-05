@@ -1,8 +1,9 @@
 using System;
-using GameSystem.GameScene.MainMenu.EventSystem;
+using GameSystem.EventSystem;
+using GameSystem.EventSystem.Event;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu.Character
+namespace GameSystem.Character.common
 {
     public class CharacterMoveController : MonoBehaviour
     {

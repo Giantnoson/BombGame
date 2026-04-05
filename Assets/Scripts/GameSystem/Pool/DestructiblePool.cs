@@ -1,7 +1,6 @@
-﻿using GameSystem.GameScene.MainMenu.GameProps;
-using UnityEngine;
+﻿using GameSystem.GameProps;
 
-namespace GameSystem.GameScene.MainMenu.Pool
+namespace GameSystem.Pool
 {
     public class DestructiblePool : ObjectPool<Destructible>
     {

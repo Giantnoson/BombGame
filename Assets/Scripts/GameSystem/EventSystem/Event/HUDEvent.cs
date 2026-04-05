@@ -1,6 +1,6 @@
 ﻿using Config;
 
-namespace GameSystem.GameScene.MainMenu.EventSystem
+namespace GameSystem.EventSystem.Event
 {
     public class HUDEvent
     {

@@ -1,9 +1,8 @@
 using Config;
-using GameSystem.GameScene.MainMenu.EventSystem;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace GameSystem.GameScene.MainMenu
+namespace GameSystem.Manager
 {
     /// <summary>
     ///     场景管理器接口，定义了场景需要实现的基本功能

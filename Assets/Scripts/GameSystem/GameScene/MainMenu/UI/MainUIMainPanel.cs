@@ -1,8 +1,7 @@
 using GameSystem.UI;
-using UnityEngine;
 using UnityEngine.UI;
 
-namespace GameSystem.GameScene.MainMenu
+namespace GameSystem.GameScene.MainMenu.UI
 {
     public class MainUIMainPanel : UIBasePanel
     {

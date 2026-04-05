@@ -4,7 +4,7 @@ using Config;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace GameSystem.GameScene.MainMenu.Map
+namespace GameSystem.Map
 {
     /// <summary>
     ///     地图扫描，要求地图关于（0，0）对称

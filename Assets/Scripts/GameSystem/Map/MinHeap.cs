@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace GameSystem.GameScene.MainMenu.Map
+namespace GameSystem.Map
 {
     /**
      * 泛型最小堆（MinHeap

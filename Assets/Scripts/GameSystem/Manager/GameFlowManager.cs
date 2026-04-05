@@ -2,14 +2,16 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Config;
-using GameSystem.GameScene.MainMenu.EventSystem;
-using GameSystem.GameScene.MessageScene;
+using GameSystem.EventSystem;
+using GameSystem.EventSystem.Event;
+using GameSystem.GameScene.MainMenu.UI;
+using GameSystem.Message;
 using GameSystem.UI;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace GameSystem.GameScene.MainMenu
+namespace GameSystem.Manager
 {
     /// <summary>
     /// 增强版游戏流管理器，负责管理全局游戏状态和场景转换

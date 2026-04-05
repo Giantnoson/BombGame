@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu.Character.Player
+namespace GameSystem.Character.Player
 {
     public class OnlineOtherPlayerController : BaseOnlinePlayerController
     {

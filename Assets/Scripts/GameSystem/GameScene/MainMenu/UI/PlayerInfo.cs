@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
-using Core.Net;
+﻿using Core.Net;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace GameSystem.GameScene.MainMenu
+namespace GameSystem.GameScene.MainMenu.UI
 {
     /// <summary>
     /// 玩家信息类，用于管理玩家在UI上的显示和操作

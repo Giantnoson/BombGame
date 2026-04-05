@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace GameSystem.GameScene.MainMenu.Character.Enemy
+namespace GameSystem.Character.Enemy.Fsm
 {
     public interface IFsm<T> where T : class
     {

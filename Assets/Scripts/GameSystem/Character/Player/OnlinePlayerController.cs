@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using Core.Net;
+﻿using Core.Net;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu.Character.Player
+namespace GameSystem.Character.Player
 {
 /**
  * 在线玩家控制器类，继承自基础在线玩家控制器

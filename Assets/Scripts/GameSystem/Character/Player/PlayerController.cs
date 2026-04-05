@@ -1,14 +1,17 @@
-﻿using System.Collections.Generic;
-using Config;
-using Core.Net;
-using GameSystem.GameScene.MainMenu.EventSystem;
-using GameSystem.GameScene.MainMenu.Map;
+﻿using Config;
+using GameSystem.Character.common;
+using GameSystem.EventSystem;
+using GameSystem.EventSystem.Event;
+using GameSystem.GameScene.MainMenu;
+using GameSystem.Manager;
+using GameSystem.Map;
 using UnityEngine;
+
 // 引入GameSystem命名空间，可能包含游戏相关的系统类
 
 // 引入Unity引擎的核心命名空间
 
-namespace GameSystem.GameScene.MainMenu.Character.Player
+namespace GameSystem.Character.Player
 {
     public class PlayerController : BaseState
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu.Character.Enemy
+namespace GameSystem.Character.Enemy.Fsm
 {
     public class FsmManager : IFsmManager
     {

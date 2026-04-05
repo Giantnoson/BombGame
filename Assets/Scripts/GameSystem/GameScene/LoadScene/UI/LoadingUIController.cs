@@ -1,4 +1,5 @@
-﻿using TMPro;
+﻿using GameSystem.Manager;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 namespace GameSystem.GameScene.MainMenu.GameScene.LoadScene

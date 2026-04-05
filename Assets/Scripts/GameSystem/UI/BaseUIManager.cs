@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using GameSystem.GameScene.MainMenu;
-using GameSystem.UI;
+using GameSystem.GameScene;
+using GameSystem.GameScene.MainMenu.UI;
 using UnityEngine;
 
-namespace GameSystem.GameScene
+namespace GameSystem.UI
 {
     public abstract class BaseUIManager : MonoBehaviour
     {

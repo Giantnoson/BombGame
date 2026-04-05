@@ -1,10 +1,6 @@
-﻿
+﻿using UnityEngine;
 
-using System;
-using GameSystem.GameScene.MainMenu.Pool;
-using UnityEngine;
-
-namespace GameSystem.GameScene.MessageScene.Tests
+namespace GameSystem.Message
 {
     public class GlobalMessageManagerTests : MonoBehaviour
     {

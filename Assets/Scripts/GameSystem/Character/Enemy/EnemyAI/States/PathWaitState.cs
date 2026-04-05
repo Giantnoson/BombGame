@@ -1,6 +1,7 @@
+using GameSystem.Character.Enemy.Fsm;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu.Character.Enemy
+namespace GameSystem.Character.Enemy.EnemyAI.States
 {
     /// <summary>
     ///     路径等待状态 - 当路径上有爆炸威胁时暂停移动

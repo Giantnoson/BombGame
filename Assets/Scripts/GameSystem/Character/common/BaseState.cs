@@ -1,8 +1,12 @@
 ﻿using Config;
-using GameSystem.GameScene.MainMenu.EventSystem;
+using GameSystem.EventSystem;
+using GameSystem.EventSystem.Event;
+using GameSystem.GameScene;
+using GameSystem.GameScene.MainMenu;
+using GameSystem.Manager;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu.Character
+namespace GameSystem.Character.common
 {
     public abstract class BaseState : BaseObject, IState
     {

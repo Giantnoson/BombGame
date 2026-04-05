@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Config;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu
+namespace GameSystem.Manager
 {
     //游戏状态
 

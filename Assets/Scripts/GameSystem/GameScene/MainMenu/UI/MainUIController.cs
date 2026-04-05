@@ -1,7 +1,7 @@
 using GameSystem.UI;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu
+namespace GameSystem.GameScene.MainMenu.UI
 {
     public class MainUIController : MonoBehaviour
     {

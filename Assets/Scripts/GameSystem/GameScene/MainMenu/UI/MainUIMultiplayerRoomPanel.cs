@@ -1,15 +1,14 @@
-using System;
-using UnityEngine;
-using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
 using Config;
 using Core.Net;
-using GameSystem.GameScene.MessageScene;
+using GameSystem.Message;
 using GameSystem.UI;
 using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
-namespace GameSystem.GameScene.MainMenu
+namespace GameSystem.GameScene.MainMenu.UI
 {
     public class MainUIMultiplayerRoomPanel : UIBasePanel
     {

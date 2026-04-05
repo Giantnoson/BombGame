@@ -1,10 +1,9 @@
-﻿using System;
-using GameSystem.GameScene.MainMenu.Pool;
+﻿using GameSystem.Pool;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace GameSystem.GameScene.MessageScene
+namespace GameSystem.Message
 {
     public class Message : MonoBehaviour
     {

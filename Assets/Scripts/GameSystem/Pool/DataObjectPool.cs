@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu.Pool
+namespace GameSystem.Pool
 {
     /// <summary>
     /// 泛型对象池基类，用于管理和复用对象，减少频繁创建和销毁带来的性能开销

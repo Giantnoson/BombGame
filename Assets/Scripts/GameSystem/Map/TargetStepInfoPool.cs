@@ -1,7 +1,7 @@
-﻿using GameSystem.GameScene.MainMenu.Pool;
+﻿using GameSystem.Pool;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu.Map
+namespace GameSystem.Map
 {
     public class TargetStepInfoPool : DataObjectPool<TargetStepInfo>
     {

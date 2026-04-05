@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Config;
 using GameSystem.GameScene.MainMenu;
-using GameSystem.GameScene.MessageScene;
+using GameSystem.GameScene.MainMenu.UI;
+using GameSystem.Manager;
+using GameSystem.Message;
 using GameSystem.UI;
 using UnityEngine;
 

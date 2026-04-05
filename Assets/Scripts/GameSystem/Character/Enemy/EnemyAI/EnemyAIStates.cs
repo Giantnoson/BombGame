@@ -1,4 +1,4 @@
-﻿namespace GameSystem.GameScene.MainMenu.Character.Enemy
+﻿namespace GameSystem.Character.Enemy.EnemyAI
 {
     public enum EnemyAIStates
     {

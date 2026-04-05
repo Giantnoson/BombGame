@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using Core.Net;
+﻿using Core.Net;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace GameSystem.GameScene.MainMenu
+namespace GameSystem.GameScene.MainMenu.UI
 {
     public class RoomMessage : MonoBehaviour
     {

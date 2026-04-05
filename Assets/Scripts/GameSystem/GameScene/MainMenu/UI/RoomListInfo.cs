@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
-using Config;
+﻿using Config;
 using Core.Net;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace GameSystem.GameScene.MainMenu
+namespace GameSystem.GameScene.MainMenu.UI
 {
     public class RoomListInfo : MonoBehaviour
     {

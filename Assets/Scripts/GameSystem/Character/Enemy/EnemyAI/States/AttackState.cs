@@ -1,6 +1,7 @@
+using GameSystem.Character.Enemy.Fsm;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu.Character.Enemy
+namespace GameSystem.Character.Enemy.EnemyAI.States
 {
     /// <summary>
     ///     攻击状态 - 对玩家进行攻击

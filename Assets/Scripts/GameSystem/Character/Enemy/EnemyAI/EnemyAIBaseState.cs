@@ -1,6 +1,7 @@
+using GameSystem.Character.Enemy.Fsm;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu.Character.Enemy
+namespace GameSystem.Character.Enemy.EnemyAI
 {
     /// <summary>
     ///     敌人AI状态基类

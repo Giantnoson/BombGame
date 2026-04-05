@@ -1,4 +1,6 @@
-﻿namespace GameSystem.GameScene.MainMenu.GameProps
+﻿using GameSystem.GameScene;
+
+namespace GameSystem.GameProps
 {
     public class Destructible : BaseObject
     {

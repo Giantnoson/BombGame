@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using Config;
-using GameSystem.GameScene.MessageScene;
+using GameSystem.Manager;
+using GameSystem.Message;
 using GameSystem.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace GameSystem.GameScene.MainMenu
+namespace GameSystem.GameScene.MainMenu.UI
 {
     public class MainUIMapSelectPanel : UIBasePanel
     {

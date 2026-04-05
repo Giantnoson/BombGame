@@ -1,7 +1,6 @@
-﻿using System;
-using GameSystem.UI;
+﻿using GameSystem.UI;
 
-namespace GameSystem.GameScene.MainMenu
+namespace GameSystem.GameScene.MainMenu.UI
 {
     public class MainUIBGPanel : UIBasePanel
     {

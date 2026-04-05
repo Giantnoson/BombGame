@@ -1,7 +1,7 @@
 ﻿using Config;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu.Map
+namespace GameSystem.Map
 {
     /// <summary>
     ///     目标信息

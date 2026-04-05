@@ -1,8 +1,6 @@
-﻿using System;
-using GameSystem.GameScene.MainMenu.Map;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu
+namespace GameSystem
 {
     public class BaseObject : MonoBehaviour
     {

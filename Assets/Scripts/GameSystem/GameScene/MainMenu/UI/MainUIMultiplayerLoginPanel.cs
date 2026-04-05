@@ -1,12 +1,11 @@
-using System.Net.Sockets;
 using Config;
 using Core.Net;
 using GameSystem.UI;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
-namespace GameSystem.GameScene.MainMenu
+namespace GameSystem.GameScene.MainMenu.UI
 {
     public class MainUIMultiplayerLoginPanel : UIBasePanel
     {

@@ -1,6 +1,6 @@
 using Config;
 
-namespace GameSystem.GameScene.MainMenu.EventSystem
+namespace GameSystem.EventSystem.Event
 {
     /// <summary>
     ///     游戏流管理器相关事件

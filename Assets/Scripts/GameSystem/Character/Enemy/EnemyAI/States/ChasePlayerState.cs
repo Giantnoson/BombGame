@@ -1,6 +1,7 @@
+using GameSystem.Character.Enemy.Fsm;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu.Character.Enemy
+namespace GameSystem.Character.Enemy.EnemyAI.States
 {
     /// <summary>
     ///     追击玩家状态 - 追击并接近玩家

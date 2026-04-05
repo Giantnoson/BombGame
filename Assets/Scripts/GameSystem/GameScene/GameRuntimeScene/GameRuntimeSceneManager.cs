@@ -1,14 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Config;
-using GameSystem.GameScene.MainMenu.Character;
-using GameSystem.GameScene.MainMenu.Character.Enemy;
-using GameSystem.GameScene.MainMenu.Character.Player;
-using GameSystem.GameScene.MainMenu.EventSystem;
+using GameSystem.Character.common;
+using GameSystem.Character.Enemy.EnemyAI;
+using GameSystem.Character.Player;
+using GameSystem.EventSystem;
+using GameSystem.EventSystem.Event;
+using GameSystem.GameScene.MainMenu;
+using GameSystem.Manager;
 using Unity.VisualScripting;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu.GameScene.GameRuntimeScene
+namespace GameSystem.GameScene.GameRuntimeScene
 {
     //游戏运行场景管理器负责管理游戏当中的场景初始化，相对于场景中的流
     public class GameRuntimeSceneManager : BaseSceneManager

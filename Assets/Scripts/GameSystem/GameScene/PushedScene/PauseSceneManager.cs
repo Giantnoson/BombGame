@@ -1,4 +1,4 @@
-﻿using GameSystem.GameScene.MainMenu.EventSystem;
+﻿using GameSystem.UI;
 using UnityEngine;
 
 namespace GameSystem.GameScene.PushedScene

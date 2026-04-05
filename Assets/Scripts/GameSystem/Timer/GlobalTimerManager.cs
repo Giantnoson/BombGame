@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu.Timer
+namespace GameSystem.Timer
 {
     public class GlobalTimerManager : MonoBehaviour
     {

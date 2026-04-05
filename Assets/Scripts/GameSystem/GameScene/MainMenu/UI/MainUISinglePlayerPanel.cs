@@ -1,12 +1,10 @@
-using Config;
+using GameSystem.Manager;
+using GameSystem.UI;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-using GameSystem.GameScene.MainMenu;
-using GameSystem.UI;
-using UnityEngine.SceneManagement;
 
-namespace GameSystem.GameScene.MainMenu
+namespace GameSystem.GameScene.MainMenu.UI
 {
     public class MainUISinglePlayerPanel : UIBasePanel
     {

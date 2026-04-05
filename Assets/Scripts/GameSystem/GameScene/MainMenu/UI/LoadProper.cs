@@ -3,7 +3,7 @@ using Config;
 using TMPro;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu
+namespace GameSystem.GameScene.MainMenu.UI
 {
     public class LoadProper : MonoBehaviour
     {

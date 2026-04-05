@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using Core.Net;
-using GameSystem.GameScene.MainMenu.EventSystem;
+using GameSystem.EventSystem;
+using GameSystem.EventSystem.Event;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu.Character.Player
+namespace GameSystem.Character.Player
 {
     public class BaseOnlinePlayerController : PlayerController
     {

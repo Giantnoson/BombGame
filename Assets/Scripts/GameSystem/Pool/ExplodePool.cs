@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using GameSystem.GameScene.MainMenu.GameProps;
+using GameSystem.GameProps;
 using UnityEngine;
 
-namespace GameSystem.GameScene.MainMenu.Pool
+namespace GameSystem.Pool
 {
     public class ExplodePool : ObjectPool<Explode>
     {

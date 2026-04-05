@@ -1,10 +1,6 @@
-﻿using System.Collections.Generic;
-using GameSystem.GameScene.MessageScene;
-using UnityEngine;
-
-namespace GameSystem.GameScene.MainMenu.Pool
+﻿namespace GameSystem.Pool
 {
-    public class MessagePool : ObjectPool<Message>
+    public class MessagePool : ObjectPool<Message.Message>
     {
         public static MessagePool Instance { get; private set; }
         
@@ -21,7 +17,7 @@ namespace GameSystem.GameScene.MainMenu.Pool
             }
         }
 
-        public  Message GetMessage()
+        public  Message.Message GetMessage()
         {
             return base.GetObjectFromPool();
         }
