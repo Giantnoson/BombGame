@@ -42,14 +42,15 @@ namespace GameSystem.Timer
         /// </summary>
         /// <param name="name">计时器名称</param>
         /// <param name="totalTime">最大时间</param>
-        /// <param name="isLoop">是否循环</param>
+        /// <param name="isLoop">是否为定时触发模式</param>
+        /// <param name="onEnable">开始时执行的函数</param>
         /// <param name="onComplete">完成时执行的函数</param>
-        public void CreateTimer(string name, float totalTime, bool isLoop = false, Action onComplete = null)
+        public void CreateTimer(string name, float totalTime, bool isLoop = false, Action onEnable = null, Action onComplete = null)
         {
             if (_timers.ContainsKey(name))
                 Debug.LogWarning($"Timer {name} already exists.");
             else
-                _timers.Add(name, new Timer(totalTime, isLoop, onComplete));
+                _timers.Add(name, new Timer(totalTime, isLoop, onEnable, onComplete));
         }
     }
 
@@ -69,7 +70,7 @@ namespace GameSystem.Timer
         ///     构造函数
         /// </summary>
         /// <param name="totalTime">最大时间</param>
-        /// <param name="isLoop">是否循环</param>
+        /// <param name="isLoop">是否为定时触发模式</param>
         /// <param name="onEnable">开始时执行</param>
         /// <param name="onComplete">完成时执行</param>
         public Timer(float totalTime, bool isLoop = false, Action onEnable = null, Action onComplete = null)
@@ -108,11 +109,7 @@ namespace GameSystem.Timer
          * 是否暂停
          */
         public bool IsPause { get; private set; }
-
-        /// <summary>
-        ///     更新计时器
-        /// </summary>
-        /// <param name="deltaTime">时间增量</param>
+        
         /// <summary>
         ///     更新计时器状态的方法
         /// </summary>
