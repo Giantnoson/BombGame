@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 635dfd4887304a54a8c45226ea01b9e2, type: 3}
+  m_Name: SpeedUpperM
+  m_EditorClassIdentifier: 
+  propsId: 
+  weight: 50
+  validTime: 60
+  propsType: 0
+  propsCategory: 1
+  propsObj: {fileID: 0}
+  propsDesc: "\u4E2D\u53F7\u52A0\u901F\u836F\u5242"
+  propsName: "\u52A0\u901F\u836F\u5242\uFF08\u4E2D\uFF09"
+  propsIcon: {fileID: 0}
+  canPickUp: 1
+  maxHpAddition: 0
+  speedMultiply: 1.2
+  maxLevelAddition: 0
+  maxStaminaAddition: 0
+  staminaDrainRateAddition: 0
+  staminaRegenRateAddition: 0
+  speedMultiplierMultiply: 0
+  maxBombCountAddition: 0
+  bombDamageAddition: 0
+  bombRadiusAddition: 0
+  bombFuseTimeSubtract: 0
+  bombCooldownDivide: 0
+  bombRecoveryTimeDivide: 0

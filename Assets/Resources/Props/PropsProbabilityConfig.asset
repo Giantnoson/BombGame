@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80fad6eda04e4d54ac3a0595cd1ebfa1, type: 3}
+  m_Name: PropsProbabilityConfig
+  m_EditorClassIdentifier: 
+  description: 
+  propsGenerationProbability: 20
+  propsConfigs:
+  - {fileID: 11400000, guid: c32135700271f674c8a6723e0a9b2113, type: 2}
+  - {fileID: 11400000, guid: 4746d862230a5e34bbbb8e15ee9fe023, type: 2}
+  - {fileID: 11400000, guid: 4ed9e34cdab04cf4db0921ff30c9fe54, type: 2}
+  - {fileID: 11400000, guid: 49c5a4a7da471034fa90066cfea787d3, type: 2}
+  - {fileID: 11400000, guid: edc30274bb4ce52468b145df62ccc27b, type: 2}
+  - {fileID: 11400000, guid: 02428d96e9ae77a4b930f409cf4f5347, type: 2}
+  - {fileID: 11400000, guid: 245b941cac18b1540986cdb5a330342a, type: 2}
+  - {fileID: 11400000, guid: feac4b4fb5615e04a859b05633fc61a5, type: 2}
+  - {fileID: 11400000, guid: e775e80c9abe7ff4489c2e446817f4ab, type: 2}
+  - {fileID: 11400000, guid: ff00bdaeae3bb684499007e3266bbe76, type: 2}
+  - {fileID: 11400000, guid: d8f90a632c2ecfd45a9ce5f7f413d5de, type: 2}
+  - {fileID: 11400000, guid: f438e565233d0114790b286cd5c54cbf, type: 2}
+  - {fileID: 11400000, guid: f7f5bbe57ce90234ca75ebac655e66d2, type: 2}
+  - {fileID: 11400000, guid: 85e53e4c823c6644c8716d3f694060f7, type: 2}
+  - {fileID: 11400000, guid: f4e32a9d66a8b6240ae4f86492966d5e, type: 2}
+  - {fileID: 11400000, guid: 3b6e747e3528bdb46b1fda8f34113998, type: 2}
+  - {fileID: 11400000, guid: 582aa9419ffac2c429d0d8a910c14fe1, type: 2}
+  - {fileID: 11400000, guid: f973753a78dab7e46866e6bc7b0864c7, type: 2}
+  - {fileID: 11400000, guid: adc9968ee75822243aaf1a057e524c16, type: 2}
+  - {fileID: 11400000, guid: b1a56f9af90f15b4dbd6a717324aa7b4, type: 2}
+  - {fileID: 11400000, guid: ac7d5d84715876a4b99f3ec8f80447dc, type: 2}
+  totalWeight: 1010
+  isInit: 1
