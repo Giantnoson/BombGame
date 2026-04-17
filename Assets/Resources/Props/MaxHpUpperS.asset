@@ -14,15 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   propsId: 
   weight: 40
-  validTime: 60
+  validTime: -1
   propsType: 7
   propsCategory: 2
   propsObj: {fileID: 0}
   propsDesc: 
-  propsName: 
+  propsName: "\u6700\u5927\u751F\u547D\u589E\u52A0\u5C0F"
   propsIcon: {fileID: 0}
   canPickUp: 1
-  maxHpAddition: 0
+  maxHpAddition: 20
+  hpRegenAddition: 0
   speedMultiply: 0
   maxLevelAddition: 0
   maxStaminaAddition: 0

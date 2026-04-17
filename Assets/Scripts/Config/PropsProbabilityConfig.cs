@@ -46,7 +46,7 @@ namespace Config
                 propsConfigs = new List<PropsConfig>(allPropsConfigs);
                 Debug.Log($"成功加载 {propsConfigs.Count} 个PropsConfig资源");
             }
-    
+            
             // 初始化权重列表
             _weightPre.Clear();
             totalWeight = 0;

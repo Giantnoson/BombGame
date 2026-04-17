@@ -19,10 +19,11 @@ MonoBehaviour:
   propsCategory: 1
   propsObj: {fileID: 0}
   propsDesc: 
-  propsName: 
+  propsName: "\u70B8\u5F39\u4F24\u5BB3\u589E\u52A0\u4E2D"
   propsIcon: {fileID: 0}
   canPickUp: 1
   maxHpAddition: 0
+  hpRegenAddition: 0
   speedMultiply: 0
   maxLevelAddition: 0
   maxStaminaAddition: 0

@@ -16,5 +16,6 @@
         BombCooldownLower,
         BombRecoveryTimeLower,
         MaxHpUpper,
+        HpRegen,
     }
 }

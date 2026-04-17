@@ -16,6 +16,7 @@ namespace Config
         [Range(-1, 300)]
         public float validTime = 60;
         [Tooltip("道具类型")]
+        
         public PropsType propsType;
         [Tooltip("道具品类,大中小自动控制道具大小")]
         public PropsCategory propsCategory;
@@ -36,6 +37,8 @@ namespace Config
         [Header("角色基础设置")]
         [Tooltip("最大生命值")]
         public float maxHpAddition = 0; //最大生命值
+        [Tooltip("生命恢复")]
+        public float hpRegenAddition = 0; //生命恢复
         [Tooltip("移动速度")]
         public float speedMultiply = 0; //移动速度
         [Tooltip("最大等级")]
