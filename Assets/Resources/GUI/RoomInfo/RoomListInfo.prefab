@@ -410,7 +410,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2390518387761209145}
   m_Layer: 5
-  m_Name: GameObject
+  m_Name: MapSpirit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -668,6 +668,7 @@ MonoBehaviour:
   hostPlayerText: {fileID: 8068201516644952530}
   mapNameText: {fileID: 5823036448850255615}
   joinButton: {fileID: 7268564659681531673}
+  roomImage: {fileID: 2604842534544884445}
 --- !u!1 &6672320816243753180
 GameObject:
   m_ObjectHideFlags: 0

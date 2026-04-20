@@ -635,45 +635,61 @@ namespace GameSystem.Map
         }
 
 
-        public List<TargetStepInfo> SearchTags(Vector2Int startPos, List<TagType> tagTypes)
-        {
-            if (!MapData.ContainsKey(startPos)) //不存在位置时，返回空
-            {
+        /// <summary>
+        /// 从指定位置开始搜索符合标签类型的节点
+        /// </summary>
+        /// <param name="startPos">搜索的起始位置</param>
+        /// <param name="tagTypes">需要匹配的标签类型列表</param>
+        /// <returns>返回符合条件的TargetStepInfo列表，如果没有找到则返回null</returns>
+        public List<TargetStepInfo> SearchTags(Vector2Int startPos, List<TagType> tagTypes) {
+            // 检查起始位置是否存在于地图数据中
+            if (!MapData.ContainsKey(startPos)) { //不存在位置时，返回空
                 Debug.LogWarning("此位置不存在" + startPos);
                 return null;
             }
-
+            // 初始化队列用于广度优先搜索
             var que = new Queue<Vector2Int>();
-            var visited = new HashSet<Vector2Int>();
-
+            // 记录已访问过的位置，避免重复处理
+            var visited = new HashSet<Vector2Int>(); 
+            // 将起始位置加入队列并标记为已访问
             que.Enqueue(startPos);
             visited.Add(startPos);
+            // 记录搜索步数
             var count = 0;
+            // 存储搜索结果
             var result = new List<TargetStepInfo>();
-
-
+            // 使用广度优先搜索算法遍历地图
             while (que.Count > 0)
             {
-                count++;
+                count++; // 每处理一层，步数加1
+                // 取出队列中的当前位置
                 var current = que.Dequeue();
 
+                // 获取当前位置的地图节点
                 var currentNode = MapData[current];
+                // 遍历当前节点的所有相邻节点
                 foreach (var currentNodeMapNode in currentNode.NeighborNodes)
                 {
+                    // 如果相邻节点已经访问过，则跳过
                     if (visited.Contains(currentNodeMapNode.CurrentPos)) continue;
+                    // 检查相邻节点的标签是否符合要求，且不在爆炸区域内
                     if (CompareTag(currentNodeMapNode.CurrentPos, tagTypes) &&
                         !BombPos.Instance.IsInExportArea(GetRealCoord(currentNodeMapNode.CurrentPos)))
                     {
+                        // 将符合条件的位置添加到结果列表中
                         result.Add(TargetStepInfoPool.Instance.Get(currentNode.CurrentPos, count));
+                        // 标记为已访问
                         visited.Add(currentNodeMapNode.CurrentPos);
+                        // 继续检查下一个相邻节点
                         continue;
                     }
-
+                    // 标记为已访问并加入队列继续搜索
                     visited.Add(currentNodeMapNode.CurrentPos);
                     que.Enqueue(currentNodeMapNode.CurrentPos);
                 }
             }
 
+            // 如果没有找到符合条件的位置，返回null，否则返回结果列表
             return result.Count == 0 ? null : result;
         }
 
@@ -690,28 +706,39 @@ namespace GameSystem.Map
         }
 
 
-        public List<TargetStepInfo> SearchTags(Vector2Int startPos, List<TagType> tagTypes, int maxArea)
-        {
+    /// <summary>
+    /// 从指定位置开始搜索符合特定标签类型的区域
+    /// </summary>
+    /// <param name="startPos">搜索的起始位置</param>
+    /// <param name="tagTypes">需要匹配的标签类型列表</param>
+    /// <param name="maxArea">最大搜索区域范围</param>
+    /// <returns>返回符合条件的目标步骤信息列表，如果没有找到则返回null</returns>
+        public List<TargetStepInfo> SearchTags(Vector2Int startPos, List<TagType> tagTypes, int maxArea) {
+            // 检查起始位置是否存在于地图数据中
             if (!MapData.ContainsKey(startPos)) //不存在位置时，返回空
             {
                 Debug.LogWarning("此位置不存在" + startPos);
                 return null;
             }
 
+            // 初始化队列和已访问集合
             var que = new Queue<Vector2Int>();
             var visited = new HashSet<Vector2Int>();
 
+            // 将起始位置加入队列和已访问集合
             que.Enqueue(startPos);
             visited.Add(startPos);
-            var count = 1;
+            var count = 1; // 记录当前层级的节点数量
             var result = new List<TargetStepInfo>();
+            // 按层级进行广度优先搜索
             for (var i = 0; i < maxArea; i++)
             {
-                var bfsCount = count;
-                count = 0;
+                var bfsCount = count; // 当前层级的节点数量
+                count = 0; // 重置下一层级的节点计数器
+                // 遍历当前层级的所有节点
                 for (var j = 0; j < bfsCount; j++)
                 {
-                    var current = que.Dequeue();
+                    var current = que.Dequeue(); // 取出队列中的第一个节点
                     var currentNode = MapData[current];
                     foreach (var currentNodeMapNode in currentNode.NeighborNodes)
                     {

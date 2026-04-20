@@ -13,6 +13,7 @@ namespace GameSystem.GameScene.MainMenu.UI
         public TextMeshProUGUI hostPlayerText;
         public TextMeshProUGUI mapNameText;
         public Button joinButton;
+        public Image roomImage;
         
         private RoomInfo roomInfo;
         
@@ -42,6 +43,7 @@ namespace GameSystem.GameScene.MainMenu.UI
             playerCountText.text = $"房间信息: {roomInfo.CurrentPlayers}/{roomInfo.MaxPlayers}人";
             hostPlayerText.text = $"房主名称: {roomInfo.HostPlayerName}";
             mapNameText.text = $"地图: {Resources.Load<MapSelectInfoList>(MapSelectInfoList.OnLineConfig).mapSelectInfoList[roomInfo.MapIndex].mapName}";
+            roomImage.sprite = Resources.Load<MapSelectInfoList>(MapSelectInfoList.OnLineConfig).mapSelectInfoList[roomInfo.MapIndex].mapSprite;
         }
     }
 

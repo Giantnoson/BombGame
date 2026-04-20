@@ -185,8 +185,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 150, y: -102.53}
-  m_SizeDelta: {x: 300, y: 25}
+  m_AnchoredPosition: {x: 125, y: -102.53}
+  m_SizeDelta: {x: 250, y: 25}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &7094674044842218876
 MonoBehaviour:
@@ -489,6 +489,7 @@ MonoBehaviour:
   playerBtnTran: {fileID: 7579644458612517555}
   removePlayer: {fileID: 9036582556112587555}
   transferRoomOwner: {fileID: 7421491036139251369}
+  LeaderId: 
 --- !u!1 &2712573430404197677
 GameObject:
   m_ObjectHideFlags: 0
