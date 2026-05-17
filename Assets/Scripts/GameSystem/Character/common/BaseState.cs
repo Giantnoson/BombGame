@@ -1,9 +1,12 @@
 ﻿using Config;
 using GameSystem.EventSystem;
 using GameSystem.EventSystem.Event;
+using GameSystem.GameProps.Item;
 using GameSystem.GameScene;
 using GameSystem.GameScene.MainMenu;
 using GameSystem.Manager;
+using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace GameSystem.Character.common
@@ -150,6 +153,10 @@ namespace GameSystem.Character.common
         [Tooltip("移动更新结束")] private float beforeCurrentSpeed;
 
         private float beforeStamina;
+
+        [Header("活跃道具")]
+        [SerializeField]
+        private List<PropsStatus> activeProps = new List<PropsStatus>();
         #endregion
 
 
@@ -163,6 +170,7 @@ namespace GameSystem.Character.common
             LoadProper();
             InitHUD();
             print("HUD初始化成功");
+            RegisterPropsListeners();
         }
 
         private void InitHUD()
@@ -424,6 +432,8 @@ namespace GameSystem.Character.common
             GameEventSystem.RemoveListener<CharacterDieEvent>(OnKillPlayer);
             GameEventSystem.RemoveListener<ExpAddEvent>(OnExpAdd);
             GameEventSystem.RemoveListener<LeaveUpEvent>(OnLeaveUp);
+            ClearAllActiveProps();
+            UnregisterPropsListeners();
             //TODO : 显示面板
         }
 
@@ -442,6 +452,118 @@ namespace GameSystem.Character.common
                     //游戏结束，输了
                 }
             }
+        }
+
+        #endregion
+
+        #region 道具系统
+
+        protected void RegisterPropsListeners()
+        {
+            GameEventSystem.AddListener<PropsEvent.PropsStatusEnable>(OnPropsEnable);
+            GameEventSystem.AddListener<PropsEvent.PropsStatusDisable>(OnPropsDisable);
+        }
+
+        protected void UnregisterPropsListeners()
+        {
+            GameEventSystem.RemoveListener<PropsEvent.PropsStatusEnable>(OnPropsEnable);
+            GameEventSystem.RemoveListener<PropsEvent.PropsStatusDisable>(OnPropsDisable);
+        }
+
+        private void OnPropsEnable(PropsEvent.PropsStatusEnable evt)
+        {
+            if (evt.ownerId != id) return;
+            // 直接存储原始引用（不再 Clone），因为 PlayerController 不再销毁 PropsStatus GameObject，
+            // PropsStatus 自行管理完整生命周期：Timer 到期 → PropsDisable → Broadcast → Destroy(gameObject)
+            activeProps.Add(evt.propsStatus);
+            ApplyPropsEffect(evt.propsStatus.propsConfig, true);
+        }
+
+        private void OnPropsDisable(PropsEvent.PropsStatusDisable evt)
+        {
+            if (evt.ownerId != id) return;
+            // 检查对象有效性（Unity 已销毁的对象 == null）
+            if (evt.propsStatus != null)
+            {
+                activeProps.Remove(evt.propsStatus);
+            }
+            // 即使对象已销毁，仍需通过 config 撤回属性效果
+            if (evt.propsStatus != null && evt.propsStatus.propsConfig != null)
+            {
+                ApplyPropsEffect(evt.propsStatus.propsConfig, false);
+            }
+        }
+
+        private void ApplyPropsEffect(PropsConfig config, bool isEnable)
+        {
+            if (config == null)
+            {
+                Debug.LogWarning("ApplyPropsEffect: config is null, skipping");
+                return;
+            }
+            float sign = isEnable ? 1f : -1f;
+
+            // 基础属性 (Addition)
+            maxHp += config.maxHpAddition * sign;
+            hp = Mathf.Min(hp + config.maxHpAddition * sign, maxHp);
+
+            // 移动属性 (Multiply)
+            if (config.speedMultiply != 0)
+                baseSpeed = isEnable ? baseSpeed * (1 + config.speedMultiply)
+                                     : baseSpeed / (1 + config.speedMultiply);
+
+            // 体力属性 (Addition)
+            maxStamina += config.maxStaminaAddition * sign;
+            staminaDrainRate += config.staminaDrainRateAddition * sign;
+            staminaRegenRate += config.staminaRegenRateAddition * sign;
+
+            // 速度倍率 (Multiply)
+            if (config.speedMultiplierMultiply != 0)
+                speedMultiplier = isEnable ? speedMultiplier * (1 + config.speedMultiplierMultiply)
+                                           : speedMultiplier / (1 + config.speedMultiplierMultiply);
+
+            // 炸弹属性 (Addition)
+            maxBombCount += (int)(config.maxBombCountAddition * sign);
+            bombDamage += config.bombDamageAddition * sign;
+            bombRadius += (int)(config.bombRadiusAddition * sign);
+
+            // 炸弹属性 (Subtract)
+            bombFuseTime -= config.bombFuseTimeSubtract * sign;
+            bombFuseTime = Mathf.Max(0.5f, bombFuseTime);
+
+            // 炸弹属性 (Divide)
+            if (config.bombCooldownDivide != 0)
+                maxBombCooldown = isEnable ? maxBombCooldown / (1 + config.bombCooldownDivide)
+                                           : maxBombCooldown * (1 + config.bombCooldownDivide);
+            if (config.bombRecoveryTimeDivide != 0)
+                maxBombRecoveryTime = isEnable ? maxBombRecoveryTime / (1 + config.bombRecoveryTimeDivide)
+                                               : maxBombRecoveryTime * (1 + config.bombRecoveryTimeDivide);
+
+            // 更新速度
+            currentSpeed = baseSpeed;
+            //GameEventSystem.Broadcast(new CharacterMoveEvent.UpdateSpeedEvent(id, currentSpeed));
+            GameEventSystem.Broadcast(new HUDEvent.LoadHUDEvent(id, characterName, characterType, characterProper,
+                globalProper, hp, stamina, exp, level, currentSpeed));
+        }
+
+        /// <summary>
+        /// 获取当前活跃道具列表
+        /// </summary>
+        public List<PropsStatus> GetActiveProps() => activeProps;
+
+        /// <summary>
+        /// 强制清除所有活跃道具效果（用于角色死亡等）
+        /// </summary>
+        protected void ClearAllActiveProps()
+        {
+            for (int i = activeProps.Count - 1; i >= 0; i--)
+            {
+                if (activeProps[i] != null)
+                {
+                    activeProps[i].ForceDisable();
+                }
+            }
+            activeProps.Clear();
         }
 
         #endregion

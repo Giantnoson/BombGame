@@ -12,12 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 635dfd4887304a54a8c45226ea01b9e2, type: 3}
   m_Name: MaxHpUpperM
   m_EditorClassIdentifier: 
-  propsId: 
+  propsId: HP002B
   weight: 50
   validTime: -1
   propsType: 7
-  propsCategory: 1
-  propsObj: {fileID: 0}
+  propsMaterial: {fileID: 2100000, guid: 7175d52c48bf6c54a93088efe5d0971d, type: 2}
+  propsSize: 1
+  propsObj: {fileID: 1009434267519560147, guid: c4b35bfb212e81f4ca4105dc78afb34a, type: 3}
   propsDesc: 
   propsName: "\u6700\u5927\u751F\u547D\u589E\u52A0\u4E2D"
   propsIcon: {fileID: 0}

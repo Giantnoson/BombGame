@@ -2,6 +2,7 @@
 using GameSystem.Character.common;
 using GameSystem.EventSystem;
 using GameSystem.EventSystem.Event;
+using GameSystem.GameProps.Item;
 using GameSystem.GameScene.MainMenu;
 using GameSystem.Manager;
 using GameSystem.Map;
@@ -92,8 +93,35 @@ namespace GameSystem.Character.Player
             {
                 MapInfo.Instance.UpdateItem(currentV2IPos, beforeV2IPos, this, TagType.Player);
                 beforeV2IPos = currentV2IPos;
+                // 检查当前区块是否有道具
+                CheckAndPickUpProps(currentV2IPos);
             }
         }
+
+        private void CheckAndPickUpProps(Vector2Int pos)
+        {
+            var items = MapInfo.Instance.GetItem(pos, TagType.Props);
+            if (items == null || items.Count == 0) return;
+            
+            // 拾取所有当前区块的道具
+            for (int i = items.Count - 1; i >= 0; i--)
+            {
+                var propsStatus = items[i] as PropsStatus;
+                if (!propsStatus || !propsStatus.propsConfig.canPickUp) continue;
+                
+                // 从地图系统移除道具
+                MapInfo.Instance.RemoveItem(pos, propsStatus);
+                
+                // 初始化并使用道具（UseProps 内部会创建 Timer 管理生命周期）
+                propsStatus.InitProps(id, propsStatus.propsConfig);
+                propsStatus.UseProps();
+                
+                // 隐藏道具视觉（不销毁，因为 PropsStatus 需要保持存活以处理 Timer 回调）
+                // PropsStatus 的 Timer 到期后会自行调用 PropsDisable → Destroy(gameObject)
+            }
+        }
+
+
 
         protected virtual void PutBomb()
         {

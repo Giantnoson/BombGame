@@ -16,10 +16,13 @@ namespace Config
         [Range(-1, 300)]
         public float validTime = 60;
         [Tooltip("道具类型")]
-        
         public PropsType propsType;
+        /*[Tooltip("道具颜色")]
+        public Color propsColor;*/
+        [Tooltip("道具材质")]
+        public Material propsMaterial; 
         [Tooltip("道具品类,大中小自动控制道具大小")]
-        public PropsCategory propsCategory;
+        public PropsSize propsSize;
         [Tooltip("道具Obj")]
         public GameObject propsObj;
         [Tooltip("道具描述")]

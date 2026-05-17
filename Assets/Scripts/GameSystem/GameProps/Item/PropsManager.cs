@@ -1,10 +1,13 @@
-﻿using UnityEngine;
+﻿using Config;
+using UnityEngine;
 
 namespace GameSystem.GameProps.Item
 {
     public class PropsManager : MonoBehaviour
     {
         private static PropsManager _instance;
+        
+        public PropsProbabilityConfig config;
         
         public static PropsManager Instance
         {
@@ -31,13 +34,21 @@ namespace GameSystem.GameProps.Item
                 return;
             }
             _instance = this;
+            config = Resources.Load<PropsProbabilityConfig>("Props/PropsProbabilityConfig");
+            if (config == null)
+            {
+                Debug.LogError("PropsProbabilityConfig not found");
+            }
+            else
+            {
+                config.Init();
+            }
             //DontDestroyOnLoad(gameObject);
         }
 
-        public void CreateProps()
+        public bool CreateProps(out PropsConfig propsConfig)
         {
-            // TODO: 创建道具
-            
+            return config.GetPropsConfig(out propsConfig);
         }
         
     }

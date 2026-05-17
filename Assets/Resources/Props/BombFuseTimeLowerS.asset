@@ -12,12 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 635dfd4887304a54a8c45226ea01b9e2, type: 3}
   m_Name: BombFuseTimeLowerS
   m_EditorClassIdentifier: 
-  propsId: 
+  propsId: Bomb002C
   weight: 60
   validTime: 60
   propsType: 4
-  propsCategory: 0
-  propsObj: {fileID: 0}
+  propsMaterial: {fileID: 2100000, guid: f54d09ecde5fc50478ae5bb663186e0a, type: 2}
+  propsSize: 2
+  propsObj: {fileID: 6319107677461525378, guid: 3c49358da6c49a445b7ec3d9f0a16866, type: 3}
   propsDesc: 
   propsName: "\u7206\u70B8\u65F6\u95F4\u51CF\u5C11\u5C0F"
   propsIcon: {fileID: 0}

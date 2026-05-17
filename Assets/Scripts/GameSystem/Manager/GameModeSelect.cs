@@ -120,7 +120,6 @@ namespace GameSystem.Manager
 
     /// <summary>
     /// 存放角色基础信息
-    /// 
     /// </summary>
     public class CharacterBaseInfo
     {

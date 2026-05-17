@@ -12,14 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 635dfd4887304a54a8c45226ea01b9e2, type: 3}
   m_Name: BombRecoveryTimeLowerM
   m_EditorClassIdentifier: 
-  propsId: 
+  propsId: Bomb004B
   weight: 50
   validTime: 60
   propsType: 6
-  propsCategory: 1
-  propsObj: {fileID: 0}
+  propsMaterial: {fileID: 2100000, guid: d427048c8ea8b6f4da0d211583a72fb0, type: 2}
+  propsSize: 1
+  propsObj: {fileID: 6319107677461525378, guid: 3c49358da6c49a445b7ec3d9f0a16866, type: 3}
   propsDesc: 
-  propsName: "\u70B8\u5F39\u56DE\u590D\u65F6\u95F4\u4E2D"
+  propsName: "\u70B8\u5F39\u56DE\u590D\u65F6\u95F4\u51CF\u5C11\u4E2D"
   propsIcon: {fileID: 0}
   canPickUp: 1
   maxHpAddition: 0

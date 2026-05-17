@@ -26,6 +26,7 @@ namespace Config
         Player,
         Enemy,
         Bomb,
+        Props,
         Nothing
     }
 }

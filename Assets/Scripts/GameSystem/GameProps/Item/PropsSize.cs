@@ -1,9 +1,9 @@
 ﻿namespace GameSystem.GameProps.Item
 {
-    public enum PropsCategory
+    public enum PropsSize
     {
         Large,
-        Middle,
+        Medium,
         Small
     }
 }

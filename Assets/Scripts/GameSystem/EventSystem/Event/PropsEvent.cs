@@ -1,5 +1,6 @@
 ﻿using Config;
 using GameSystem.GameProps.Item;
+using UnityEngine;
 
 namespace GameSystem.EventSystem.Event
 {
@@ -27,6 +28,18 @@ namespace GameSystem.EventSystem.Event
                 this.ownerId = ownerId;
                 this.propsStatus = propsStatus;
             }
+        }
+
+        public class PropsCreatedEvent : GameEvent
+        {
+            public Vector3 Position;
+            public PropsStatus PropsStatus;
+        }
+
+        public class PropsPickedUpEvent : GameEvent
+        {
+            public string PlayerId;
+            public PropsStatus PropsStatus;
         }
     }
 }

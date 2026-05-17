@@ -4,6 +4,7 @@ using GameSystem.Character.Enemy.EnemyAI;
 using GameSystem.Character.Player;
 using GameSystem.EventSystem;
 using GameSystem.EventSystem.Event;
+using GameSystem.GameProps.Item;
 using GameSystem.GameScene;
 using GameSystem.Map;
 using GameSystem.Pool;
@@ -199,10 +200,49 @@ namespace GameSystem.GameProps
             foreach (var tagType in removeList)
             {
                 MapInfo.Instance.RemoveItem(tagType.Key.transform.position, tagType.Key);
-                DestructiblePool.Instance.ReturnDestructible(tagType.Key as Destructible);
+                var x = tagType.Key as Destructible;
+                if (x != null)
+                {
+                    PropsStatus propsStatus = x.CreateItem();
+                    if (propsStatus != null)
+                    {
+                        // 将道具注册到地图系统
+                        propsStatus.VirtualPosition = MapInfo.Instance.GetVirtualCoord(propsStatus.transform.position);
+                        MapInfo.Instance.AddItem(propsStatus.transform.position, propsStatus, TagType.Props);
+                        
+                        // 设置道具外观
+                        var renderers = propsStatus.gameObject.GetComponentsInChildren<MeshRenderer>();
+                        for (int i = 0; i < renderers.Length; i++)
+                        {
+                            var materials = renderers[i].materials;
+                            for (int j = 0; j < materials.Length; j++)
+                            {
+                                materials[j].color = propsStatus.propsConfig.propsMaterial.color;
+                            }
+                
+                        }
+
+                        // 设置道具大小
+                        switch (propsStatus.propsConfig.propsSize)
+                        {
+                            case PropsSize.Small:
+                                transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+                                break;
+                            case PropsSize.Medium:
+                                transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
+                                break;
+                            case PropsSize.Large:
+                                transform.localScale = new Vector3(1f, 1f,1f);
+                                break;
+                            default:
+                                Debug.LogError("未知的道具大小: " + propsStatus.propsConfig.propsSize);
+                                break;
+                        }
+                        
+                    }
+                    DestructiblePool.Instance.ReturnDestructible(x);
+                }
             }
-
-
             foreach (var tagType in invokeList)
             {
                 var x = tagType.Key.GetComponent<Bomb>();

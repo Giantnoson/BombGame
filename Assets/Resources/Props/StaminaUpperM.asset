@@ -12,17 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 635dfd4887304a54a8c45226ea01b9e2, type: 3}
   m_Name: StaminaUpperM
   m_EditorClassIdentifier: 
-  propsId: 
+  propsId: Stamina001B
   weight: 50
   validTime: 60
   propsType: 0
-  propsCategory: 1
-  propsObj: {fileID: 0}
+  propsMaterial: {fileID: 2100000, guid: e33df1c0b73c92144827d1787c41b425, type: 2}
+  propsSize: 1
+  propsObj: {fileID: 6319107677461525378, guid: 3c49358da6c49a445b7ec3d9f0a16866, type: 3}
   propsDesc: "\u4F53\u529B\u836F\u5242\uFF08\u4E2D\uFF09"
   propsName: "\u4F53\u529B\u836F\u5242\uFF08\u4E2D\uFF09"
   propsIcon: {fileID: 0}
   canPickUp: 1
   maxHpAddition: 0
+  hpRegenAddition: 0
   speedMultiply: 0
   maxLevelAddition: 0
   maxStaminaAddition: 30

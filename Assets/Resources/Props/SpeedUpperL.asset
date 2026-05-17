@@ -12,17 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 635dfd4887304a54a8c45226ea01b9e2, type: 3}
   m_Name: SpeedUpperL
   m_EditorClassIdentifier: 
-  propsId: 
+  propsId: Speed001A
   weight: 40
   validTime: 60
   propsType: 0
-  propsCategory: 0
-  propsObj: {fileID: 0}
+  propsMaterial: {fileID: 2100000, guid: 221290be9dae0fd49a38b81e16b5452c, type: 2}
+  propsSize: 0
+  propsObj: {fileID: 6319107677461525378, guid: 3c49358da6c49a445b7ec3d9f0a16866, type: 3}
   propsDesc: "\u5927\u53F7\u52A0\u901F\u836F\u5242"
   propsName: "\u52A0\u901F\u836F\u5242\uFF08\u5927\uFF09"
   propsIcon: {fileID: 0}
   canPickUp: 1
   maxHpAddition: 0
+  hpRegenAddition: 0
   speedMultiply: 1.3
   maxLevelAddition: 0
   maxStaminaAddition: 0
