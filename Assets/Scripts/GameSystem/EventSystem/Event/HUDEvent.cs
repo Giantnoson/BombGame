@@ -4,7 +4,7 @@ namespace GameSystem.EventSystem.Event
 {
     public class HUDEvent
     {
-        public class LoadHUDEvent : GameEvent
+        public class InitHUDEvent : GameEvent
         {
             public CharacterProper CharacterProper;
             public CharacterType CharacterType;
@@ -17,7 +17,7 @@ namespace GameSystem.EventSystem.Event
             public string PlayerName;
             public float Stamina;
 
-            public LoadHUDEvent(string id, string playerName, CharacterType characterType,
+            public InitHUDEvent(string id, string playerName, CharacterType characterType,
                 CharacterProper characterProper, GlobalProper globalProper, float hp, float stamina, int exp, int level,
                 float currentSpeed)
             {
@@ -131,6 +131,89 @@ namespace GameSystem.EventSystem.Event
                 Id = id;
                 HP = hp;
                 MaxHp = maxHp;
+            }
+        }
+
+        /// <summary>
+        ///     计数板实时更新事件（击杀/死亡/等级/经验/存活变化时广播，供计数板UI监听）
+        /// </summary>
+        public class ScoreBoardUpdateEvent : GameEvent
+        {
+            /// <summary>发生变化的角色ID</summary>
+            public string UpdatedPlayerId;
+            /// <summary>该角色击杀数</summary>
+            public int KillCount;
+            /// <summary>该角色死亡数</summary>
+            public int DeathCount;
+            /// <summary>该角色当前等级</summary>
+            public int Level;
+            /// <summary>该角色当前经验值</summary>
+            public int Exp;
+            /// <summary>该角色是否存活</summary>
+            public bool IsAlive;
+            /// <summary>当前存活玩家数</summary>
+            public int CurrentPlayerCount;
+            /// <summary>当前存活NPC数</summary>
+            public int CurrentNPCCount;
+
+            public ScoreBoardUpdateEvent(string updatedPlayerId, int killCount, int deathCount,
+                int level, int exp, bool isAlive, int currentPlayerCount, int currentNPCCount)
+            {
+                UpdatedPlayerId = updatedPlayerId;
+                KillCount = killCount;
+                DeathCount = deathCount;
+                Level = level;
+                Exp = exp;
+                IsAlive = isAlive;
+                CurrentPlayerCount = currentPlayerCount;
+                CurrentNPCCount = currentNPCCount;
+            }
+        }
+
+        /// <summary>
+        ///     全量刷新 HUD 事件（道具启用/禁用时触发，携带所有可变状态）
+        /// </summary>
+        public class UpdateHUDEvent : GameEvent
+        {
+            public float HP;
+            public float MaxHp;
+            public float Stamina;
+            public float MaxStamina;
+            public int EXP;
+            public int MaxExpToLevelUp;
+            public int Level;
+            public float CurrentSpeed;
+            public int BombCount;
+            public int MaxBombCount;
+            public float BombRecoveryTime;
+            public float BombDamage;
+            public int BombRadius;
+            public float BombFuseTime;
+            public float BombCooldown;
+            public float MaxBombCooldown;
+
+            public UpdateHUDEvent(string id, float hp, float maxHp, float stamina, float maxStamina,
+                int exp, int maxExpToLevelUp, int level, float currentSpeed,
+                int bombCount, int maxBombCount, float bombRecoveryTime,
+                float bombDamage, int bombRadius, float bombFuseTime, float bombCooldown, float maxBombCooldown)
+            {
+                Id = id;
+                HP = hp;
+                MaxHp = maxHp;
+                Stamina = stamina;
+                MaxStamina = maxStamina;
+                EXP = exp;
+                MaxExpToLevelUp = maxExpToLevelUp;
+                Level = level;
+                CurrentSpeed = currentSpeed;
+                BombCount = bombCount;
+                MaxBombCount = maxBombCount;
+                BombRecoveryTime = bombRecoveryTime;
+                BombDamage = bombDamage;
+                BombRadius = bombRadius;
+                BombFuseTime = bombFuseTime;
+                BombCooldown = bombCooldown;
+                MaxBombCooldown = maxBombCooldown;
             }
         }
     }

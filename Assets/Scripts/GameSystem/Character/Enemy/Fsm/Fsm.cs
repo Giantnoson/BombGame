@@ -47,6 +47,7 @@ namespace GameSystem.Character.Enemy.Fsm
             if (_isRunning)
             {
                 if (CurrentState != null) CurrentState.OnLeave(this, false);
+                _currentStateTime = 0f;
                 CurrentState = GetState<TState>();
                 CurrentState.OnEnter(this);
             }
@@ -57,6 +58,7 @@ namespace GameSystem.Character.Enemy.Fsm
             if (_isRunning)
             {
                 if (CurrentState != null) CurrentState.OnLeave(this, false);
+                _currentStateTime = 0f;
                 CurrentState = GetState(stateType);
                 CurrentState.OnEnter(this);
             }

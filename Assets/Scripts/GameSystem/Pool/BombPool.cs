@@ -12,7 +12,6 @@ namespace GameSystem.Pool
             if (Instance == null)
             {
                 Instance = this;
-                DontDestroyOnLoad(gameObject);
             }
             else
             {
@@ -23,7 +22,11 @@ namespace GameSystem.Pool
         public Bomb GetBomb()
         {
             var bomb = GetObjectFromPool();
-            if (bomb != null) bomb.gameObject.SetActive(true);
+            if (bomb != null)
+            {
+                bomb.isExplode = false;
+                bomb.gameObject.SetActive(true);
+            }
             return bomb;
         }
 

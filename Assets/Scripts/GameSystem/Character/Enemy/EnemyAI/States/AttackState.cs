@@ -61,16 +61,13 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
                 return;
             }
 
-            // 2. 检查玩家是否存在
+            // 2. 刷新并检查玩家是否存在（地图同步：玩家可能已死亡）
+            targetPlayer = Owner.GetNearestPlayer();
             if (targetPlayer == null)
             {
-                targetPlayer = Owner.GetNearestPlayer();
-                if (targetPlayer == null)
-                {
-                    // 没有玩家，切换到搜索状态
-                    ChangeState<SearchState>(fsm);
-                    return;
-                }
+                // 没有玩家，切换到搜索状态
+                ChangeState<SearchState>(fsm);
+                return;
             }
 
             // 3. 检查玩家是否在攻击范围内
@@ -87,6 +84,15 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
         {
             if (targetPlayer == null) return;
 
+            // 验证玩家在攻击范围内才放置炸弹
+            var distance = Vector3.Distance(Owner.transform.position, targetPlayer.position);
+            if (distance > Owner.attackRange)
+            {
+                // 玩家不在攻击范围内，切换到追击状态
+                ChangeState<ChasePlayerState>(fsm);
+                return;
+            }
+
             // 检查是否可以放置炸弹
             if (Owner.bombCooldown <= 0 && Owner.bombCount > 0)
             {
@@ -94,6 +100,9 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
                 Debug.Log("尝试放置炸弹进行攻击");
                 Owner.PutBomb(x => { isAttackSuccess = x; });
                 lastAttackTime = Time.time;
+                
+                // 放置炸弹后立即切换到躲避状态
+                ChangeState<AvoidExplosionState>(fsm);
             }
             else
             {

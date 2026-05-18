@@ -66,7 +66,9 @@ namespace GameSystem.GameProps
                 basePos += exportWay;
                 var mapDataTarget = MapInfo.Instance.GetMapDataTarget(basePos);
                 if(mapDataTarget == null) return;
-                foreach (var tagType in mapDataTarget)
+                // 快照副本防止迭代时字典被事件回调修改
+                var mapDataSnapshot = new List<KeyValuePair<BaseObject, TagType>>(mapDataTarget);
+                foreach (var tagType in mapDataSnapshot)
                 {
                     switch (tagType.Value)
                     {
@@ -124,8 +126,10 @@ namespace GameSystem.GameProps
 
         public void Explode()
         {
-            CancelInvoke("Explode");
+            // 防止重复爆炸（引信计时器与连锁引爆的竞态条件）
+            if (isExplode) return;
             isExplode = true;
+            CancelInvoke("Explode");
             List<KeyValuePair<BaseObject, TagType>> removeList = new List<KeyValuePair<BaseObject, TagType>>();
             List<KeyValuePair<BaseObject, TagType>> invokeList = new List<KeyValuePair<BaseObject, TagType>>();
             
@@ -136,7 +140,9 @@ namespace GameSystem.GameProps
             bombPos.z = Mathf.Ceil(bombPos.z) - 0.5f;
             bombPos.y = 0.5f;
             var mapDataTarget = MapInfo.Instance.GetMapDataTarget(bombPos);
-            foreach (var tagType in mapDataTarget)
+            // 快照副本防止迭代时字典被事件回调修改
+            var mapDataSnapshot = new List<KeyValuePair<BaseObject, TagType>>(mapDataTarget);
+            foreach (var tagType in mapDataSnapshot)
             {
                 switch (tagType.Value) 
                 { 
@@ -197,6 +203,7 @@ namespace GameSystem.GameProps
             CreateExplosion(bombPos, Vector3.left, removeList, invokeList);
             CreateExplosion(bombPos, Vector3.right, removeList, invokeList);
 
+            // 先处理可破坏方块，确保被连锁炸弹扫描前已从地图移除，避免双重处理
             foreach (var tagType in removeList)
             {
                 MapInfo.Instance.RemoveItem(tagType.Key.transform.position, tagType.Key);
@@ -226,13 +233,13 @@ namespace GameSystem.GameProps
                         switch (propsStatus.propsConfig.propsSize)
                         {
                             case PropsSize.Small:
-                                transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+                                propsStatus.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
                                 break;
                             case PropsSize.Medium:
-                                transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
+                                propsStatus.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
                                 break;
                             case PropsSize.Large:
-                                transform.localScale = new Vector3(1f, 1f,1f);
+                                propsStatus.transform.localScale = new Vector3(1f, 1f,1f);
                                 break;
                             default:
                                 Debug.LogError("未知的道具大小: " + propsStatus.propsConfig.propsSize);
@@ -243,6 +250,8 @@ namespace GameSystem.GameProps
                     DestructiblePool.Instance.ReturnDestructible(x);
                 }
             }
+
+            // 再处理连锁引爆：此时地图上的可破坏方块已清除，被连锁炸弹不会重复处理
             foreach (var tagType in invokeList)
             {
                 var x = tagType.Key.GetComponent<Bomb>();
@@ -251,6 +260,7 @@ namespace GameSystem.GameProps
                     x.Explode();
                 }
             }
+            
             BombPool.Instance.ReturnBomb(this);
             MapInfo.Instance.RemoveItem(transform.position, this);
             GameEventSystem.Broadcast(new BombEvents.BombDestroyEvent

@@ -20,8 +20,16 @@ namespace GameSystem.Map
 
         public MapNode Get(Vector2Int pos, int step)
         {
-            var obj = base.Get();
+            var obj = Get();
+            obj.CurrentPos = pos;
+            return obj;
+        }
 
+        public new MapNode Get()
+        {
+            var obj = base.Get();
+            obj.NeighborNodes.Clear();
+            obj.CurrentTagOb.Clear();
             return obj;
         }
     }

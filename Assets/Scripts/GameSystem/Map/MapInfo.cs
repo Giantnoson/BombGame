@@ -290,64 +290,6 @@ namespace GameSystem.Map
         }
 
 
-        // /// <summary>
-        // ///     更新所有地图数据
-        // /// </summary>
-        // public void UpdateMapForAll()
-        // {
-        //     foreach (var node in _mapData) ScanPoint(node.Key, node.Value);
-        // }
-        //
-        // /// <summary>
-        // ///     扫描指定位置，重用传入的节点对象
-        // /// </summary>
-        // /// <param name="v3Pos">扫描位置</param>
-        // /// <param name="node">要重用的节点对象</param>
-        // public void ScanPoint(Vector3 v3Pos, MapNode node)
-        // {
-        //     v3Pos.y = startY;
-        //     var flag = false;
-        //     // 清空现有标签
-        //     //node.CurrentTag.Clear();
-        //
-        //     var colliderCount = Physics.OverlapBoxNonAlloc(v3Pos, new Vector3(0.4f, 0.4f, 0.4f), _hitColliders);
-        //     for (var k = 0; k < colliderCount; k++)
-        //         if (TagMap.ContainsKey(_hitColliders[k].tag))
-        //         {
-        //             //node.CurrentTag.Add(TagMap[_hitColliders[k].tag]); //添加标签
-        //             flag = true;
-        //         }
-        //
-        //     //if (!flag) node.CurrentTag.Add(TagType.Nothing); //添加标签
-        // }
-        //
-        // /// <summary>
-        // ///     扫描指定位置，重用传入的节点对象
-        // /// </summary>
-        // /// <param name="pos">扫描位置</param>
-        // /// <param name="node">要重用的节点对象</param>
-        // public void ScanPoint(Vector2Int pos, MapNode node)
-        // {
-        //     var v3Pso = GetRealCoord(pos);
-        //     var flag = false;
-        //     //node.CurrentTag.Clear();
-        //
-        //     var colliderCount = Physics.OverlapBoxNonAlloc(v3Pso, new Vector3(0.4f, 0.4f, 0.4f), _hitColliders);
-        //     for (var i = 0; i < colliderCount; i++)
-        //         if (TagMap.ContainsKey(_hitColliders[i].tag))
-        //         {
-        //             if (_hitColliders[i].CompareTag(nameof(TagType.Player)) ||
-        //                 _hitColliders[i].CompareTag(nameof(TagType.Enemy)))
-        //                 if (GetVirtualCoord(_hitColliders[i].transform.position) != pos)
-        //                     continue;
-        //
-        //             //node.CurrentTag.Add(TagMap[_hitColliders[i].tag]);
-        //             flag = true;
-        //         }
-        //
-        //     //if (!flag) node.CurrentTag.Add(TagType.Nothing); //添加标签
-        // }
-
         #endregion
 
         #region 坐标转换
@@ -473,6 +415,12 @@ namespace GameSystem.Map
         }
 
         /// <summary>
+        ///     道具吸引力权重，当路径经过道具节点时，F值会按此权重降低
+        /// </summary>
+        [Header("道具寻路设置")] [Tooltip("道具对寻路F值的降低权重（0=不降低，值越大吸引力越强）")]
+        public float propAttractionWeight = 0.3f;
+
+        /// <summary>
         ///     使用A*算法搜索路径
         /// </summary>
         /// <param name="startPos">起始位置</param>
@@ -511,6 +459,9 @@ namespace GameSystem.Map
                         continue; // 检查邻居是否在爆炸范围内，如果是则跳过（除非是终点）
                     // 计算从起点经过当前节点到邻居的代价
                     var neighborGScore = gScore[currentNode] + DistanceBetween(currentNode, neighbor);
+                    // 道具吸引力：如果邻居节点上有道具，降低g值使路径更倾向经过此处
+                    if (neighbor.HasTag(TagType.Props))
+                        neighborGScore -= propAttractionWeight;
                     // 如果邻居不在开放列表中，或者找到更好的路径
                     if (!openList.Contains(neighbor) || neighborGScore < gScore[neighbor])
                     {

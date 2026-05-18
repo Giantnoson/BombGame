@@ -42,8 +42,6 @@ namespace GameSystem.Manager
         [SerializeField] [Tooltip("需要持久化的场景列表")]
         private HashSet<string> _persistentScenes = new();
 
-        [Tooltip("场景队列")] [SerializeField] private Queue<SceneInfo> _sceneQueue = new();
-
         /// 场景加载状态
         public bool IsSceneLoading { get; private set; }
 
@@ -187,21 +185,11 @@ namespace GameSystem.Manager
             foreach (var sceneInfo in sceneInfos)
                 if (sceneInfo.loadOnStartup)
                 {
-                    if (sceneInfo != CurrentState) LoadScene(sceneInfo);
-                    //_sceneQueue.Enqueue(sceneInfo);
+                    // 使用场景名称比较而非引用比较，避免配置重载后引用不一致
+                    if (sceneInfo.sceneName != CurrentState.sceneName) LoadScene(sceneInfo);
                     // 如果是持久化场景，添加到持久化场景列表
                     if (sceneInfo.isPersistent) _persistentScenes.Add(sceneInfo.sceneName);
                 }
-        }
-
-
-        private void LoadScene()
-        {
-            while (_sceneQueue.Count > 0)
-            {
-                var sceneInfo = _sceneQueue.Dequeue();
-                LoadScene(sceneInfo);
-            }
         }
 
         private void RegisterEventListeners()
@@ -245,6 +233,11 @@ namespace GameSystem.Manager
                     case GameState.Paused:
                         ResumeGame();
                         break;
+                    case GameState.GameOver:
+                    case GameState.Victory:
+                        // 从结束界面返回主菜单
+                        ReturnToMainMenu();
+                        break;
                     case GameState.Settings:
                         // 从设置界面返回到之前的界面
                         ChangeGameState(_previousState);
@@ -280,6 +273,9 @@ namespace GameSystem.Manager
             {
                 case GameState.MainMenu:
                     UnloadAllLoadedScenes();
+                    // 确保主菜单场景被加载
+                    if (!newState.isFlag && !string.IsNullOrEmpty(newState.sceneName))
+                        LoadScene(newState);
                     break;
                 case GameState.Loading:
                     Time.timeScale = 1f;
@@ -289,7 +285,7 @@ namespace GameSystem.Manager
                 case GameState.Playing:
                     Time.timeScale = 1f;
                     IsGameActive = true;
-                    // 如果从非暂停状态进入，加载当前关卡
+                    // 如果从非暂停/非Playing状态进入，加载当前关卡
                     if (oldState.state != GameState.Paused && oldState.state != GameState.Playing)
                         StartCoroutine(LoadSceneWithTransitionCoroutine(newState));
                     break;
@@ -300,17 +296,29 @@ namespace GameSystem.Manager
                     break;
 
                 case GameState.GameOver:
-                    Time.timeScale = 0f;
                     IsGameActive = false;
+                    // 如果是首次进入GameOver（避免从Victory切过来重复加载）
+                    if (oldState.state != GameState.GameOver && oldState.state != GameState.Victory
+                        && !newState.isFlag && !string.IsNullOrEmpty(newState.sceneName))
+                        StartCoroutine(LoadSceneWithTransitionCoroutine(newState));
                     break;
 
                 case GameState.Victory:
-                    Time.timeScale = 0f;
                     IsGameActive = false;
+                    // 如果是首次进入Victory（避免从GameOver切过来重复加载）
+                    if (oldState.state != GameState.GameOver && oldState.state != GameState.Victory
+                        && !newState.isFlag && !string.IsNullOrEmpty(newState.sceneName))
+                        StartCoroutine(LoadSceneWithTransitionCoroutine(newState));
                     break;
 
                 case GameState.Settings:
                     // 保存当前时间尺度，以便从设置返回时恢复
+                    break;
+
+                case GameState.Message:
+                    // 消息界面状态，通常以叠加方式显示
+                    Time.timeScale = 0f;
+                    IsGameActive = false;
                     break;
             }
 
@@ -325,10 +333,13 @@ namespace GameSystem.Manager
         /// <param name="sceneNameToKeep">要保留的场景名称</param>
         private void UnloadAllLoadedScenesExcept(string sceneNameToKeep = null)
         {
+            // 先收集再卸载，避免在迭代 _loadedScenes 时修改它
+            List<string> scenesToUnload = new();
             foreach (var sceneName in _loadedScenes)
-                // 保留指定的场景和持久化场景
                 if (sceneName != sceneNameToKeep && !_persistentScenes.Contains(sceneName))
-                    UnloadScene(sceneName);
+                    scenesToUnload.Add(sceneName);
+            foreach (var s in scenesToUnload)
+                UnloadScene(s);
         }
 
         /// <summary>
@@ -364,8 +375,18 @@ namespace GameSystem.Manager
         /// </summary>
         public void RestartGame()
         {
-            // 重新加载当前关卡
-            ChangeGameState(CurrentState);
+            // 如果当前在非Playing状态（如GameOver/Victory），需要切换回Playing并加载场景
+            if (CurrentState.state != GameState.Playing)
+            {
+                var playingState = FindState(GameState.Playing);
+                if (playingState != null)
+                {
+                    ChangeGameState(playingState);
+                    return;
+                }
+            }
+            // 在Playing/Paused状态或找不到Playing配置时，直接重新加载当前场景
+            ReLoadCurrentScene();
         }
 
         /// <summary>
@@ -464,7 +485,7 @@ namespace GameSystem.Manager
         /// </summary>
         private IEnumerator LoadSceneWithTransitionCoroutine(SceneInfo sceneInfo)
         {
-            var loadStartTime = Time.time;
+            var loadStartTime = Time.unscaledTime;
             var sceneName = sceneInfo.sceneName;
 
             // 广播场景加载开始事件
@@ -511,7 +532,7 @@ namespace GameSystem.Manager
             }
 
             // 确保至少加载minLoadTime秒
-            var elapsedTime = Time.time - loadStartTime;
+            var elapsedTime = Time.unscaledTime - loadStartTime;
             if (elapsedTime < minLoadTime)
             {
                 var remainingTime = minLoadTime - elapsedTime;
@@ -519,7 +540,7 @@ namespace GameSystem.Manager
                 // 在剩余时间内更新进度到100%
                 while (remainingTime > 0)
                 {
-                    remainingTime -= Time.deltaTime;
+                    remainingTime -= Time.unscaledDeltaTime;
                     SceneLoadProgress = 1f - remainingTime / minLoadTime;
                     OnSceneLoadProgress?.Invoke(sceneName, SceneLoadProgress);
                     yield return null;
@@ -533,9 +554,7 @@ namespace GameSystem.Manager
             // 记录加载的场景
             if (!_loadedScenes.Contains(sceneName)) _loadedScenes.Add(sceneName);
 
-            // 广播场景加载完成事件
-            OnSceneLoadCompleted?.Invoke(sceneName);
-            GameEventSystem.Broadcast(new GameEvents.SceneLoadCompletedEvent(sceneName));
+            // 注意：场景加载完成事件由 OnSceneLoaded 回调统一触发，避免重复广播
 
             targetSceneOperation.allowSceneActivation = true;
 

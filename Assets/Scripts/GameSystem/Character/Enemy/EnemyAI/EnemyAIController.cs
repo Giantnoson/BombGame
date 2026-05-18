@@ -8,6 +8,7 @@ using GameSystem.Character.Player;
 using GameSystem.EventSystem;
 using GameSystem.EventSystem.Event;
 using GameSystem.GameProps;
+using GameSystem.GameProps.Item;
 using GameSystem.Map;
 using UnityEngine;
 
@@ -59,6 +60,10 @@ namespace GameSystem.Character.Enemy.EnemyAI
 
         public EnemyMoveController MoveController { get; private set; }
 
+        // 地图位置追踪
+        private Vector2Int beforeV2IPos;
+        private Vector2Int currentV2IPos;
+
 
         // 炸弹位置
 
@@ -74,6 +79,8 @@ namespace GameSystem.Character.Enemy.EnemyAI
             */
             bombPos = FindAnyObjectByType<BombPos>();
             MapInfo = MapInfo.Instance;
+            beforeV2IPos = MapInfo.GetVirtualCoord(transform.position);
+            currentV2IPos = new Vector2Int(beforeV2IPos.x, beforeV2IPos.y);
             MoveController = GetComponent<EnemyMoveController>();
             /*if (enemyAgent == null)
             {
@@ -114,6 +121,12 @@ namespace GameSystem.Character.Enemy.EnemyAI
             isMoving = false;
             InitializeFSM();
             players = GameObject.FindGameObjectsWithTag("Player");
+            
+            // 将敌人初始位置注册到地图系统
+            if (MapInfo != null && MapInfo.IsValidPosition(transform.position))
+            {
+                MapInfo.AddItem(transform.position, this, TagType.Enemy);
+            }
         }
 
         private void Update()
@@ -128,12 +141,18 @@ namespace GameSystem.Character.Enemy.EnemyAI
 
             StaminaUpdate();
             BombUpdate();
+            V2IUpdate();
             // 更新FSM
             if (fsm != null && fsm.IsRunning) fsm.Update(Time.deltaTime, Time.unscaledDeltaTime);
         }
 
         private void OnDestroy()
         {
+            // 从地图系统移除自身
+            if (MapInfo != null && !string.IsNullOrEmpty(id) && id != "Die")
+            {
+                MapInfo.RemoveItem(transform.position, this);
+            }
             // 清理FSM
             if (fsm != null) fsm.Clear();
         }
@@ -176,6 +195,14 @@ namespace GameSystem.Character.Enemy.EnemyAI
             if (evt.DieId == id)
             {
                 isDie = true;
+                isDead = true;
+                
+                // 从地图系统移除自身
+                if (MapInfo != null)
+                {
+                    MapInfo.RemoveItem(transform.position, this);
+                }
+                
                 id = "Die";
                 fsm.Clear();
                 Die();
@@ -208,6 +235,47 @@ namespace GameSystem.Character.Enemy.EnemyAI
         }
 
         #region 公共方法
+
+        /// <summary>
+        ///     更新虚拟坐标位置到地图系统
+        /// </summary>
+        private void V2IUpdate()
+        {
+            currentV2IPos = MapInfo.GetVirtualCoord(transform.position);
+            if (beforeV2IPos != currentV2IPos)
+            {
+                MapInfo.UpdateItem(currentV2IPos, beforeV2IPos, this, TagType.Enemy);
+                beforeV2IPos = currentV2IPos;
+                // 检查当前区块是否有道具
+                CheckAndPickUpProps(currentV2IPos);
+            }
+        }
+
+        /// <summary>
+        ///     检查并拾取当前位置的道具
+        /// </summary>
+        private void CheckAndPickUpProps(Vector2Int pos)
+        {
+            var items = MapInfo.GetItem(pos, TagType.Props);
+            if (items == null || items.Count == 0) return;
+
+            // 拾取所有当前区块的道具
+            for (var i = items.Count - 1; i >= 0; i--)
+            {
+                var propsStatus = items[i] as PropsStatus;
+                if (!propsStatus || !propsStatus.propsConfig.canPickUp) continue;
+
+                // 从地图系统移除道具
+                MapInfo.RemoveItem(pos, propsStatus);
+                
+                // 初始化并使用道具
+                propsStatus.InitProps(id, propsStatus.propsConfig);
+                propsStatus.UseProps();
+
+                Debug.Log($"敌人 {id} 拾取了道具: {propsStatus.GetPropsName()}");
+            }
+        }
+
 
         /// <summary>
         ///     获取最近的玩家
@@ -297,6 +365,7 @@ namespace GameSystem.Character.Enemy.EnemyAI
             if (bombCooldown > 0 || bombCount == 0)
             {
                 print("炸弹冷却或数量为0，放置失败");
+                callBack?.Invoke(false);
                 return;
             }
 
@@ -310,6 +379,7 @@ namespace GameSystem.Character.Enemy.EnemyAI
                     if (!collider1.gameObject.CompareTag(tag))
                     {
                         print("炸弹放置失败，位置有障碍物");
+                        callBack?.Invoke(false);
                         return;
                     }
 

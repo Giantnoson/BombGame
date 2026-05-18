@@ -47,7 +47,7 @@ namespace GameSystem.Character.common
         }
 
 
-        public void LoadHUD(HUDEvent.LoadHUDEvent evt)
+        public void LoadHUD(HUDEvent.InitHUDEvent evt)
         {
             if (ownerId != evt.Id) return;
             // 初始化玩家名称
@@ -145,6 +145,39 @@ namespace GameSystem.Character.common
             hpBar.fillAmount = evt.HP / evt.MaxHp;
         }
 
+        /// <summary>
+        ///     全量刷新 HUD（道具启用/禁用时触发）
+        /// </summary>
+        public void UpdateAllHUD(HUDEvent.UpdateHUDEvent evt)
+        {
+            if (ownerId != evt.Id) return;
+
+            // ========== 生命值 ==========
+            hpText.text = $"{evt.HP}/{evt.MaxHp}";
+            hpBar.fillAmount = evt.HP / evt.MaxHp;
+
+            // ========== 体力值 ==========
+            staminaText.text = $"{evt.Stamina:F2}/{evt.MaxStamina}";
+            staminaBar.fillAmount = evt.Stamina / evt.MaxStamina;
+
+            // ========== 经验值 ==========
+            expText.text = $"{evt.EXP}/{evt.MaxExpToLevelUp}";
+            expBar.fillAmount = (float)evt.EXP / evt.MaxExpToLevelUp;
+
+            // ========== 等级 ==========
+            leaveText.text = evt.Level.ToString();
+
+            // ========== 速度 ==========
+            moveSpeedText.text = evt.CurrentSpeed.ToString("F2");
+
+            // ========== 炸弹属性 ==========
+            bombCooldownText.text = evt.BombCooldown.ToString("F2");
+            bombFuseTimeText.text = evt.BombFuseTime.ToString("F2");
+            bombCountText.text = $"{evt.BombCount}/{evt.MaxBombCount}({evt.BombRecoveryTime:F2})";
+            bombDamageText.text = evt.BombDamage.ToString();
+            bombRadiusText.text = evt.BombRadius.ToString();
+        }
+
         #region 基础内容
 
         [Header("配置")] [Tooltip("所有者")] public string ownerId;
@@ -186,22 +219,24 @@ namespace GameSystem.Character.common
 
         private void OnEnable()
         {
-            GameEventSystem.AddListener<HUDEvent.LoadHUDEvent>(LoadHUD);
+            GameEventSystem.AddListener<HUDEvent.InitHUDEvent>(LoadHUD);
             GameEventSystem.AddListener<HUDEvent.UpdateStaminaEvent>(UpdateStamina);
             GameEventSystem.AddListener<HUDEvent.UpdateBombEvent>(UpdateBomb);
             GameEventSystem.AddListener<HUDEvent.LeaveUpEvent>(OnLeaveUpUIUpdate);
             GameEventSystem.AddListener<HUDEvent.ExpAddEvent>(OnExpAddUIUpdate);
             GameEventSystem.AddListener<HUDEvent.TakeDamageEvent>(OnTakeDamageUIUpdate);
+            GameEventSystem.AddListener<HUDEvent.UpdateHUDEvent>(UpdateAllHUD);
         }
 
         private void OnDisable()
         {
-            GameEventSystem.RemoveListener<HUDEvent.LoadHUDEvent>(LoadHUD);
+            GameEventSystem.RemoveListener<HUDEvent.InitHUDEvent>(LoadHUD);
             GameEventSystem.RemoveListener<HUDEvent.UpdateStaminaEvent>(UpdateStamina);
             GameEventSystem.RemoveListener<HUDEvent.UpdateBombEvent>(UpdateBomb);
             GameEventSystem.RemoveListener<HUDEvent.LeaveUpEvent>(OnLeaveUpUIUpdate);
             GameEventSystem.RemoveListener<HUDEvent.ExpAddEvent>(OnExpAddUIUpdate);
             GameEventSystem.RemoveListener<HUDEvent.TakeDamageEvent>(OnTakeDamageUIUpdate);
+            GameEventSystem.RemoveListener<HUDEvent.UpdateHUDEvent>(UpdateAllHUD);
         }
 
         #endregion

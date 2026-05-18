@@ -11,7 +11,6 @@ namespace GameSystem.Pool
             if (Instance == null)
             {
                 Instance = this;
-                DontDestroyOnLoad(gameObject);
             }
             else
             {

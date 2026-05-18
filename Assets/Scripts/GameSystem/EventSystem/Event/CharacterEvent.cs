@@ -28,8 +28,12 @@
         public string PlayerId; // 玩家ID
     }
 
+    /// <summary>
+    ///     游戏结束事件，携带完整的结算数据
+    /// </summary>
     public class GameOverEvent : CharacterEvent
     {
         public bool isWin; // 是否胜利
+        public GameScene.GameEndScene.GameResultData ResultData; // 游戏结算数据
     }
 }

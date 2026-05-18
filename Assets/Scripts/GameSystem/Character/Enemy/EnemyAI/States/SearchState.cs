@@ -122,34 +122,45 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
                 }
             }
 
-            // 3. 检查是否到达目标
+            // 3. 检查目标是否仍然有效（地图同步：目标方块可能已被其他爆炸摧毁）
+            if (hasTarget && !Owner.MapInfo.HasTag(targetPosition, TagType.Destructible))
+            {
+                Debug.Log("目标方块已被摧毁，重新搜索");
+                hasTarget = false;
+                Owner.isMoving = false;
+            }
+
+            // 4. 检查是否到达目标
             if (hasTarget && Vector3.Distance(Owner.transform.position, targetPosition) < Owner.stoppingDistance)
             {
                 ChangeState<PlaceBombState>(fsm);
                 return;
             }
 
-            // 4. 检查路径是否被爆炸阻挡
+            // 5. 检查路径是否被爆炸阻挡
             if (IsPathBlockedByExplosion())
             {
                 ChangeState<PathWaitState>(fsm);
                 return;
             }
 
+            // 6. 没有目标时寻找新目标
             if (!hasTarget) FindNewTarget();
         }
 
         /// <summary>
-        ///     寻找新目标
+        ///     寻找新目标（仅设置targetPosition和hasTarget，不发起移动）
         /// </summary>
         private void FindNewTarget()
         {
             Owner.isMoving = false;
+            
+            // 先进行范围搜索
             var target = Owner.MapInfo.SearchTags(Owner.transform.position, TagType.Destructible,
                 Mathf.CeilToInt(Owner.detectionRange));
             if (target != null)
             {
-                Debug.Log("存在可破坏的方块");
+                Debug.Log("范围内存在可破坏的方块");
                 foreach (var stepTracker in target)
                     if (!IsInExplosionRange(Owner.MapInfo.GetRealCoord(stepTracker.Pos)))
                     {
@@ -159,63 +170,46 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
                     }
             }
 
-            Debug.Log("找不到可破坏的方块，进行全局扫描");
-            hasTarget = HasDestructible();
+            Debug.Log("范围内找不到可破坏的方块，进行全局扫描");
+            FindDestructibleGlobal();
         }
 
 
-        private bool HasDestructible()
+        /// <summary>
+        ///     全局扫描可破坏方块（仅设置targetPosition和hasTarget，不发起移动）
+        /// </summary>
+        private void FindDestructibleGlobal()
         {
             var target = Owner.MapInfo.SearchTags(Owner.transform.position, TagType.Destructible);
             if (target != null)
             {
-                var ishasDestructibleBlockInExplosionRange = false;
-                Debug.Log("存在可破坏的方块");
+                Debug.Log("全局存在可破坏的方块");
+                // 收集所有不在爆炸范围内的安全方块
+                var safeBlocks = new List<TargetStepInfo>();
                 foreach (var stepTracker in target)
                     if (!IsInExplosionRange(Owner.MapInfo.GetRealCoord(stepTracker.Pos)))
-                    {
-                        Debug.Log("存在不在爆炸范围的可破坏方块");
-                        ishasDestructibleBlockInExplosionRange = true;
-                        break;
-                    }
+                        safeBlocks.Add(stepTracker);
 
-                if (ishasDestructibleBlockInExplosionRange)
+                if (safeBlocks.Count > 0)
                 {
-                    List<TargetStepInfo> safeBlocks = new List<TargetStepInfo>();
-                    foreach (var stepTracker in target)
-                    {
-                        if (!IsInExplosionRange(Owner.MapInfo.GetRealCoord(stepTracker.Pos)))
-                        {
-                            safeBlocks.Add(stepTracker);
-                        }
-                    }
-
-                    if (safeBlocks.Count > 0)
-                    {
-                        var randomIndex = Random.Range(0, safeBlocks.Count);
-                        var selectedBlock = safeBlocks[randomIndex];
-                        targetPosition = Owner.MapInfo.GetRealCoord(selectedBlock.Pos);
-                        Owner.MoveTo(Owner.MapInfo.SearchPath(Owner.transform.position, targetPosition, true));
-                        return true;
-                    }
+                    var randomIndex = Random.Range(0, safeBlocks.Count);
+                    targetPosition = Owner.MapInfo.GetRealCoord(safeBlocks[randomIndex].Pos);
+                    hasTarget = true;
+                    return;
                 }
             }
 
-            Debug.Log("全局不存在不在爆炸范围的可破坏方块,采取随机移动策略");
-            //采取随机移动的策略;
+            // 没有安全方块，采用随机移动策略
+            Debug.Log("全局不存在安全可破坏方块，采取随机移动策略");
             var pointInArea = Owner.MapInfo.GetRandomPointInArea(Owner.ToBombPutPos(Owner.transform.position),
                 Mathf.CeilToInt(Owner.detectionRange));
             if (pointInArea != null)
             {
                 targetPosition = Owner.MapInfo.GetRealCoord(pointInArea.Pos);
-                var ans = Owner.MoveTo(Owner.MapInfo.SearchPath(Owner.transform.position,
-                    Owner.MapInfo.GetRealCoord(pointInArea.Pos), true));
-                Owner.isMoving = ans;
-                return ans;
+                hasTarget = true;
             }
-
-            return false;
         }
+
 
         /// <summary>
         ///     移动向目标

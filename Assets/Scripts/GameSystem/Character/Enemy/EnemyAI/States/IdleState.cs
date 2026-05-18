@@ -11,9 +11,13 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
     /// </summary>
     public class IdleState : EnemyAIBaseState
     {
+        /// <summary>
+        ///     扫描结果枚举，用于ScanEnvironment统一处理状态切换
+        /// </summary>
+        private enum ScanResult { None, Destructible, Player }
+        
         private readonly float scanInterval = 0.5f; // 扫描间隔
         private bool hasDestructibleBlock;
-        private bool hasTarget;
         private float lastScanTime;
 
         protected internal override void OnEnter(IFsm<EnemyAIController> fsm)
@@ -24,7 +28,6 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
             Owner.StatusQueue.Dequeue();
             //Owner.isMoving = false;
             hasDestructibleBlock = false;
-            hasTarget = true;
             Owner.StopMove();
             lastScanTime = Time.time;
         }
@@ -72,10 +75,6 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
                     }
                 }
             }
-            
-            if (!hasTarget)
-            {
-            }
 
             // 3. 检测是否有可破坏的方块
             if (HasDestructibleInRange())
@@ -84,7 +83,23 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
                 return;
             }
 
-            if (HasDestructible()) ChangeState<SearchState>(fsm);
+            // 全局扫描：统一处理状态切换，避免内部ChangeState导致的竞争条件
+            var scanResult = HasDestructible();
+            switch (scanResult)
+            {
+                case ScanResult.Player:
+                    ChangeState<ChasePlayerState>(fsm);
+                    break;
+                case ScanResult.Destructible:
+                    ChangeState<SearchState>(fsm);
+                    break;
+                case ScanResult.None:
+                    // 没有任何目标，采取随机移动策略
+                    hasDestructibleBlock = false;
+                    MoveInRand();
+                    ChangeState<SearchState>(fsm);
+                    break;
+            }
         }
 
         /// <summary>
@@ -113,56 +128,34 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
             return false;
         }
 
-        private bool HasDestructible()
+        /// <summary>
+        ///     全局扫描：只返回扫描结果，不切换状态。由ScanEnvironment统一处理状态切换。
+        /// </summary>
+        private ScanResult HasDestructible()
         {
             var target = Owner.MapInfo.SearchTags(Owner.transform.position, TagType.Destructible);
             if (target != null)
             {
-                var ishasDestructibleBlockInExplosionRange = false;
                 Debug.Log("存在可破坏的方块");
                 hasDestructibleBlock = true;
                 foreach (var stepTracker in target)
                     if (!IsInExplosionRange(Owner.MapInfo.GetRealCoord(stepTracker.Pos)))
                     {
                         Debug.Log("存在不在爆炸范围的可破坏方块");
-                        ishasDestructibleBlockInExplosionRange = true;
-                        break;
+                        return ScanResult.Destructible;
                     }
-
-                if (ishasDestructibleBlockInExplosionRange)
-                {
-                    List<TargetStepInfo> safeBlocks = new List<TargetStepInfo>();
-                    foreach (var stepTracker in target)
-                    {
-                        if (!IsInExplosionRange(Owner.MapInfo.GetRealCoord(stepTracker.Pos)))
-                        {
-                            safeBlocks.Add(stepTracker);
-                        }
-                    }
-
-                    if (safeBlocks.Count > 0)
-                    {
-                        ChangeState<SearchState>(fsm);
-                        return true;
-                    }
-                }
 
                 Debug.Log("全局不存在不在爆炸范围的可破坏方块");
-                return false;
+                return ScanResult.None;
             }
 
             Debug.Log("全局不存在不在爆炸范围的可破坏方块,选择查找玩家");
             if (FindPlayer())
             {
-                ChangeState<ChasePlayerState>(fsm);
-                return true;
+                return ScanResult.Player;
             }
-            Debug.Log("全局不存在不在爆炸范围的可破坏方块,采取随机移动策略");
-            hasDestructibleBlock = false;
-            MoveInRand();
-            ChangeState<SearchState>(fsm);
-            hasTarget = false;
-            return false;
+            Debug.Log("全局不存在不在爆炸范围的可破坏方块,也没有玩家,采取随机移动策略");
+            return ScanResult.None;
         }
 
         private bool FindPlayer()

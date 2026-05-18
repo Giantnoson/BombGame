@@ -175,7 +175,7 @@ namespace GameSystem.Character.common
 
         private void InitHUD()
         {
-            GameEventSystem.Broadcast(new HUDEvent.LoadHUDEvent(id, characterName, characterType, characterProper,
+            GameEventSystem.Broadcast(new HUDEvent.InitHUDEvent(id, characterName, characterType, characterProper,
                 globalProper, hp, stamina, exp, level, currentSpeed));
         }
         
@@ -308,9 +308,6 @@ namespace GameSystem.Character.common
                 bombRecoveryTime = maxBombRecoveryTime;
             }
 
-            if (isBombUpdate) return;
-            if (!isBombUpdate && bombCooldown == 0 && bombRecoveryTime == maxBombRecoveryTime &&
-                bombCount == maxBombCount) isBombUpdate = true;
             GameEventSystem.Broadcast(new HUDEvent.UpdateBombEvent(id, bombCooldown, bombCount, maxBombCount,
                 bombRecoveryTime));
         }
@@ -494,13 +491,20 @@ namespace GameSystem.Character.common
             }
         }
 
+        /// <summary>
+        /// 应用道具效果到角色属性
+        /// </summary>
+        /// <param name="config">道具配置对象，包含各种属性修改值</param>
+        /// <param name="isEnable">true表示启用效果，false表示取消效果</param>
         private void ApplyPropsEffect(PropsConfig config, bool isEnable)
         {
+            // 检查配置是否有效，无效则直接返回
             if (config == null)
             {
                 Debug.LogWarning("ApplyPropsEffect: config is null, skipping");
                 return;
             }
+            // 根据启用/取消状态设置符号，1表示增加，-1表示减少
             float sign = isEnable ? 1f : -1f;
 
             // 基础属性 (Addition)
@@ -541,9 +545,11 @@ namespace GameSystem.Character.common
 
             // 更新速度
             currentSpeed = baseSpeed;
-            //GameEventSystem.Broadcast(new CharacterMoveEvent.UpdateSpeedEvent(id, currentSpeed));
-            GameEventSystem.Broadcast(new HUDEvent.LoadHUDEvent(id, characterName, characterType, characterProper,
-                globalProper, hp, stamina, exp, level, currentSpeed));
+            // 全量刷新 HUD（道具效果变更后需要同步所有属性显示）
+            GameEventSystem.Broadcast(new HUDEvent.UpdateHUDEvent(id, hp, maxHp, stamina, maxStamina,
+                exp, globalProper.maxExpToLevelUp, level, currentSpeed,
+                bombCount, maxBombCount, bombRecoveryTime,
+                bombDamage, bombRadius, bombFuseTime, bombCooldown, maxBombCooldown));
         }
 
         /// <summary>

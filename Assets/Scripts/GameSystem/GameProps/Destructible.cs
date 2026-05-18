@@ -1,5 +1,6 @@
 ﻿using GameSystem.GameProps.Item;
 using GameSystem.GameScene;
+using GameSystem.Manager;
 using UnityEngine;
 
 namespace GameSystem.GameProps
@@ -8,7 +9,7 @@ namespace GameSystem.GameProps
     {
         public PropsStatus CreateItem()
         {
-            if (PropsManager.Instance.CreateProps(out var propsConfig))
+            if (PropsManager.Instance.CreateProps(out var propsConfig) && GameModeSelect.CurrentModeType == GameModeType.Offline)
             {
                 // 创建道具
                 var item = Instantiate(propsConfig.propsObj, transform.position, Quaternion.identity);

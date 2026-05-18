@@ -1,15 +1,12 @@
 ﻿using System.Collections.Generic;
 using GameSystem.EventSystem;
 using GameSystem.EventSystem.Event;
-using GameSystem.Map;
 using UnityEngine;
 
 namespace GameSystem.GameProps
 {
     public class BombPos : MonoBehaviour
     {
-        private MapScan _mapScan;
-
         private Vector3[] drirect;
         public static BombPos Instance { get; private set; }
 
@@ -33,8 +30,7 @@ namespace GameSystem.GameProps
                 Vector3.left,
                 Vector3.right
             };
-            _mapScan = FindAnyObjectByType<MapScan>();
-            // if (_mapScan == null) Debug.LogError("找不到MapScan");
+
         }
 
         private void OnEnable()
@@ -87,9 +83,6 @@ namespace GameSystem.GameProps
                     for (var i = 0; i < evt.BombRadius; i++)
                     {
                         current += dri;
-                        // if (_mapScan.CompareTag(current, ObjectType.Wall)) //当此处为墙时，返回
-                        //     break;
-
                         if (BombExportArea.ContainsKey(current))
                             BombExportArea[current]++;
                         else
@@ -118,8 +111,6 @@ namespace GameSystem.GameProps
                     for (var i = 0; i < bombInfo.BombRadius; i++)
                     {
                         current += dri;
-                        // if (_mapScan.CompareTag(current, ObjectType.Wall))
-                        //     break;
                         if (BombExportArea.ContainsKey(current))
                         {
                             BombExportArea[current]--;

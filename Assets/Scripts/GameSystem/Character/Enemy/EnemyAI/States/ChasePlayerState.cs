@@ -42,6 +42,10 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
                 targetPlayer = Owner.GetNearestPlayer();
                 ChasePlayer();
             }
+            
+            // 检测移动是否已完成，重置isMoving标志
+            if (isMoving && !Owner.isMoving)
+                isMoving = false;
         }
 
         protected internal override void OnLeave(IFsm<EnemyAIController> fsm, bool isShutdown)
@@ -67,16 +71,16 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
                 return;
             }
 
-            // 2. 检查玩家是否存在
+            // 2. 刷新目标玩家并检查是否存在（地图同步：玩家可能已死亡或离开）
+            targetPlayer = Owner.GetNearestPlayer();
             if (targetPlayer == null)
             {
-                // 没有玩家，切换到搜索状态
+                // 没有活着的玩家，切换到搜索状态
                 ChangeState<SearchState>(fsm);
                 return;
             }
 
             // 3. 检查是否到达攻击范围
-            targetPlayer = Owner.GetNearestPlayer();
             if (targetPlayer != null)
             {
                 var distance = Vector3.Distance(Owner.transform.position, Owner.ToBombPutPos(targetPlayer.position));
@@ -86,19 +90,26 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
                     return;
                 }
 
-                Owner.MoveTo(Owner.MapInfo.SearchPath(Owner.transform.position,
-                    Owner.ToBombPutPos(targetPlayer.position), true));
-
-                // 4. 检查是否超出追击范围
+                // 4. 检查是否超出追击范围（不在此处发起移动，由ChasePlayer统一处理）
                 if (distance > Owner.chaseRange)
                 {
                     // 超出范围，切换到搜索状态
                     ChangeState<SearchState>(fsm);
                     return;
                 }
+
+                // 5. 验证路径是否可达
+                var path = Owner.MapInfo.SearchPath(Owner.transform.position,
+                    Owner.ToBombPutPos(targetPlayer.position), true);
+                if (path == null)
+                {
+                    // 路径不可达，切换到搜索状态
+                    ChangeState<SearchState>(fsm);
+                    return;
+                }
             }
 
-            // 5. 检查路径是否被爆炸阻挡
+            // 6. 检查路径是否被爆炸阻挡
             if (IsPathBlockedByExplosion()) ChangeState<PathWaitState>(fsm);
         }
 
@@ -113,12 +124,20 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
                 return;
             }
 
+            // 如果正在移动中，等待移动完成（由OnUpdate中的检测重置isMoving）
             if (isMoving) return;
-            if (!Owner.MoveTo(Owner.MapInfo.SearchPath(Owner.transform.position,
-                    Owner.ToBombPutPos(targetPlayer.position), true)))
+            
+            var path = Owner.MapInfo.SearchPath(Owner.transform.position,
+                Owner.ToBombPutPos(targetPlayer.position), true);
+            if (path == null || !Owner.MoveTo(path))
+            {
+                // 路径无效或移动失败，切换到搜索状态
                 ChangeState<SearchState>(fsm);
+            }
             else
+            {
                 isMoving = true;
+            }
         }
 
         /// <summary>

@@ -85,6 +85,27 @@ namespace GameSystem.Manager
         public bool IsSceneCompleted => isSceneCompleted;
         public bool IsSceneSuccessful => isSceneSuccessful;
 
+        /// <summary>
+        ///     标记场景完成，触发游戏结束流程
+        /// </summary>
+        /// <param name="isSuccessful">是否成功完成（胜利）</param>
+        protected void CompleteScene(bool isSuccessful)
+        {
+            if (isSceneCompleted)
+            {
+                Debug.LogWarning($"场景 {sceneName} 已经完成，忽略重复调用");
+                return;
+            }
+
+            isSceneCompleted = true;
+            isSceneSuccessful = isSuccessful;
+            Debug.Log($"场景 {sceneName} 完成，结果: {(isSuccessful ? "胜利" : "失败")}");
+
+            // 通知游戏流管理器结束游戏
+            if (GameFlowManager.Instance != null)
+                GameFlowManager.Instance.EndGame(isSuccessful);
+        }
+
         // 以下方法由子类实现
         public abstract void InitializeScene();
         public abstract void CleanupScene();
