@@ -38,6 +38,7 @@ namespace GameSystem.GameProps
         private void OnEnable()
         {
             print("炸弹创建成功，创建者Id：" + ownerId + "，爆炸时间：" + bombFuseTime);
+            // TODO: Invoke通过统一的时间管理器触发
             Invoke("Explode", bombFuseTime);
         }
 

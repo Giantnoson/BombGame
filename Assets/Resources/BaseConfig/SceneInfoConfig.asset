@@ -25,7 +25,7 @@ MonoBehaviour:
     isAdditive: 1
     isPersistent: 0
     loadOnStartup: 0
-  - sceneName: WinSceme
+  - sceneName: WinScene
     state: 5
     isFlag: 0
     isAdditive: 1

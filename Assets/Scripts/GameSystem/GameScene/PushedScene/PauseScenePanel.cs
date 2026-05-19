@@ -45,7 +45,7 @@ namespace GameSystem.GameScene.PushedScene
 
         private void OnRestartBtnClick()
         {
-            GameFlowManager.Instance.ReLoadCurrentScene();
+            GameFlowManager.Instance.RestartGame();
         }
 
         private void OnSettingBtnClick()

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Config;
 using GameSystem.EventSystem;
 using GameSystem.EventSystem.Event;
@@ -17,7 +18,16 @@ namespace GameSystem.GameProps.Item
         public PropsConfig propsConfig;
         [Tooltip("是否处于活跃状态")]
         public bool isActive = false;
-        
+
+        private void OnDestroy()
+        {
+            var timerKey = GetTimerKey();
+            if (GlobalTimerManager.Instance != null && GlobalTimerManager.Instance.HasTimer(timerKey))
+            {
+                GlobalTimerManager.Instance.CancelTimer(timerKey);
+            }
+        }
+
         /// <summary>
         /// 是否已经被销毁/失效，防止重复调用 Disable
         /// </summary>

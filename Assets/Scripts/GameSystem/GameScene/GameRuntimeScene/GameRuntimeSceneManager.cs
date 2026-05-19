@@ -85,8 +85,7 @@ namespace GameSystem.GameScene.GameRuntimeScene
 
         private void OnEnable()
         {
-            // 订阅游戏流管理器事件
-            GameFlowManager.OnGameStateChanged += OnGameStateChanged;
+            // 注意：OnGameStateChanged 已在基类 BaseSceneManager.Start() 中订阅，此处不重复订阅
             GameEventSystem.AddListener<CharacterDieEvent>(OnGameCharacterDie);
             // 订阅等级/经验变化事件，用于计数板数据追踪
             GameEventSystem.AddListener<HUDEvent.LeaveUpEvent>(OnPlayerLevelUp);
@@ -95,7 +94,7 @@ namespace GameSystem.GameScene.GameRuntimeScene
 
         private void OnDisable()
         {
-            GameFlowManager.OnGameStateChanged -= OnGameStateChanged;
+            // 注意：OnGameStateChanged 已在基类 BaseSceneManager.OnDestroy() 中取消订阅
             GameEventSystem.RemoveListener<CharacterDieEvent>(OnGameCharacterDie);
             GameEventSystem.RemoveListener<HUDEvent.LeaveUpEvent>(OnPlayerLevelUp);
             GameEventSystem.RemoveListener<HUDEvent.ExpAddEvent>(OnPlayerExpChanged);
@@ -269,6 +268,7 @@ namespace GameSystem.GameScene.GameRuntimeScene
             player.name = $"player{index}";
             player.tag = nameof(ObjectType.Player);
             player.SetActive(true);
+            player.transform.SetParent(transform);
             Characters.Add(player);
         }
 
@@ -295,6 +295,7 @@ namespace GameSystem.GameScene.GameRuntimeScene
             enemy.name = CharacterBaseInfos[index].CharacterName;
             enemy.tag = nameof(ObjectType.Enemy);
             enemy.SetActive(true);
+            enemy.transform.SetParent(transform);
             Characters.Add(enemy);
         }
 

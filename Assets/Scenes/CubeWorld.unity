@@ -4084,7 +4084,7 @@ Transform:
   m_GameObject: {fileID: 788991405}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 12.026864, y: 5.7605653, z: -9.999205}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6512,21 +6512,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76c19554308a44cb995162e20c895d33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startY: 0.5
-  offsetDistance: 15
-  TagPointPairsList:
-  - tag: 0
-    point: 87
-  - tag: 0
-    point: 79
-  - tag: 0
-    point: 66
-  - tag: 0
-    point: 80
-  ScanConfig: {fileID: 0}
-  referencePos: {x: 7.5, y: 0.5, z: 5.5}
-  referenceOffset: 3
-  isPrint: 0
 --- !u!4 &1228522502
 Transform:
   m_ObjectHideFlags: 0
