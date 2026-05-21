@@ -142,7 +142,7 @@ namespace Core.Net
                         GameModeSelect.Instance.SetGameMode(GameModeType.Online, players.Count, 0);
                         GameModeSelect.CharacterBaseInfos = players;
                         GameModeSelect.Instance.StartGame();
-                        MainUIManager.Instance.CloseAll();
+                        MainUIManager.Instance.HidePanel();
                     }
                 })
             });

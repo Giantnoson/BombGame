@@ -106,5 +106,29 @@ namespace GameSystem.UI
             }
             _panelStack.Clear();
         }
+
+        public void HidePanel()
+        {
+            if (_panelStack.Count > 0)
+            {
+                _panelStack.Peek().Hide();
+            }
+        }
+
+        public void HidePanel(PanelSymbol symbol)
+        {
+            if (_panels.TryGetValue(symbol.name, out UIBasePanel panel))
+            {
+                panel.Hide();
+            }
+        }
+
+        public void UnHidePanel()
+        {
+            if (_panelStack.Count > 0)
+            {
+                _panelStack.Peek().Show();
+            }
+        }
     }
 }

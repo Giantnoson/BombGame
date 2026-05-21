@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using GameSystem.EventSystem;
 using GameSystem.EventSystem.Event;
 using GameSystem.GameScene.GameRuntimeScene;
+using GameSystem.GameScene.MainMenu.UI;
 using GameSystem.Manager;
 using TMPro;
 using UnityEngine;
@@ -45,11 +46,25 @@ namespace GameSystem.GameScene.GameEndScene
         public TextMeshProUGUI gameModeText;
 
         [Header("按钮")]
+        
+        [Tooltip("离线按钮")]
+        public GameObject offlineButtonGroup;
         [Tooltip("重新开始按钮")]
         public Button restartButton;
 
+        [Tooltip("返回角色选择按钮")]
+        public Button returnToPlayerSetButton;
+        
         [Tooltip("返回主菜单按钮")]
         public Button returnToMenuButton;
+        
+        [Tooltip("在线按钮")]
+        public GameObject onlineButtonGroup;
+        [Tooltip("返回房间按钮")]
+        public Button returnToRoomButton;
+        [Tooltip("返回地图选择按钮")]
+        public Button returnToLobbyButton;
+
 
         [Header("结算面板")]
         [Tooltip("整个结算面板（可做动画）")]
@@ -69,12 +84,35 @@ namespace GameSystem.GameScene.GameEndScene
 
         private void OnEnable()
         {
-            // 绑定按钮事件
-            if (restartButton != null)
-                restartButton.onClick.AddListener(OnRestartClicked);
+            if (GameModeSelect.CurrentModeType == GameModeType.Offline)
+            {
+                offlineButtonGroup.SetActive(true);
+                onlineButtonGroup.SetActive(false);
+                
+                // 绑定按钮事件
+                if (restartButton != null)
+                    restartButton.onClick.AddListener(OnRestartClicked);
 
-            if (returnToMenuButton != null)
-                returnToMenuButton.onClick.AddListener(OnReturnToMenuClicked);
+                if (returnToMenuButton != null)
+                    returnToMenuButton.onClick.AddListener(OnReturnToMenuClicked);
+                
+                if(returnToPlayerSetButton != null)
+                    returnToPlayerSetButton.onClick.AddListener(OnReturnToPlayerSetClicked);
+            }
+            else
+            {
+                offlineButtonGroup.SetActive(false);
+                onlineButtonGroup.SetActive(true);
+                
+                // 绑定按钮事件
+                if (returnToRoomButton != null)
+                    returnToRoomButton.onClick.AddListener(OnReturnToRoomClicked);
+                if (returnToLobbyButton != null)
+                    returnToLobbyButton.onClick.AddListener(OnReturnToLobbyClicked);
+            }
+            
+            
+
         }
 
         private void OnDisable()
@@ -155,5 +193,28 @@ namespace GameSystem.GameScene.GameEndScene
             if (GameFlowManager.Instance != null)
                 GameFlowManager.Instance.ReturnToMainMenu();
         }
+
+        private void OnReturnToPlayerSetClicked()
+        {
+            MainUIManager.Instance.UnHidePanel();
+            if (GameFlowManager.Instance != null)
+                GameFlowManager.Instance.ReturnToMainMenu();
+        }
+
+        private void OnReturnToRoomClicked()
+        {
+            MainUIManager.Instance.UnHidePanel();
+            if (GameFlowManager.Instance != null)
+                GameFlowManager.Instance.ReturnToMainMenu();
+        }
+
+        private void OnReturnToLobbyClicked()
+        {
+            MainUIManager.Instance.Back();
+            if (GameFlowManager.Instance != null)
+                GameFlowManager.Instance.ReturnToMainMenu();
+        }
+        
+        
     }
 }

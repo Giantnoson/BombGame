@@ -315,7 +315,7 @@ namespace GameSystem.GameScene.MainMenu.UI
             GameModeSelect.CharacterBaseInfos = characterBaseInfos;
             
             GameModeSelect.Instance.StartGame();
-            MainUIManager.Instance.CloseAll();
+            MainUIManager.Instance.HidePanel();
         }
 
         private void OnResetClick()
