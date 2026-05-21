@@ -15,7 +15,7 @@ MonoBehaviour:
   propsId: Stamina001A
   weight: 40
   validTime: 60
-  propsType: 0
+  propsType: 1
   propsMaterial: {fileID: 2100000, guid: e33df1c0b73c92144827d1787c41b425, type: 2}
   propsSize: 0
   propsObj: {fileID: 6319107677461525378, guid: 3c49358da6c49a445b7ec3d9f0a16866, type: 3}

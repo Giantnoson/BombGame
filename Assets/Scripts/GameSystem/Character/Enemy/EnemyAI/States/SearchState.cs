@@ -16,6 +16,9 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
         // 目标检查间隔时间（秒）
         private readonly float targetCheckInterval = 0.2f;
 
+        // 连续寻找目标失败计数器
+        private readonly int maxConsecutiveFailures = 10;
+
         private Vector3 beforePosition;
 
         // 是否有目标
@@ -29,6 +32,9 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
         // 目标位置
         private Vector3 targetPosition;
 
+        // 连续失败次数
+        private int consecutiveFailures;
+
         /// <summary>
         ///     进入状态时的回调函数
         /// </summary>
@@ -41,6 +47,7 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
             Owner.StatusQueue.Dequeue();
             hasTarget = false;
             Owner.isMoving = false;
+            consecutiveFailures = 0;
             FindNewTarget();
         }
 
@@ -122,19 +129,21 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
                 }
             }
 
-            // 3. 检查目标是否仍然有效（地图同步：目标方块可能已被其他爆炸摧毁）
-            if (hasTarget && !Owner.MapInfo.HasTag(targetPosition, TagType.Destructible))
-            {
-                Debug.Log("目标方块已被摧毁，重新搜索");
-                hasTarget = false;
-                Owner.isMoving = false;
-            }
+
 
             // 4. 检查是否到达目标
             if (hasTarget && Vector3.Distance(Owner.transform.position, targetPosition) < Owner.stoppingDistance)
             {
                 ChangeState<PlaceBombState>(fsm);
                 return;
+            }
+            
+            // 3. 检查目标是否仍然有效（地图同步：目标方块可能已被其他爆炸摧毁）
+            if (hasTarget && !Owner.MapInfo.HasTag(targetPosition, TagType.Destructible))
+            {
+                Debug.Log("目标方块已被摧毁，重新搜索");
+                hasTarget = false;
+                Owner.isMoving = false;
             }
 
             // 5. 检查路径是否被爆炸阻挡
@@ -145,7 +154,17 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
             }
 
             // 6. 没有目标时寻找新目标
-            if (!hasTarget) FindNewTarget();
+            if (!hasTarget)
+            {
+                // 连续失败过多次，回退到IdleState让系统重新决策
+                if (consecutiveFailures >= maxConsecutiveFailures)
+                {
+                    Debug.Log($"SearchState: 连续{consecutiveFailures}次找不到可达目标，回退到IdleState");
+                    ChangeState<IdleState>(fsm);
+                    return;
+                }
+                FindNewTarget();
+            }
         }
 
         /// <summary>
@@ -162,12 +181,21 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
             {
                 Debug.Log("范围内存在可破坏的方块");
                 foreach (var stepTracker in target)
-                    if (!IsInExplosionRange(Owner.MapInfo.GetRealCoord(stepTracker.Pos)))
+                {
+                    var candidatePos = Owner.MapInfo.GetRealCoord(stepTracker.Pos);
+                    if (!IsInExplosionRange(candidatePos) && Owner.MapInfo.IsWalkable(candidatePos))
                     {
-                        targetPosition = Owner.MapInfo.GetRealCoord(stepTracker.Pos);
-                        hasTarget = true;
-                        return;
+                        // 验证路径可达性，避免选中路径被墙阻隔的孤岛位置
+                        var path = Owner.MapInfo.SearchPath(Owner.transform.position, candidatePos, true);
+                        if (path != null)
+                        {
+                            targetPosition = candidatePos;
+                            hasTarget = true;
+                            consecutiveFailures = 0;
+                            return;
+                        }
                     }
+                }
             }
 
             Debug.Log("范围内找不到可破坏的方块，进行全局扫描");
@@ -184,22 +212,33 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
             if (target != null)
             {
                 Debug.Log("全局存在可破坏的方块");
-                // 收集所有不在爆炸范围内的安全方块
+                // 收集所有不在爆炸范围内且可行走的安全方块
                 var safeBlocks = new List<TargetStepInfo>();
                 foreach (var stepTracker in target)
-                    if (!IsInExplosionRange(Owner.MapInfo.GetRealCoord(stepTracker.Pos)))
+                {
+                    var candidatePos = Owner.MapInfo.GetRealCoord(stepTracker.Pos);
+                    if (!IsInExplosionRange(candidatePos) && Owner.MapInfo.IsWalkable(candidatePos))
                         safeBlocks.Add(stepTracker);
+                }
 
-                if (safeBlocks.Count > 0)
+                // 随机尝试安全方块，找到第一个路径可达的即接受
+                while (safeBlocks.Count > 0)
                 {
                     var randomIndex = Random.Range(0, safeBlocks.Count);
-                    targetPosition = Owner.MapInfo.GetRealCoord(safeBlocks[randomIndex].Pos);
-                    hasTarget = true;
-                    return;
+                    var candidatePos = Owner.MapInfo.GetRealCoord(safeBlocks[randomIndex].Pos);
+                    var path = Owner.MapInfo.SearchPath(Owner.transform.position, candidatePos, true);
+                    if (path != null)
+                    {
+                        targetPosition = candidatePos;
+                        hasTarget = true;
+                        consecutiveFailures = 0;
+                        return;
+                    }
+                    safeBlocks.RemoveAt(randomIndex);
                 }
             }
 
-            // 没有安全方块，采用随机移动策略
+            // 没有安全方块或所有都不可达，采用随机移动策略
             Debug.Log("全局不存在安全可破坏方块，采取随机移动策略");
             var pointInArea = Owner.MapInfo.GetRandomPointInArea(Owner.ToBombPutPos(Owner.transform.position),
                 Mathf.CeilToInt(Owner.detectionRange));
@@ -207,7 +246,13 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
             {
                 targetPosition = Owner.MapInfo.GetRealCoord(pointInArea.Pos);
                 hasTarget = true;
+                consecutiveFailures = 0;
+                return;
             }
+
+            // 完全找不到目标，递增失败计数
+            consecutiveFailures++;
+            Debug.Log($"SearchState: 找不到任何可达目标 ({consecutiveFailures}/{maxConsecutiveFailures})");
         }
 
 
@@ -217,7 +262,16 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
         private void MoveToTarget()
         {
             Debug.Log("移动到目标：" + targetPosition + " vPos:" + Owner.MapInfo.GetVirtualCoord(targetPosition));
-            Owner.isMoving = Owner.MoveTo(Owner.MapInfo.SearchPath(Owner.transform.position, targetPosition, true));
+            var path = Owner.MapInfo.SearchPath(Owner.transform.position, targetPosition, true);
+            if (path == null)
+            {
+                // 路径失效（例如目标中途被炸弹阻断），重新寻找
+                Debug.Log("路径失效，重新寻找目标");
+                hasTarget = false;
+                Owner.isMoving = false;
+                return;
+            }
+            Owner.isMoving = Owner.MoveTo(path);
             if (!Owner.isMoving) hasTarget = false;
         }
 

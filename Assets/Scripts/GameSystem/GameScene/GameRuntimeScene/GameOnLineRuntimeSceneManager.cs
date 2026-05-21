@@ -11,6 +11,8 @@ using GameSystem.GameScene.GameEndScene;
 using GameSystem.GameScene.MainMenu;
 using GameSystem.Manager;
 using GameSystem.Map;
+using GameSystem.Pool;
+using GameSystem.Timer;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -453,6 +455,36 @@ namespace GameSystem.GameScene.GameRuntimeScene
             ps.propsConfig = propsConfig;
             ps.VirtualPosition = MapInfo.Instance.GetVirtualCoord(position);
 
+            // 设置道具外观（材质颜色 + 大小，与离线模式 Destructible.CreateItem 保持一致）
+            if (propsConfig.propsMaterial != null)
+            {
+                var renderers = ps.gameObject.GetComponentsInChildren<MeshRenderer>();
+                for (var i = 0; i < renderers.Length; i++)
+                {
+                    var materials = renderers[i].materials;
+                    for (var j = 0; j < materials.Length; j++)
+                    {
+                        materials[j].color = propsConfig.propsMaterial.color;
+                    }
+                }
+            }
+
+            switch (propsConfig.propsSize)
+            {
+                case PropsSize.Small:
+                    ps.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+                    break;
+                case PropsSize.Medium:
+                    ps.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
+                    break;
+                case PropsSize.Large:
+                    ps.transform.localScale = new Vector3(1f, 1f, 1f);
+                    break;
+                default:
+                    Debug.LogWarning($"[PropsOnline] 未知道具大小: {propsConfig.propsSize}");
+                    break;
+            }
+
             // 注册到地图系统（可被拾取检测）
             MapInfo.Instance.AddItem(position, ps, TagType.Props);
 
@@ -491,6 +523,8 @@ namespace GameSystem.GameScene.GameRuntimeScene
 
         /// <summary>
         ///     处理服务端下发的道具效果启用消息
+        ///     在线模式不使用临时 GameObject，直接通过 PropsConfig 广播事件
+        ///     限时道具使用 GlobalTimerManager（时间戳模式）做本地自动过期保障
         /// </summary>
         private void OnPropEffectEnable(NetMessage msg)
         {
@@ -504,18 +538,26 @@ namespace GameSystem.GameScene.GameRuntimeScene
             {
                 if (PropsManager.Instance.GetPropsConfigById(propsId, out var propsConfig))
                 {
-                    // 创建一个临时的 PropsStatus 用于广播事件
-                    var tempGO = new GameObject($"_temp_props_{propsId}");
-                    var tempPS = tempGO.AddComponent<PropsStatus>();
-                    tempPS.InitProps(playerId, propsConfig);
-                    GameEventSystem.Broadcast(new PropsEvent.PropsStatusEnable(playerId, tempPS));
-                    Destroy(tempGO);
+                    // 在线模式：直接广播事件（仅携带 PropsConfig，不创建临时 GameObject）
+                    GameEventSystem.Broadcast(new PropsEvent.PropsStatusEnable(playerId, propsConfig));
+
+                    // 限时道具（validTime > 0）：创建本地 Timer 作为自动过期保障
+                    // 添加 3 秒缓冲确保服务端 PROP_EFFECT_DISABLE 先触发
+                    if (propsConfig.validTime > 0f)
+                    {
+                        var timerKey = GetPropsTimerKey(playerId, propsConfig.propsId);
+                        var expireTime = LocalTime.Now + (long)(propsConfig.validTime * 1000) + 3000L;
+                        GlobalTimerManager.Instance.CreateOrResetTimer(timerKey, expireTime,
+                            onComplete: () => OnOnlinePropsTimerExpired(playerId, propsConfig),
+                            useTimeScale: false);
+                    }
                 }
             }
         }
 
         /// <summary>
         ///     处理服务端下发的道具效果禁用消息
+        ///     取消本地 Timer（若存在），防止重复移除道具效果
         /// </summary>
         private void OnPropEffectDisable(NetMessage msg)
         {
@@ -529,14 +571,32 @@ namespace GameSystem.GameScene.GameRuntimeScene
             {
                 if (PropsManager.Instance.GetPropsConfigById(propsId, out var propsConfig))
                 {
-                    var tempGO = new GameObject($"_temp_props_{propsId}");
-                    var tempPS = tempGO.AddComponent<PropsStatus>();
-                    tempPS.InitProps(playerId, propsConfig);
-                    GameEventSystem.Broadcast(new PropsEvent.PropsStatusDisable(playerId, tempPS));
-                    Destroy(tempGO);
+                    var timerKey = GetPropsTimerKey(playerId, propsConfig.propsId);
+
+                    // 尝试取消本地 Timer
+                    //  成功 → 服务端先于 Timer 触发，广播 Disable
+                    //  失败 → Timer 已自动过期（已广播过 Disable），跳过，防止重复移除
+                    if (GlobalTimerManager.Instance.CancelTimer(timerKey))
+                    {
+                        GameEventSystem.Broadcast(new PropsEvent.PropsStatusDisable(playerId, propsConfig));
+                    }
                 }
             }
         }
+
+        /// <summary>
+        ///     在线模式道具 Timer 过期回调（本地 Timer 先于服务端触发时的兜底）
+        /// </summary>
+        private void OnOnlinePropsTimerExpired(string playerId, PropsConfig propsConfig)
+        {
+            Debug.Log($"[PropsOnline] 本地道具[{propsConfig.propsId}] Timer 到期，广播 Disable（兜底）");
+            GameEventSystem.Broadcast(new PropsEvent.PropsStatusDisable(playerId, propsConfig));
+        }
+
+        /// <summary>
+        ///     生成在线模式道具 Timer 唯一键，与离线 PropsStatus.GetTimerKey 格式一致
+        /// </summary>
+        private static string GetPropsTimerKey(string playerId, string propsId) => $"{playerId}_{propsId}";
 
         #endregion
 
@@ -576,7 +636,10 @@ namespace GameSystem.GameScene.GameRuntimeScene
 
         /// <summary>
         ///     处理服务端下发的炸弹爆炸消息（BOMB_EXPLODE = 0x0502）
-        ///     服务端已权威处理伤害和地图更新，客户端仅负责播放视觉效果
+        ///     服务端已权威处理伤害和地图更新，客户端负责：
+        ///     1. 根据服务端下发的障碍物列表直接清除可破坏方块
+        ///     2. 播放爆炸视觉效果
+        ///     3. 回收炸弹
         /// </summary>
         private void OnBombExplode(NetMessage msg)
         {
@@ -585,8 +648,48 @@ namespace GameSystem.GameScene.GameRuntimeScene
             var gridZ = msg._body.GetInt("gridZ");
             var serverX = msg._body.GetInt("x");
             var serverZ = msg._body.GetInt("z");
+            var obstaclesStr = msg._body.GetString("obstacles");
 
-            // 通过服务端 bombId 或位置匹配客户端炸弹实例
+            // ===== 1. 根据服务端障碍物列表直接清除可破坏方块 =====
+            if (!string.IsNullOrEmpty(obstaclesStr))
+            {
+                var obstaclePairs = obstaclesStr.Split(';');
+                foreach (var pair in obstaclePairs)
+                {
+                    var parts = pair.Split(',');
+                    if (parts.Length == 2 && int.TryParse(parts[0], out var ogx) && int.TryParse(parts[1], out var ogz))
+                    {
+                        // 将服务端网格坐标直接转换为客户端世界坐标
+                        // 客户端 GetVirtualCoord: FloorToInt(worldX) + offsetDistance = gridX
+                        // 逆推: worldX = gridX - offsetDistance + 0.5f
+                        var worldX = ogx - MapInfo.Instance.offsetDistance + 0.5f;
+                        var worldZ = ogz - MapInfo.Instance.offsetDistance + 0.5f;
+                        var worldPos = new Vector3(worldX, 0f, worldZ);
+
+                        var items = MapInfo.Instance?.GetMapDataTarget(worldPos);
+                        if (items != null)
+                        {
+                            // 使用快照副本避免迭代时修改字典
+                            var snapshot = new List<KeyValuePair<BaseObject, TagType>>(items);
+                            foreach (var kv in snapshot)
+                            {
+                                if (kv.Value == TagType.Destructible)
+                                {
+                                    MapInfo.Instance?.RemoveItem(worldPos, kv.Key);
+                                    var dest = kv.Key as Destructible;
+                                    if (dest != null && DestructiblePool.Instance != null)
+                                    {
+                                        DestructiblePool.Instance.ReturnDestructible(dest);
+                                    }
+                                    Debug.Log($"[BombOnline] 服务端通知清除障碍物: grid=({ogx},{ogz}) world=({worldX},{worldZ})");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ===== 2. 查找本地炸弹实例并播放视觉效果 =====
             Bomb targetBomb = null;
 
             // 方式1：通过服务端 bombId 查找对应位置
@@ -617,7 +720,26 @@ namespace GameSystem.GameScene.GameRuntimeScene
             }
             else
             {
-                Debug.LogWarning($"[BombOnline] 未找到服务端炸弹[{bombId}]的本地实例（可能已被本地计时器提前引爆）");
+                // 方式3：扫描所有炸弹实例（兜底方案，处理坐标/缓存不匹配的情况）
+                var allBombs = FindObjectsOfType<Bomb>();
+                foreach (var b in allBombs)
+                {
+                    if (!b.isExplode && b.isOnlineBomb && b.serverBombId == bombId)
+                    {
+                        targetBomb = b;
+                        Debug.Log($"[BombOnline] 通过ID匹配找到炸弹[{bombId}]（兜底方案）");
+                        break;
+                    }
+                }
+
+                if (targetBomb != null)
+                {
+                    targetBomb.CleanupFromServer();
+                }
+                else
+                {
+                    Debug.LogWarning($"[BombOnline] 未找到服务端炸弹[{bombId}]的本地实例（可能已被本地计时器提前引爆）");
+                }
             }
         }
 

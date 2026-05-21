@@ -61,9 +61,8 @@ namespace GameSystem.GameProps.Item
             {
                 config = Resources.Load<PropsProbabilityConfig>("Props/PropsProbabilityConfig");
                 if (config != null) config.Init();
+                else return false;
             }
-            if (config == null) return false;
-
             var allConfigs = Resources.LoadAll<PropsConfig>("Props");
             foreach (var pc in allConfigs)
             {

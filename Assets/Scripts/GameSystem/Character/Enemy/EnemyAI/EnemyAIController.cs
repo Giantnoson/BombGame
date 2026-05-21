@@ -170,7 +170,7 @@ namespace GameSystem.Character.Enemy.EnemyAI
 
             // 创建FSM
             fsm = Fsm<EnemyAIController>.Create(
-                "EnemyAI",
+                $"EnemyAI{id}",
                 this,
                 idleState,
                 searchState,
@@ -436,6 +436,8 @@ namespace GameSystem.Character.Enemy.EnemyAI
             /*
             enemyAgent.SetDestination(transform.position);
             */
+            MoveController.hasTarget = false;
+            MoveController.isMoving = false;
             MoveController.StopMoving();
         }
 

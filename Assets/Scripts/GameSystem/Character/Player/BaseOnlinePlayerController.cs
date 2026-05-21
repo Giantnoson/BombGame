@@ -51,7 +51,13 @@ namespace GameSystem.Character.Player
                         });
 
                         // 在线模式：查找刚创建的炸弹并设置服务端 bombId（用于 BOMB_EXPLODE 匹配）
-                        GameOnLineRuntimeSceneManagerManager.Instance?.RegisterServerBomb(bombId, bombPos);
+                        // 对齐到格子中心，与 BombManager.OnPlaceRequest 的 Mathf.Ceil-0.5f 对齐一致
+                        var alignedPos = new Vector3(
+                            Mathf.Ceil(bombPos.x) - 0.5f,
+                            0f,
+                            Mathf.Ceil(bombPos.z) - 0.5f
+                        );
+                        GameOnLineRuntimeSceneManagerManager.Instance?.RegisterServerBomb(bombId, alignedPos);
                     }
                 }),
                 new (CmdType.Move, msg =>
@@ -68,6 +74,74 @@ namespace GameSystem.Character.Player
                         float angle = msg._body.GetFloat("angle");
                         transform.position = new Vector3(x, y, z);
                         transform.rotation = Quaternion.Euler(0, angle, 0);
+                    }
+                }),
+                // HP_CHANGE: 服务端权威伤害/治疗广播
+                new (CmdType.HpChange, msg =>
+                {
+                    string hpPlayerId = msg._body.GetString("id");
+                    if (hpPlayerId == PlayerId)
+                    {
+                        float newHp = msg._body.GetFloat("hp");
+                        float oldHp = hp;
+                        hp = newHp;
+                        Debug.Log($"[HP_SYNC] 玩家[{PlayerId}] HP变化: {oldHp} → {newHp} (服务端权威)");
+                        
+                        // 如果血量归零则触发死亡
+                        if (hp <= 0 && !isDie)
+                        {
+                            hp = 0;
+                            isDie = true;
+                            Debug.Log($"[HP_SYNC] 玩家[{PlayerId}] 服务端判定死亡");
+                            GameEventSystem.Broadcast(new HUDEvent.TakeDamageEvent(id, hp, maxHp));
+                            GameEventSystem.Broadcast(new CharacterDieEvent
+                            {
+                                AttackerID = "",  // 服务端已处理击杀者逻辑
+                                DieId = id,
+                                Exp = 0
+                            });
+                        }
+                        else
+                        {
+                            GameEventSystem.Broadcast(new HUDEvent.TakeDamageEvent(id, hp, maxHp));
+                        }
+                    }
+                }),
+                // PlayerSync: 服务端每帧广播玩家状态（HP + 属性 + 位置）
+                new (CmdType.PlayerSync, msg =>
+                {
+                    string syncPlayerId = msg._body.GetString("id");
+                    if (syncPlayerId == PlayerId)
+                    {
+                        float syncedHp = msg._body.GetFloat("hp");
+                        float syncedMaxHp = msg._body.GetFloat("maxHp");
+                        int syncedLevel = msg._body.GetInt("level");
+                        int syncedExp = msg._body.GetInt("exp");
+                        float syncedMaxStamina = msg._body.GetFloat("maxStamina");
+                        float sx = msg._body.GetInt("x") / 100f;
+                        float sy = msg._body.GetInt("y") / 100f;
+                        float sz = msg._body.GetInt("z") / 100f;
+
+                        // 仅远程玩家校正位置（本地玩家位置由本地输入+服务端Move回显控制）
+                        if (PlayerId != TcpGameClient.PlayerId)
+                        {
+                            transform.position = new Vector3(sx, sy, sz);
+                        }
+
+                        // 同步HP（服务端权威）
+                        if (Mathf.Abs(hp - syncedHp) > 0.01f)
+                        {
+                            hp = syncedHp;
+                        }
+
+                        // 同步属性（服务端权威）
+                        if (syncedMaxHp > 0) maxHp = syncedMaxHp;
+                        if (syncedLevel > 0) level = syncedLevel;
+                        if (syncedExp >= 0) exp = syncedExp;
+                        if (syncedMaxStamina > 0) maxStamina = syncedMaxStamina;
+
+                        // 反射HUD更新（HP+属性变化时）
+                        GameEventSystem.Broadcast(new HUDEvent.TakeDamageEvent(id, hp, maxHp));
                     }
                 })
             });

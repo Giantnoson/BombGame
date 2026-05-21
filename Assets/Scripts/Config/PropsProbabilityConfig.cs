@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 
 namespace Config
@@ -99,6 +101,65 @@ namespace Config
 
             propsConfig = propsConfigs[index];
             return true;
+        }
+
+        /// <summary>
+        ///     将当前道具配置导出为服务端可识别的 JSON 格式
+        ///     右键点击 ScriptableObject → "Export Props Config to JSON"
+        ///     输出到 persistentDataPath/props_config.json，手动复制到服务端 resources/props/ 目录
+        /// </summary>
+        [ContextMenu("Export Props Config to JSON")]
+        public void ExportPropsConfigToJson()
+        {
+            if (!isInit) Init();
+
+            if (propsConfigs.Count == 0)
+            {
+                Debug.LogError("[PropsConfigExport] 没有道具配置可导出");
+                return;
+            }
+
+            var sb = new StringBuilder();
+            sb.Append("{");
+            sb.Append($"\"propsGenerationProbability\":{propsGenerationProbability},");
+            sb.Append("\"props\":{");
+
+            for (var i = 0; i < propsConfigs.Count; i++)
+            {
+                var pc = propsConfigs[i];
+                if (i > 0) sb.Append(",");
+                sb.Append($"\"{i}\":{{");
+                sb.Append($"\"id\":\"{pc.propsId}\",");
+                sb.Append($"\"type\":\"{pc.propsType}\",");
+                sb.Append($"\"weight\":{pc.weight},");
+                sb.Append($"\"validTime\":{pc.validTime},");
+                sb.Append($"\"size\":\"{pc.propsSize}\",");
+                // 效果值（与服务端 PropsConfig.loadFromJson 字段名严格一致）
+                sb.Append($"\"maxHpAddition\":{pc.maxHpAddition},");
+                sb.Append($"\"hpRegenAddition\":{pc.hpRegenAddition},");
+                sb.Append($"\"speedMultiply\":{pc.speedMultiply},");
+                sb.Append($"\"maxLevelAddition\":{pc.maxLevelAddition},");
+                sb.Append($"\"maxStaminaAddition\":{pc.maxStaminaAddition},");
+                sb.Append($"\"staminaDrainRateAddition\":{pc.staminaDrainRateAddition},");
+                sb.Append($"\"staminaRegenRateAddition\":{pc.staminaRegenRateAddition},");
+                sb.Append($"\"speedMultiplierMultiply\":{pc.speedMultiplierMultiply},");
+                sb.Append($"\"maxBombCountAddition\":{pc.maxBombCountAddition},");
+                sb.Append($"\"bombDamageAddition\":{pc.bombDamageAddition},");
+                sb.Append($"\"bombRadiusAddition\":{pc.bombRadiusAddition},");
+                sb.Append($"\"bombFuseTimeSubtract\":{pc.bombFuseTimeSubtract},");
+                sb.Append($"\"bombCooldownDivide\":{pc.bombCooldownDivide},");
+                sb.Append($"\"bombRecoveryTimeDivide\":{pc.bombRecoveryTimeDivide}");
+                sb.Append("}");
+            }
+
+            sb.Append("}}");
+
+            var json = sb.ToString();
+            var filePath = Path.Combine(Application.persistentDataPath, "props_config.json");
+            File.WriteAllText(filePath, json);
+            Debug.Log($"[PropsConfigExport] 道具配置已导出到: {filePath}");
+            Debug.Log($"[PropsConfigExport] 共导出 {propsConfigs.Count} 个道具，总权重={totalWeight}");
+            Debug.Log($"[PropsConfigExport] 请手动复制此文件到服务端: src/main/resources/props/props_config.json");
         }
         
     }

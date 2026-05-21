@@ -119,9 +119,13 @@ namespace Core.Net
         
         // 状态相关命令
         /// <summary>
-        /// 状态变更命令
+        /// 生命值变化命令（服务器权威广播）
         /// </summary>
-        public const int StatusChange = 0x0601;   // 状态变更命令
+        public const int HpChange = 0x0601;   // 生命值变化命令
+        /// <summary>
+        /// 玩家状态同步命令（服务器每帧广播：位置+HP）
+        /// </summary>
+        public const int PlayerSync = 0x0602; // 玩家状态同步命令
         
 
         

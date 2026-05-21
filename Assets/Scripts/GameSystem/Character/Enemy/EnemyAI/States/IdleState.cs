@@ -114,11 +114,14 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
                 Debug.Log("存在可破坏的方块");
                 hasDestructibleBlock = true;
                 foreach (var stepTracker in targetStep)
-                    if (!IsInExplosionRange(Owner.MapInfo.GetRealCoord(stepTracker.Pos)))
+                {
+                    var candidatePos = Owner.MapInfo.GetRealCoord(stepTracker.Pos);
+                    if (!IsInExplosionRange(candidatePos) && Owner.MapInfo.IsWalkable(candidatePos))
                     {
                         Debug.Log("存在不在爆炸范围的可破坏方块");
                         return true;
                     }
+                }
 
                 return false;
             }
@@ -139,11 +142,14 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
                 Debug.Log("存在可破坏的方块");
                 hasDestructibleBlock = true;
                 foreach (var stepTracker in target)
-                    if (!IsInExplosionRange(Owner.MapInfo.GetRealCoord(stepTracker.Pos)))
+                {
+                    var candidatePos = Owner.MapInfo.GetRealCoord(stepTracker.Pos);
+                    if (!IsInExplosionRange(candidatePos) && Owner.MapInfo.IsWalkable(candidatePos))
                     {
                         Debug.Log("存在不在爆炸范围的可破坏方块");
                         return ScanResult.Destructible;
                     }
+                }
 
                 Debug.Log("全局不存在不在爆炸范围的可破坏方块");
                 return ScanResult.None;
@@ -167,12 +173,15 @@ namespace GameSystem.Character.Enemy.EnemyAI.States
                 Debug.Log("存在玩家");
                 hasDestructibleBlock = true;
                 foreach (var stepTracker in target)
-                    if (!IsInExplosionRange(Owner.MapInfo.GetRealCoord(stepTracker.Pos)))
+                {
+                    var candidatePos = Owner.MapInfo.GetRealCoord(stepTracker.Pos);
+                    if (!IsInExplosionRange(candidatePos) && Owner.MapInfo.IsWalkable(candidatePos))
                     {
                         Debug.Log("存在不在爆炸范围的玩家");
                         hasPlayerInExportRange = true;
                         break;
                     }
+                }
 
                 if (hasPlayerInExportRange)
                 {

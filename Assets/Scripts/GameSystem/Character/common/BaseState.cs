@@ -157,6 +157,11 @@ namespace GameSystem.Character.common
         [Header("活跃道具")]
         [SerializeField]
         private List<PropsStatus> activeProps = new List<PropsStatus>();
+
+        /// <summary>
+        /// 在线模式下活跃道具配置列表（无需 PropsStatus GameObject，仅记录 Config 用于清理）
+        /// </summary>
+        private readonly List<PropsConfig> activeOnlineConfigs = new List<PropsConfig>();
         #endregion
 
 
@@ -470,24 +475,36 @@ namespace GameSystem.Character.common
         private void OnPropsEnable(PropsEvent.PropsStatusEnable evt)
         {
             if (evt.ownerId != id) return;
-            // 直接存储原始引用（不再 Clone），因为 PlayerController 不再销毁 PropsStatus GameObject，
-            // PropsStatus 自行管理完整生命周期：Timer 到期 → PropsDisable → Broadcast → Destroy(gameObject)
-            activeProps.Add(evt.propsStatus);
-            ApplyPropsEffect(evt.propsStatus.propsConfig, true);
+
+            // 离线模式：存储 PropsStatus 引用（用于 ForceDisable 取消 Timer）
+            if (evt.propsStatus != null)
+                activeProps.Add(evt.propsStatus);
+            else
+                // 在线模式：仅记录配置（用于 ClearAllActiveProps 时广播 Disable）
+                activeOnlineConfigs.Add(evt.propsConfig);
+
+            ApplyPropsEffect(evt.propsConfig, true);
         }
 
         private void OnPropsDisable(PropsEvent.PropsStatusDisable evt)
         {
             if (evt.ownerId != id) return;
-            // 检查对象有效性（Unity 已销毁的对象 == null）
+
+            // 离线模式：移除 PropsStatus 引用
             if (evt.propsStatus != null)
             {
                 activeProps.Remove(evt.propsStatus);
             }
-            // 即使对象已销毁，仍需通过 config 撤回属性效果
-            if (evt.propsStatus != null && evt.propsStatus.propsConfig != null)
+            else if (evt.propsConfig != null)
             {
-                ApplyPropsEffect(evt.propsStatus.propsConfig, false);
+                // 在线模式：移除配置记录
+                activeOnlineConfigs.Remove(evt.propsConfig);
+            }
+
+            // 通过 event 携带的 PropsConfig 撤回属性效果（兼容离线/在线两种模式）
+            if (evt.propsConfig != null)
+            {
+                ApplyPropsEffect(evt.propsConfig, false);
             }
         }
 
@@ -562,6 +579,7 @@ namespace GameSystem.Character.common
         /// </summary>
         protected void ClearAllActiveProps()
         {
+            // 离线模式：通过 ForceDisable 取消 Timer 并广播 Disable 事件
             for (int i = activeProps.Count - 1; i >= 0; i--)
             {
                 if (activeProps[i] != null)
@@ -570,6 +588,13 @@ namespace GameSystem.Character.common
                 }
             }
             activeProps.Clear();
+
+            // 在线模式：直接广播 Disable 事件（无 PropsStatus，无 Timer 需取消）
+            foreach (var config in activeOnlineConfigs)
+            {
+                GameEventSystem.Broadcast(new PropsEvent.PropsStatusDisable(id, config));
+            }
+            activeOnlineConfigs.Clear();
         }
 
         #endregion

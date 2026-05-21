@@ -89,6 +89,7 @@ namespace GameSystem.Character.Enemy.EnemyAI
                         hasTarget = false;
                         isMoving = false;
                         StopMoving();
+                        owner.isMoving = false;
                     }
                 }
                 else //当未达到下一个位置时
@@ -99,6 +100,7 @@ namespace GameSystem.Character.Enemy.EnemyAI
                         isSafe = false;
                         isMoving = false;
                         StopMoving();
+                        owner.isMoving = false;
                     }
                 }
             }
@@ -109,6 +111,7 @@ namespace GameSystem.Character.Enemy.EnemyAI
                     isSafe = true;
                     isMoving = true;
                     Moving();
+                    owner.isMoving = true;
                 }
             }
         }

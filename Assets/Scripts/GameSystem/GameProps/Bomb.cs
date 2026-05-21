@@ -212,7 +212,7 @@ namespace GameSystem.GameProps
             
             var explosionPos = bombPos;
             explosionPos.y = 0f;
-            ExplodePool.Instance.GetExplode(explosionPos, Quaternion.identity);
+            if (ExplodePool.Instance != null) ExplodePool.Instance.GetExplode(explosionPos, Quaternion.identity);
             CreateExplosion(bombPos, Vector3.forward, removeList, invokeList);
             CreateExplosion(bombPos, Vector3.back, removeList, invokeList);
             CreateExplosion(bombPos, Vector3.left, removeList, invokeList);
@@ -221,7 +221,7 @@ namespace GameSystem.GameProps
             // 先处理可破坏方块，确保被连锁炸弹扫描前已从地图移除，避免双重处理
             foreach (var tagType in removeList)
             {
-                MapInfo.Instance.RemoveItem(tagType.Key.transform.position, tagType.Key);
+                MapInfo.Instance?.RemoveItem(tagType.Key.transform.position, tagType.Key);
                 var x = tagType.Key as Destructible;
                 if (x != null)
                 {
@@ -262,7 +262,7 @@ namespace GameSystem.GameProps
                         }
                         
                     }
-                    DestructiblePool.Instance.ReturnDestructible(x);
+                    if (DestructiblePool.Instance != null) DestructiblePool.Instance.ReturnDestructible(x);
                 }
             }
 
@@ -276,8 +276,8 @@ namespace GameSystem.GameProps
                 }
             }
             
-            BombPool.Instance.ReturnBomb(this);
-            MapInfo.Instance.RemoveItem(transform.position, this);
+            if (BombPool.Instance != null) BombPool.Instance.ReturnBomb(this);
+            MapInfo.Instance?.RemoveItem(transform.position, this);
             GameEventSystem.Broadcast(new BombEvents.BombDestroyEvent
             {
                 Position = putPosition,
@@ -287,7 +287,8 @@ namespace GameSystem.GameProps
 
         /// <summary>
         ///     在线模式：服务端 BOMB_EXPLODE 触发的纯视觉效果清理
-        ///     不造成伤害、不触发事件（伤害已由服务端 HP_CHANGE 权威处理）
+        ///     不造成伤害、不处理可破坏方块（由 OnBombExplode 使用服务端权威列表处理）
+        ///     只负责：播放爆炸特效 + 回收炸弹
         /// </summary>
         public void CleanupFromServer()
         {
@@ -297,39 +298,24 @@ namespace GameSystem.GameProps
 
             GetComponent<Collider>().enabled = false;
 
-            // 对齐炸弹位置到格子中心（与服务端 scanCell/scanDirection 的 gridSize=250 对应）
+            // 对齐炸弹位置到格子中心
             var bombPos = transform.position;
             bombPos.x = Mathf.Ceil(bombPos.x) - 0.5f;
             bombPos.z = Mathf.Ceil(bombPos.z) - 0.5f;
             bombPos.y = 0f;
 
-            // 收集爆炸范围内需要移除的可破坏方块（不生成道具，道具由服务端 PROP_SPAWN 下发）
-            var removeList = new List<KeyValuePair<BaseObject, TagType>>();
+            // 中心点爆炸特效
+            if (ExplodePool.Instance != null) ExplodePool.Instance.GetExplode(bombPos, Quaternion.identity);
 
-            // 中心点：收集可破坏方块 + 播放爆炸效果
-            CollectDestructiblesAt(bombPos, removeList);
-            ExplodePool.Instance.GetExplode(bombPos, Quaternion.identity);
-
-            // 四个方向：扫描收集可破坏方块 + 播放爆炸效果（遇墙/边界停止）
-            ScanDirectionForCleanup(bombPos, Vector3.forward, removeList);
-            ScanDirectionForCleanup(bombPos, Vector3.back, removeList);
-            ScanDirectionForCleanup(bombPos, Vector3.left, removeList);
-            ScanDirectionForCleanup(bombPos, Vector3.right, removeList);
-
-            // 移除可破坏方块并回收（不生成道具，道具由服务端 PROP_SPAWN 单独下发）
-            foreach (var tagType in removeList)
-            {
-                MapInfo.Instance.RemoveItem(tagType.Key.transform.position, tagType.Key);
-                var dest = tagType.Key as Destructible;
-                if (dest != null)
-                {
-                    DestructiblePool.Instance.ReturnDestructible(dest);
-                }
-            }
+            // 四个方向爆炸特效（遇墙/边界停止，与服务端 scanDirection 对称）
+            PlayDirectionalExplosions(bombPos, Vector3.forward);
+            PlayDirectionalExplosions(bombPos, Vector3.back);
+            PlayDirectionalExplosions(bombPos, Vector3.left);
+            PlayDirectionalExplosions(bombPos, Vector3.right);
 
             // 回收炸弹
-            BombPool.Instance.ReturnBomb(this);
-            MapInfo.Instance.RemoveItem(transform.position, this);
+            if (BombPool.Instance != null) BombPool.Instance.ReturnBomb(this);
+            MapInfo.Instance?.RemoveItem(transform.position, this);
             GameEventSystem.Broadcast(new BombEvents.BombDestroyEvent
             {
                 Position = putPosition,
@@ -338,48 +324,21 @@ namespace GameSystem.GameProps
         }
 
         /// <summary>
-        ///     在线模式专用：沿方向扫描，收集可破坏方块并播放爆炸视觉效果
-        ///     与服务端 scanDirection 对称：逐格扫描，遇到无 MapData（墙/边界）停止
+        ///     在线模式专用：沿方向创建爆炸视觉特效
+        ///     与服务端 scanDirection 对称：逐格播放，遇墙/边界停止
+        ///     不收集可破坏方块（由 OnBombExplode 使用服务端权威列表处理）
         /// </summary>
-        private void ScanDirectionForCleanup(Vector3 basePos, Vector3 direction,
-            List<KeyValuePair<BaseObject, TagType>> removeList)
+        private void PlayDirectionalExplosions(Vector3 basePos, Vector3 direction)
         {
             for (var i = 1; i < bombRadius; i++)
             {
                 basePos += direction;
-                var mapDataTarget = MapInfo.Instance.GetMapDataTarget(basePos);
-                // 无 MapData 表示遇到墙或地图边界，停止该方向传播（与服务端 isWall 对称）
-                if (mapDataTarget == null) return;
-
-                // 收集该位置的可破坏方块
-                foreach (var tagType in mapDataTarget)
-                {
-                    if (tagType.Value == TagType.Destructible)
-                    {
-                        removeList.Add(tagType);
-                    }
-                }
+                // 无 MapData 表示遇到墙或地图边界，停止传播
+                if (MapInfo.Instance.GetMapDataTarget(basePos) == null) return;
 
                 var explosionPos = basePos;
                 explosionPos.y = 0f;
-                ExplodePool.Instance.GetExplode(explosionPos, Quaternion.identity);
-            }
-        }
-
-        /// <summary>
-        ///     在线模式专用：收集指定位置的可破坏方块（中心点扫描，与服务端 scanCell 对称）
-        /// </summary>
-        private void CollectDestructiblesAt(Vector3 position,
-            List<KeyValuePair<BaseObject, TagType>> removeList)
-        {
-            var mapDataTarget = MapInfo.Instance.GetMapDataTarget(position);
-            if (mapDataTarget == null) return;
-            foreach (var tagType in mapDataTarget)
-            {
-                if (tagType.Value == TagType.Destructible)
-                {
-                    removeList.Add(tagType);
-                }
+                if (ExplodePool.Instance != null) ExplodePool.Instance.GetExplode(explosionPos, Quaternion.identity);
             }
         }
     }
