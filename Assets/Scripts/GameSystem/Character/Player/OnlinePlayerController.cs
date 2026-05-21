@@ -1,5 +1,6 @@
 ﻿using Core.Net;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
 namespace GameSystem.Character.Player
 {
@@ -55,7 +56,17 @@ namespace GameSystem.Character.Player
                 }
             }
         }
-        
+
+        protected override void Update()
+        {
+            base.Update();
+            // 在线玩家的炸弹按键检测（基类 Update 被重写后链路断裂，需在此补充）
+            if (Input.GetKeyDown(sputBomb)) PutBomb();
+            CameraViewUpdate();
+            MoveUpdate();
+            
+        }
+                
         /**
          * 玩家死亡处理方法
          * 处理玩家死亡后的相关逻辑

@@ -149,10 +149,19 @@ namespace GameSystem.GameScene.GameRuntimeScene
                 _aliveStatus[info.CharacterId] = true;
             }
 
-            // TODO: 初始化游戏场景
+            // 根据游戏模式初始化场景
             if (GameModeSelect.CurrentModeType == GameModeType.Online)
             {
-                // TODO: 初始化在线游戏场景
+                // 在线模式：确保 GameOnLineRuntimeSceneManagerManager 存在并委托初始化
+                var onlineManager = GameOnLineRuntimeSceneManagerManager.Instance;
+                if (onlineManager == null)
+                {
+                    // 场景中未挂载在线管理器，动态添加
+                    onlineManager = gameObject.AddComponent<GameOnLineRuntimeSceneManagerManager>();
+                    Debug.Log("[GameRuntimeSceneManager] 动态创建 GameOnLineRuntimeSceneManagerManager 处理在线模式");
+                }
+                // GameOnLineRuntimeSceneManagerManager 通过自身的 Start() → InitializeScene() → InitGame() 完成在线初始化
+                // 此处无需额外操作
             }
             else
             {

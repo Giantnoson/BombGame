@@ -37,12 +37,6 @@ MonoBehaviour:
     isAdditive: 1
     isPersistent: 0
     loadOnStartup: 0
-  - sceneName: PausedScene
-    state: 3
-    isFlag: 0
-    isAdditive: 1
-    isPersistent: 0
-    loadOnStartup: 0
   - sceneName: CubeWorld
     state: 2
     isFlag: 0

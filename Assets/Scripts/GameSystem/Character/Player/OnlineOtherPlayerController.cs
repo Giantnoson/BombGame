@@ -15,6 +15,9 @@ namespace GameSystem.Character.Player
         protected override void Update()
         {
             // 不做任何输入处理，完全由网络同步位置和旋转
+            // 但需要更新 MapInfo 中的位置追踪，确保其他系统能正确查询远程玩家位置
+            if (isDie) return;
+            V2IUpdate();
         }
         
         protected override void Die()

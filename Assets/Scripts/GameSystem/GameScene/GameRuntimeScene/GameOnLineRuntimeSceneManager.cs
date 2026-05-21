@@ -5,9 +5,12 @@ using GameSystem.Character.common;
 using GameSystem.Character.Player;
 using GameSystem.EventSystem;
 using GameSystem.EventSystem.Event;
+using GameSystem.GameProps;
+using GameSystem.GameProps.Item;
 using GameSystem.GameScene.GameEndScene;
 using GameSystem.GameScene.MainMenu;
 using GameSystem.Manager;
+using GameSystem.Map;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -38,6 +41,9 @@ namespace GameSystem.GameScene.GameRuntimeScene
         
         private List<GameObject> Characters = new List<GameObject>();
         public static GameOnLineRuntimeSceneManagerManager Instance { get; private set; }
+
+        /// <summary>是否已完成初始化（防止重复初始化）</summary>
+        private bool _isGameInitialized;
 
         /// <summary>游戏开始时间（用于结算时长）</summary>
         private float _gameStartTime;
@@ -81,6 +87,12 @@ namespace GameSystem.GameScene.GameRuntimeScene
             // 订阅等级/经验变化事件，用于计数板数据追踪
             GameEventSystem.AddListener<HUDEvent.LeaveUpEvent>(OnPlayerLevelUp);
             GameEventSystem.AddListener<HUDEvent.ExpAddEvent>(OnPlayerExpChanged);
+
+            // 注册在线道具系统消息处理器
+            RegisterPropsHandlers();
+
+            // 注册在线炸弹系统消息处理器
+            RegisterBombHandlers();
         }
 
         private void OnDisable()
@@ -114,6 +126,13 @@ namespace GameSystem.GameScene.GameRuntimeScene
         
         public void InitGame()
         {
+            if (_isGameInitialized)
+            {
+                Debug.LogWarning("[GameOnLineRuntimeSceneManagerManager] InitGame 已执行过，跳过重复初始化");
+                return;
+            }
+            _isGameInitialized = true;
+
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
             currentPlayerCount = playerCount;
@@ -156,6 +175,8 @@ namespace GameSystem.GameScene.GameRuntimeScene
                 }
             }
             Characters.Clear();
+            // 重置初始化标记，允许下次重新初始化
+            _isGameInitialized = false;
             // 隐藏并锁定鼠标光标到屏幕中心
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
@@ -338,6 +359,288 @@ namespace GameSystem.GameScene.GameRuntimeScene
             GameEventSystem.Broadcast(new HUDEvent.ScoreBoardUpdateEvent(
                 playerId, killCount, deathCount, level, exp, isAlive,
                 currentPlayerCount, 0));
+        }
+
+        #endregion
+
+        #region 在线道具系统
+
+        /// <summary>
+        ///     服务端生成的道具实例缓存（itemId → PropsStatus），用于被拾取时查找和移除
+        /// </summary>
+        private readonly Dictionary<string, PropsStatus> _spawnedProps = new Dictionary<string, PropsStatus>();
+
+        /// <summary>
+        ///     反向映射（PropsStatus → itemId），用于拾取时从 PropsStatus 实例反查服务端 itemId
+        /// </summary>
+        private readonly Dictionary<PropsStatus, string> _propToItemId = new Dictionary<PropsStatus, string>();
+
+        /// <summary>
+        ///     根据 PropsStatus 实例查找对应的服务端 itemId（供 BaseOnlinePlayerController 拾取时使用）
+        /// </summary>
+        public bool TryGetPropItemId(PropsStatus ps, out string itemId)
+        {
+            return _propToItemId.TryGetValue(ps, out itemId);
+        }
+
+        /// <summary>
+        ///     注销道具（移除缓存和双向映射）
+        /// </summary>
+        public void UnregisterProp(string itemId)
+        {
+            if (_spawnedProps.TryGetValue(itemId, out var ps))
+            {
+                _propToItemId.Remove(ps);
+                _spawnedProps.Remove(itemId);
+            }
+        }
+
+        /// <summary>
+        ///     注册在线道具系统的网络消息处理器
+        /// </summary>
+        private void RegisterPropsHandlers()
+        {
+            TcpGameClient.RegisterMessageHandler(this, new List<DefaultHandler>
+            {
+                new(CmdType.PropSpawn, OnPropSpawn),
+                new(CmdType.PropPickedUp, OnPropPickedUp),
+                new(CmdType.PropEffectEnable, OnPropEffectEnable),
+                new(CmdType.PropEffectDisable, OnPropEffectDisable)
+            });
+        }
+
+        /// <summary>
+        ///     处理服务端下发的道具生成消息
+        /// </summary>
+        private void OnPropSpawn(NetMessage msg)
+        {
+            var propsId = msg._body.GetString("propsId");
+            var itemId = msg._body.GetString("itemId");
+            var propsType = msg._body.GetString("propsType");
+            var propsSize = msg._body.GetString("propsSize");
+            var validTime = msg._body.GetFloat("validTime");
+            var x = msg._body.GetInt("x") / 100f;
+            var y = msg._body.GetInt("y") / 100f;
+            var z = msg._body.GetInt("z") / 100f;
+            var position = new Vector3(x, y, z);
+
+            // 从本地资源加载对应的 PropsConfig
+            if (!PropsManager.Instance.GetPropsConfigById(propsId, out var propsConfig))
+            {
+                Debug.LogWarning($"[PropsOnline] 找不到道具配置: {propsId}");
+                return;
+            }
+
+            // 实例化道具 GameObject
+            if (propsConfig.propsObj == null)
+            {
+                Debug.LogWarning($"[PropsOnline] 道具[{propsId}]缺少预制体引用");
+                return;
+            }
+
+            var item = Instantiate(propsConfig.propsObj, position, Quaternion.identity);
+            item.transform.SetParent(PropsManager.Instance.transform);
+
+            var ps = item.GetComponent<PropsStatus>();
+            if (ps == null)
+            {
+                Debug.LogError($"[PropsOnline] 道具预制体[{propsId}]上未找到 PropsStatus 组件");
+                Destroy(item);
+                return;
+            }
+
+            // 设置道具配置
+            ps.propsConfig = propsConfig;
+            ps.VirtualPosition = MapInfo.Instance.GetVirtualCoord(position);
+
+            // 注册到地图系统（可被拾取检测）
+            MapInfo.Instance.AddItem(position, ps, TagType.Props);
+
+            // 缓存以便后续查找
+            _spawnedProps[itemId] = ps;
+            _propToItemId[ps] = itemId;
+
+            Debug.Log($"[PropsOnline] 服务端生成了道具[{propsId}]($itemId) 在({x}, {y}, {z})");
+        }
+
+        /// <summary>
+        ///     处理服务端下发的道具被拾取消息
+        /// </summary>
+        private void OnPropPickedUp(NetMessage msg)
+        {
+            var itemId = msg._body.GetString("itemId");
+            var playerId = msg._body.GetString("playerId");
+
+            // 从缓存中查找（本地玩家拾取时可能已被 UnregisterProp 移除）
+            if (!_spawnedProps.TryGetValue(itemId, out var ps))
+            {
+                // 本地玩家已提前清理，静默忽略
+                return;
+            }
+
+            // 清理双向映射
+            _propToItemId.Remove(ps);
+            _spawnedProps.Remove(itemId);
+
+            // 从地图系统和场景中移除（所有客户端都需要移除）
+            MapInfo.Instance.RemoveItem(ps.transform.position, ps);
+            Destroy(ps.gameObject);
+
+            Debug.Log($"[PropsOnline] 道具[{itemId}]被玩家[{playerId}]拾取");
+        }
+
+        /// <summary>
+        ///     处理服务端下发的道具效果启用消息
+        /// </summary>
+        private void OnPropEffectEnable(NetMessage msg)
+        {
+            var playerId = msg._body.GetString("playerId");
+            var propsId = msg._body.GetString("propsId");
+
+            Debug.Log($"[PropsOnline] 玩家[{playerId}]的道具[{propsId}]效果已启用");
+
+            // 如果是本地玩家，广播 PropsStatusEnable 事件以触发 BaseState.ApplyPropsEffect
+            if (playerId == TcpGameClient.PlayerId)
+            {
+                if (PropsManager.Instance.GetPropsConfigById(propsId, out var propsConfig))
+                {
+                    // 创建一个临时的 PropsStatus 用于广播事件
+                    var tempGO = new GameObject($"_temp_props_{propsId}");
+                    var tempPS = tempGO.AddComponent<PropsStatus>();
+                    tempPS.InitProps(playerId, propsConfig);
+                    GameEventSystem.Broadcast(new PropsEvent.PropsStatusEnable(playerId, tempPS));
+                    Destroy(tempGO);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     处理服务端下发的道具效果禁用消息
+        /// </summary>
+        private void OnPropEffectDisable(NetMessage msg)
+        {
+            var playerId = msg._body.GetString("playerId");
+            var propsId = msg._body.GetString("propsId");
+
+            Debug.Log($"[PropsOnline] 玩家[{playerId}]的道具[{propsId}]效果已禁用");
+
+            // 如果是本地玩家，广播 PropsStatusDisable 事件以触发 BaseState.ApplyPropsEffect 移除
+            if (playerId == TcpGameClient.PlayerId)
+            {
+                if (PropsManager.Instance.GetPropsConfigById(propsId, out var propsConfig))
+                {
+                    var tempGO = new GameObject($"_temp_props_{propsId}");
+                    var tempPS = tempGO.AddComponent<PropsStatus>();
+                    tempPS.InitProps(playerId, propsConfig);
+                    GameEventSystem.Broadcast(new PropsEvent.PropsStatusDisable(playerId, tempPS));
+                    Destroy(tempGO);
+                }
+            }
+        }
+
+        #endregion
+
+        #region 在线炸弹系统
+
+        /// <summary>
+        ///     服务端炸弹ID → 客户端炸弹位置的映射（用于 BOMB_EXPLODE 匹配本地炸弹实例）
+        /// </summary>
+        private readonly Dictionary<string, Vector3> _serverBombPositions = new Dictionary<string, Vector3>();
+
+        /// <summary>
+        ///     注册在线炸弹系统的网络消息处理器
+        /// </summary>
+        private void RegisterBombHandlers()
+        {
+            TcpGameClient.RegisterMessageHandler(this, new List<DefaultHandler>
+            {
+                new(CmdType.BombExplode, OnBombExplode)
+            });
+        }
+
+        /// <summary>
+        ///     注册服务端炸弹（PUT_BOMB 广播时记录服务端 bombId → 客户端位置，并取消本地计时器）
+        /// </summary>
+        public void RegisterServerBomb(string serverBombId, Vector3 position)
+        {
+            _serverBombPositions[serverBombId] = position;
+
+            // 立即取消本地计时器，防止客户端 Bomb.Explode 与服务端 BOMB_EXPLODE 重复处理
+            var bomb = FindBombAtPosition(position);
+            if (bomb != null)
+            {
+                bomb.CancelInvoke("Explode");
+                bomb.isOnlineBomb = true;
+            }
+        }
+
+        /// <summary>
+        ///     处理服务端下发的炸弹爆炸消息（BOMB_EXPLODE = 0x0502）
+        ///     服务端已权威处理伤害和地图更新，客户端仅负责播放视觉效果
+        /// </summary>
+        private void OnBombExplode(NetMessage msg)
+        {
+            var bombId = msg._body.GetString("bombId");
+            var gridX = msg._body.GetInt("gridX");
+            var gridZ = msg._body.GetInt("gridZ");
+            var serverX = msg._body.GetInt("x");
+            var serverZ = msg._body.GetInt("z");
+
+            // 通过服务端 bombId 或位置匹配客户端炸弹实例
+            Bomb targetBomb = null;
+
+            // 方式1：通过服务端 bombId 查找对应位置
+            if (!string.IsNullOrEmpty(bombId) && _serverBombPositions.TryGetValue(bombId, out var cachedPos))
+            {
+                targetBomb = FindBombAtPosition(cachedPos);
+                _serverBombPositions.Remove(bombId);
+            }
+
+            // 方式2：通过格子坐标匹配（备用）
+            if (targetBomb == null)
+            {
+                // 服务端坐标 → 客户端坐标转换
+                var clientX = (serverX / 100f);
+                var clientZ = (serverZ / 100f);
+                var clientPos = new Vector3(
+                    Mathf.Ceil(clientX) - 0.5f,
+                    0f,
+                    Mathf.Ceil(clientZ) - 0.5f
+                );
+                targetBomb = FindBombAtPosition(clientPos);
+            }
+
+            if (targetBomb != null)
+            {
+                Debug.Log($"[BombOnline] 服务端炸弹[{bombId}]爆炸，客户端播放视觉效果");
+                targetBomb.CleanupFromServer();
+            }
+            else
+            {
+                Debug.LogWarning($"[BombOnline] 未找到服务端炸弹[{bombId}]的本地实例（可能已被本地计时器提前引爆）");
+            }
+        }
+
+        /// <summary>
+        ///     在指定位置查找炸弹（MapInfo + BombManager 双重查找）
+        /// </summary>
+        private Bomb FindBombAtPosition(Vector3 position)
+        {
+            // 从 MapInfo 查找
+            var items = MapInfo.Instance.GetMapDataTarget(position);
+            if (items != null)
+            {
+                foreach (var kv in items)
+                {
+                    if (kv.Value == TagType.Bomb)
+                    {
+                        var bomb = kv.Key.GetComponent<Bomb>();
+                        if (bomb != null && !bomb.isExplode)
+                            return bomb;
+                    }
+                }
+            }
+            return null;
         }
 
         #endregion

@@ -61,7 +61,7 @@ namespace GameSystem.Character.Player
             V2IUpdate();
         }
 
-        private void CameraViewUpdate()
+        protected void CameraViewUpdate()
         {
             if(!isCameraViewUpdate) return;//在离线PVP模式下不更新摄像头
             cameraHorizontal = Input.GetAxis("Mouse X");
@@ -91,14 +91,23 @@ namespace GameSystem.Character.Player
             currentV2IPos = MapInfo.Instance.GetVirtualCoord(transform.position);
             if (beforeV2IPos != currentV2IPos)
             {
-                MapInfo.Instance.UpdateItem(currentV2IPos, beforeV2IPos, this, TagType.Player);
+                // 旧位置无效时（首次更新 Vector2Int.zero 通常不在 MapData 中），直接添加到新位置
+                if (!MapInfo.Instance.IsValidPosition(beforeV2IPos))
+                {
+                    if (MapInfo.Instance.IsValidPosition(currentV2IPos))
+                        MapInfo.Instance.AddItem(currentV2IPos, this, TagType.Player);
+                }
+                else
+                {
+                    MapInfo.Instance.UpdateItem(currentV2IPos, beforeV2IPos, this, TagType.Player);
+                }
                 beforeV2IPos = currentV2IPos;
                 // 检查当前区块是否有道具
                 CheckAndPickUpProps(currentV2IPos);
             }
         }
 
-        private void CheckAndPickUpProps(Vector2Int pos)
+        protected virtual void CheckAndPickUpProps(Vector2Int pos)
         {
             var items = MapInfo.Instance.GetItem(pos, TagType.Props);
             if (items == null || items.Count == 0) return;

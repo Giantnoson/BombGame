@@ -167,6 +167,9 @@ namespace GameSystem.Manager
             CurrentState = startScene[0];
             /*// 设置初始状态
             ChangeGameState(startScene[0]);*/
+            // 将初始场景（MainMenu）记录到 _loadedScenes，保持追踪完整性
+            if (!_loadedScenes.Contains(CurrentState.sceneName))
+                _loadedScenes.Add(CurrentState.sceneName);
             // 加载启动时需要加载的场景
             LoadStartupScenes();
             // 注册事件监听
@@ -226,6 +229,9 @@ namespace GameSystem.Manager
 
         private void HandleInput()
         {
+            // 场景加载期间不响应输入，避免状态切换与加载协程并发冲突
+            if (IsSceneLoading) return;
+
             // 处理ESC键
             if (Input.GetKeyDown(KeyCode.Escape))
                 switch (CurrentState.state)
@@ -276,9 +282,16 @@ namespace GameSystem.Manager
             {
                 case GameState.MainMenu:
                     UnloadAllLoadedScenes();
-                    // 确保主菜单场景被加载
+                    // MainMenu 是启动场景且持久化，已在启动时加载，直接切换为激活场景即可
+                    // 避免非叠加加载销毁 PausedScene、Message 等持久化场景
                     if (!newState.isFlag && !string.IsNullOrEmpty(newState.sceneName))
-                        LoadScene(newState);
+                    {
+                        var mainMenuScene = SceneManager.GetSceneByName(newState.sceneName);
+                        if (mainMenuScene.isLoaded)
+                            SceneManager.SetActiveScene(mainMenuScene);
+                        else
+                            LoadScene(newState);
+                    }
                     break;
                 case GameState.Loading:
                     Time.timeScale = 1f;
@@ -299,6 +312,7 @@ namespace GameSystem.Manager
                     break;
 
                 case GameState.GameOver:
+                    Time.timeScale = 1f;
                     IsGameActive = false;
                     // 如果是首次进入GameOver（避免从Victory切过来重复加载）
                     if (oldState.state != GameState.GameOver && oldState.state != GameState.Victory
@@ -307,6 +321,7 @@ namespace GameSystem.Manager
                     break;
 
                 case GameState.Victory:
+                    Time.timeScale = 1f;
                     IsGameActive = false;
                     // 如果是首次进入Victory（避免从GameOver切过来重复加载）
                     if (oldState.state != GameState.GameOver && oldState.state != GameState.Victory
@@ -378,18 +393,27 @@ namespace GameSystem.Manager
         /// </summary>
         public void RestartGame()
         {
-            // 如果当前在非Playing状态（如GameOver/Victory），需要切换回Playing并加载场景
-            if (CurrentState.state != GameState.Playing)
+            Time.timeScale = 1f;
+            var playingState = FindState(GameState.Playing);
+            if (playingState == null) return;
+
+            if (CurrentState.state == GameState.Paused)
             {
-                var playingState = FindState(GameState.Playing);
-                if (playingState != null)
-                {
-                    ChangeGameState(playingState);
-                    return;
-                }
+                // 从暂停状态重启：ChangeGameState 的 Playing 分支在 oldState==Paused 时不触发
+                // LoadScene，因此需要手动切换状态并加载场景
+                ChangeGameState(playingState);
+                LoadScene(playingState, true);
             }
-            // 在Playing/Paused状态或找不到Playing配置时，直接重新加载当前场景
-            ReLoadCurrentScene();
+            else if (CurrentState.state != GameState.Playing)
+            {
+                // 从 GameOver/Victory/MainMenu 等状态重启：ChangeGameState 会自动加载场景
+                ChangeGameState(playingState);
+            }
+            else
+            {
+                // 已在 Playing 状态：直接重载当前场景
+                ReLoadCurrentScene();
+            }
         }
 
         /// <summary>

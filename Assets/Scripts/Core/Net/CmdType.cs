@@ -135,6 +135,24 @@ namespace Core.Net
         /// </summary>
         public const int ObstacleChange = 0x0702; // 障碍物变更命令
 
+        // 道具系统相关命令
+        /// <summary>
+        /// 道具生成命令（服务器→客户端）
+        /// </summary>
+        public const int PropSpawn = 0x0801;
+        /// <summary>
+        /// 道具被拾取命令
+        /// </summary>
+        public const int PropPickedUp = 0x0802;
+        /// <summary>
+        /// 道具效果启用命令（服务器→客户端）
+        /// </summary>
+        public const int PropEffectEnable = 0x0803;
+        /// <summary>
+        /// 道具效果禁用命令（服务器→客户端）
+        /// </summary>
+        public const int PropEffectDisable = 0x0804;
+
         private static Dictionary<int, string> cmdNameCache = new Dictionary<int, string>();
         /// <summary>
         /// 根据命令类型代码获取对应的命令名称

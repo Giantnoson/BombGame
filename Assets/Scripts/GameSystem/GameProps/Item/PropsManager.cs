@@ -50,6 +50,31 @@ namespace GameSystem.GameProps.Item
         {
             return config.GetPropsConfig(out propsConfig);
         }
+
+        /// <summary>
+        /// 根据道具ID查找对应的 PropsConfig（用于在线模式下服务端下发道具时匹配本地配置）
+        /// </summary>
+        public bool GetPropsConfigById(string propsId, out PropsConfig propsConfig)
+        {
+            propsConfig = null;
+            if (config == null)
+            {
+                config = Resources.Load<PropsProbabilityConfig>("Props/PropsProbabilityConfig");
+                if (config != null) config.Init();
+            }
+            if (config == null) return false;
+
+            var allConfigs = Resources.LoadAll<PropsConfig>("Props");
+            foreach (var pc in allConfigs)
+            {
+                if (pc.propsId == propsId)
+                {
+                    propsConfig = pc;
+                    return true;
+                }
+            }
+            return false;
+        }
         
     }
 }

@@ -57,19 +57,18 @@ namespace GameSystem.GameProps
                 bomb.bombFuseTime = evt.BombFuseTime;
                 bomb.bombRadius = evt.BombRadius;
                 bomb.bombDamage = evt.BombDamage;
+                bomb.gameObject.SetActive(true);
+
+                MapInfo.Instance.AddItem(evt.Position, bomb, TagType.Bomb);
+                // 记录位置
+                placedBombPositions.Add(bomb.putPosition);
+                evt.CallBack?.Invoke(true);
             }
             else
             {
                 Debug.LogError("炸弹预制体上没有Bomb组件");
                 evt.CallBack?.Invoke(false);
             }
-            bomb.gameObject.SetActive(true);
-
-            
-            MapInfo.Instance.AddItem(evt.Position, bomb, TagType.Bomb);
-            // 记录位置
-            placedBombPositions.Add(bomb.putPosition);
-            evt.CallBack?.Invoke(true);
         }
 
         // 示例：移除位置的逻辑

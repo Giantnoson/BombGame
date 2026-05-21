@@ -24,7 +24,10 @@ namespace GameSystem.Pool
             var bomb = GetObjectFromPool();
             if (bomb != null)
             {
+                // 清理所有残留状态（对象池复用时状态泄漏会导致在线炸弹不爆炸）
                 bomb.isExplode = false;
+                bomb.isOnlineBomb = false;
+                bomb.CancelInvoke("Explode");
                 bomb.gameObject.SetActive(true);
             }
             return bomb;
@@ -43,6 +46,8 @@ namespace GameSystem.Pool
                 collider.enabled = true;
                 collider.isTrigger = true;
             }
+            // 取消残留的爆炸 Invoke，防止回收后仍触发（SetActive(false) 不会取消 Invoke）
+            bomb.CancelInvoke("Explode");
         }
     }
 }
