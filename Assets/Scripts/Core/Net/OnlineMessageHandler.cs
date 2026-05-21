@@ -65,6 +65,13 @@ namespace Core.Net
                         GlobalMessageManager.Instance.SendTopMessage($"Login failed: {msg._body.GetString("reason")}");
                     }
                 }),
+                new(CmdType.Logout, msg =>
+                {
+                    Debug.Log("Received LOGOUT from server, returning to main menu");
+                    TcpGameClient.IsLogin = false;
+                    if (GameFlowManager.Instance != null)
+                        GameFlowManager.Instance.ReturnToMainMenu();
+                }),
                 new(CmdType.Exception, msg =>
                 {
                     GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Error,msg._body.GetString("msg"));
@@ -143,6 +150,7 @@ namespace Core.Net
                         GameModeSelect.CharacterBaseInfos = players;
                         GameModeSelect.Instance.StartGame();
                         MainUIManager.Instance.HidePanel();
+                        MainUIManager.Instance.HidePanel(PanelSymbols.BgPanel);
                     }
                 })
             });

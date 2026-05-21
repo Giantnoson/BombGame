@@ -30,8 +30,9 @@ namespace GameSystem.GameScene.MainMenu.UI
         
         
         
-        private void Start()
+        public override void Show()
         {
+            base.Show();
             mapSelectInfoList = Resources.Load<MapSelectInfoList>("BaseConfig/MapSelectInfoList").mapSelectInfoList;
             if (mapSelectInfoList == null)
             {
@@ -58,6 +59,15 @@ namespace GameSystem.GameScene.MainMenu.UI
             prevBtn.onClick.AddListener(OnClickPrevBtnBtn);
             continueBtn.onClick.AddListener(OnContinueBtnClick);
             backButton.onClick.AddListener(OnBackClick);
+        }
+
+        public override void Hide()
+        {
+            base.Hide();
+            nextBtn.onClick.RemoveListener(OnClickNextBtn);
+            prevBtn.onClick.RemoveListener(OnClickPrevBtnBtn);
+            continueBtn.onClick.RemoveListener(OnContinueBtnClick);
+            backButton.onClick.RemoveListener(OnBackClick);
         }
 
         private void SetMapSelectInfo(int index)

@@ -187,6 +187,18 @@ namespace GameSystem.GameScene.MainMenu.UI
             playerMoveSelect.value = 0;
         }
         
+        public override void Hide()
+        {
+            base.Hide();
+            playTypesSelect.onValueChanged.RemoveListener(OnPlayTypeSelect);
+            playerMoveSelect.onValueChanged.RemoveListener(OnPlayerControlSelect);
+            nextBtn.onClick.RemoveListener(OnNextBtnClick);
+            prevBtn.onClick.RemoveListener(OnPrevBtnBtnClick);
+            createRoomBtn.onClick.RemoveListener(OnCreateRoomClick);
+            backButton.onClick.RemoveListener(OnBackClick);
+            GetComponent<AutoRegister>()?.UnregisterAll();
+        }
+        
         public override void Show()
         {
             base.Show();

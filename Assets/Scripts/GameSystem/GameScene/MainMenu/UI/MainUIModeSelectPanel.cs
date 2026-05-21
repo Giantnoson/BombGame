@@ -10,12 +10,20 @@ namespace GameSystem.GameScene.MainMenu.UI
         public Button multiplayerButton;
         public Button backButton;
 
-        private void Start()
+        public override void Show()
         {
+            base.Show();
             singlePlayerButton.onClick.AddListener(OnSinglePlayerClick);
             multiplayerButton.onClick.AddListener(OnMultiplayerClick);
             backButton.onClick.AddListener(OnBackClick);
+        }
 
+        public override void Hide()
+        {
+            base.Hide();
+            singlePlayerButton.onClick.RemoveListener(OnSinglePlayerClick);
+            multiplayerButton.onClick.RemoveListener(OnMultiplayerClick);
+            backButton.onClick.RemoveListener(OnBackClick);
         }
         
         private void OnSinglePlayerClick()

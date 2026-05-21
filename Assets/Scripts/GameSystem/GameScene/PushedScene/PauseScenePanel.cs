@@ -25,12 +25,22 @@ namespace GameSystem.GameScene.PushedScene
         public Button cancelBtn;
 
 
-        private void Start()
+        public override void Show()
         {
+            base.Show();
             exitGameBtn.onClick.AddListener(OnExitGameBtnClick);
             restartBtn.onClick.AddListener(OnRestartBtnClick);
             settingBtn.onClick.AddListener(OnSettingBtnClick);
             cancelBtn.onClick.AddListener(OnCancelBtnClick);
+        }
+
+        public override void Hide()
+        {
+            base.Hide();
+            exitGameBtn.onClick.RemoveListener(OnExitGameBtnClick);
+            restartBtn.onClick.RemoveListener(OnRestartBtnClick);
+            settingBtn.onClick.RemoveListener(OnSettingBtnClick);
+            cancelBtn.onClick.RemoveListener(OnCancelBtnClick);
         }
 
         private void OnCancelBtnClick()
@@ -52,8 +62,6 @@ namespace GameSystem.GameScene.PushedScene
         {
             
         }
-        
-        
         
         
         

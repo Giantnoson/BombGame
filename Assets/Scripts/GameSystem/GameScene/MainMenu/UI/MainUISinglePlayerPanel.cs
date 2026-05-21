@@ -24,18 +24,35 @@ namespace GameSystem.GameScene.MainMenu.UI
         private int _playerCount = 1;
         private int _npcCount = 0;
 
-        private void Start()
+        public override void Show()
         {
-            addPlayerBtn.onClick.AddListener(() => ChangePlayerCount(1));
-            subPlayerBtn.onClick.AddListener(() => ChangePlayerCount(-1));
-            addNpcBtn.onClick.AddListener(() => ChangeNpcCount(1));
-            subNpcBtn.onClick.AddListener(() => ChangeNpcCount(-1));
+            base.Show();
+            addPlayerBtn.onClick.AddListener(OnAddPlayerClick);
+            subPlayerBtn.onClick.AddListener(OnSubPlayerClick);
+            addNpcBtn.onClick.AddListener(OnAddNpcClick);
+            subNpcBtn.onClick.AddListener(OnSubNpcClick);
             
             startBtn.onClick.AddListener(OnStartClick);
             backBtn.onClick.AddListener(OnBackClick);
 
             UpdateUI();
         }
+
+        public override void Hide()
+        {
+            base.Hide();
+            addPlayerBtn.onClick.RemoveListener(OnAddPlayerClick);
+            subPlayerBtn.onClick.RemoveListener(OnSubPlayerClick);
+            addNpcBtn.onClick.RemoveListener(OnAddNpcClick);
+            subNpcBtn.onClick.RemoveListener(OnSubNpcClick);
+            startBtn.onClick.RemoveListener(OnStartClick);
+            backBtn.onClick.RemoveListener(OnBackClick);
+        }
+
+        private void OnAddPlayerClick() => ChangePlayerCount(1);
+        private void OnSubPlayerClick() => ChangePlayerCount(-1);
+        private void OnAddNpcClick() => ChangeNpcCount(1);
+        private void OnSubNpcClick() => ChangeNpcCount(-1);
 
         private void ChangePlayerCount(int delta)
         {

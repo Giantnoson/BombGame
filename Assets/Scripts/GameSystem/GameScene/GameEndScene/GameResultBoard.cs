@@ -4,6 +4,7 @@ using GameSystem.EventSystem.Event;
 using GameSystem.GameScene.GameRuntimeScene;
 using GameSystem.GameScene.MainMenu.UI;
 using GameSystem.Manager;
+using GameSystem.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -117,11 +118,25 @@ namespace GameSystem.GameScene.GameEndScene
 
         private void OnDisable()
         {
-            if (restartButton != null)
-                restartButton.onClick.RemoveListener(OnRestartClicked);
+            
+            if (GameModeSelect.CurrentModeType == GameModeType.Offline)
+            {
+                if (restartButton != null)
+                    restartButton.onClick.RemoveListener(OnRestartClicked);
 
-            if (returnToMenuButton != null)
-                returnToMenuButton.onClick.RemoveListener(OnReturnToMenuClicked);
+                if (returnToMenuButton != null)
+                    returnToMenuButton.onClick.RemoveListener(OnReturnToMenuClicked);
+                
+                if(returnToPlayerSetButton != null)
+                    returnToPlayerSetButton.onClick.RemoveListener(OnReturnToPlayerSetClicked);
+            }
+            else
+            {
+                if (returnToRoomButton != null)
+                    returnToRoomButton.onClick.RemoveListener(OnReturnToRoomClicked);
+                if (returnToLobbyButton != null)
+                    returnToLobbyButton.onClick.RemoveListener(OnReturnToLobbyClicked);
+            }
         }
         
         /// <summary>
@@ -192,27 +207,30 @@ namespace GameSystem.GameScene.GameEndScene
         {
             if (GameFlowManager.Instance != null)
                 GameFlowManager.Instance.ReturnToMainMenu();
+            
         }
 
         private void OnReturnToPlayerSetClicked()
         {
-            MainUIManager.Instance.UnHidePanel();
             if (GameFlowManager.Instance != null)
-                GameFlowManager.Instance.ReturnToMainMenu();
+                GameFlowManager.Instance.ReturnToMainMenu(false);
+            MainUIManager.Instance.ShowPanel(PanelSymbols.BgPanel,true);
+            MainUIManager.Instance.UnHidePanel();
         }
 
         private void OnReturnToRoomClicked()
         {
-            MainUIManager.Instance.UnHidePanel();
             if (GameFlowManager.Instance != null)
-                GameFlowManager.Instance.ReturnToMainMenu();
+                GameFlowManager.Instance.ReturnToMainMenu(false);
+            MainUIManager.Instance.UnHidePanel();
+            MainUIManager.Instance.ShowPanel(PanelSymbols.BgPanel,true);
         }
 
         private void OnReturnToLobbyClicked()
         {
-            MainUIManager.Instance.Back();
             if (GameFlowManager.Instance != null)
-                GameFlowManager.Instance.ReturnToMainMenu();
+                GameFlowManager.Instance.ReturnToMainMenu(false);
+            MainUIManager.Instance.Back();
         }
         
         

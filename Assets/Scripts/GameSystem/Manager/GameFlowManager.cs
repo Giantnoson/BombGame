@@ -419,12 +419,16 @@ namespace GameSystem.Manager
         /// <summary>
         /// 返回主菜单
         /// </summary>
-        public void ReturnToMainMenu()
+        public void ReturnToMainMenu(bool isBackMainPanel = true)
         {
             ChangeGameState(FindState(GameState.MainMenu));
-            MainUIController.Reset();
-            MainUIManager.Instance.ShowPanel(PanelSymbols.BgPanel, true);
-            MainUIManager.Instance.ShowPanel(PanelSymbols.MainPanel);
+            if (isBackMainPanel)
+            {
+                MainUIController.Reset();
+                MainUIManager.Instance.ShowPanel(PanelSymbols.BgPanel, true);
+                MainUIManager.Instance.ShowPanel(PanelSymbols.MainPanel);
+            }
+
         }
 
         /// <summary>

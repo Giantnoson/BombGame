@@ -160,6 +160,17 @@ namespace GameSystem.GameScene.MainMenu.UI
             playerMoveSelect.value = 0;
         }
         
+        public override void Hide()
+        {
+            base.Hide();
+            playTypesSelect.onValueChanged.RemoveListener(OnPlayTypeSelect);
+            playerMoveSelect.onValueChanged.RemoveListener(OnPlayerControlSelect);
+            nextBtn.onClick.RemoveListener(OnNextBtnClick);
+            prevBtn.onClick.RemoveListener(OnPrevBtnBtnClick);
+            matchingBtn.onClick.RemoveListener(OnStartClick);
+            backButton.onClick.RemoveListener(OnBackClick);
+        }
+        
         public override void Show()
         {
             base.Show();
@@ -281,8 +292,7 @@ namespace GameSystem.GameScene.MainMenu.UI
         
         private void OnBackClick()
         {
-            MainUIManager.Instance.BackForDontHide();
-            Hide();
+            MainUIManager.Instance.Back();
         }
 
         private void OnStartClick()
@@ -292,7 +302,6 @@ namespace GameSystem.GameScene.MainMenu.UI
                 isMatching = false;
                 matchingBtn.GetComponentInChildren<TextMeshProUGUI>().text = "开始匹配";
                 TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameCancelMatch));
-                return;
             }
             else
             {

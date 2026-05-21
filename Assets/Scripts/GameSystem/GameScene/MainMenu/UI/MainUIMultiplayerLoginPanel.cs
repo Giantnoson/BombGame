@@ -15,12 +15,20 @@ namespace GameSystem.GameScene.MainMenu.UI
         public Button loginBtn;
         public Button backBtn;
 
-        private void Start()
+        public override void Show()
         {
+            base.Show();
             usernameInput.text = OnlineConfig.Instance.defaultPlayerName;
             passwordInput.text = OnlineConfig.Instance.defaultPlayerPassword;
             loginBtn.onClick.AddListener(OnLoginClick);
             backBtn.onClick.AddListener(OnBackClick);
+        }
+
+        public override void Hide()
+        {
+            base.Hide();
+            loginBtn.onClick.RemoveListener(OnLoginClick);
+            backBtn.onClick.RemoveListener(OnBackClick);
         }
 
         private void OnLoginClick()

@@ -106,6 +106,7 @@ namespace GameSystem.UI
             }
             _panelStack.Clear();
         }
+        
 
         public void HidePanel()
         {

@@ -80,6 +80,10 @@ namespace GameSystem.GameScene.MainMenu.UI
         public override void Hide()
         {
             base.Hide();
+            createRoomBtn.onClick.RemoveListener(OnCreateRoomClick);
+            joinRoomBtn.onClick.RemoveListener(OnRefreshListClick);
+            backBtn.onClick.RemoveListener(OnBackClick);
+            matchingBtn.onClick.RemoveListener(OnMatchingClick);
             GetComponent<AutoRegister>()?.UnregisterAll();
         }
 
@@ -90,7 +94,7 @@ namespace GameSystem.GameScene.MainMenu.UI
 
         private void OnMatchingClick()
         {
-            MainUIManager.Instance.ShowPanel(PanelSymbols.MultiPlayerRandomFitPanel,true);
+            MainUIManager.Instance.ShowPanel(PanelSymbols.MultiPlayerRandomFitPanel);
         }
         
         private void OnRefreshListClick()
@@ -105,6 +109,7 @@ namespace GameSystem.GameScene.MainMenu.UI
 
         private void OnBackClick()
         {
+            TcpGameClient.SendMessage(new NetMessage(CmdType.Logout));
             MainUIManager.Instance.Back();
         }
     }

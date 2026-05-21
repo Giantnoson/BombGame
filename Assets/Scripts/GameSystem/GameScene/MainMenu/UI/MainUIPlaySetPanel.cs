@@ -79,11 +79,27 @@ namespace GameSystem.GameScene.MainMenu.UI
         {
             base.Show();
             OnResetClick();
+            playTypesSelect.onValueChanged.AddListener(OnPlayTypeSelect);
+            playerMoveSelect.onValueChanged.AddListener(OnPlayerControlSelect);
+            playerNamesInput.onValueChanged.AddListener(OnPlayerNameInput);
+            nextBtn.onClick.AddListener(OnNextBtnClick);
+            prevBtn.onClick.AddListener(OnPrevBtnBtnClick);
+            startBtn.onClick.AddListener(OnStartClick);
+            backButton.onClick.AddListener(OnBackClick);
+            ResetBtn.onClick.AddListener(OnResetClick);
         }
 
         public override void Hide()
         {
             base.Hide();
+            playTypesSelect.onValueChanged.RemoveListener(OnPlayTypeSelect);
+            playerMoveSelect.onValueChanged.RemoveListener(OnPlayerControlSelect);
+            playerNamesInput.onValueChanged.RemoveListener(OnPlayerNameInput);
+            nextBtn.onClick.RemoveListener(OnNextBtnClick);
+            prevBtn.onClick.RemoveListener(OnPrevBtnBtnClick);
+            startBtn.onClick.RemoveListener(OnStartClick);
+            backButton.onClick.RemoveListener(OnBackClick);
+            ResetBtn.onClick.RemoveListener(OnResetClick);
         }
 
         public void RefreshPlayerInfos()
@@ -161,7 +177,6 @@ namespace GameSystem.GameScene.MainMenu.UI
                 .Select(v => v.ToString())
                 .ToList();
             playTypesSelect.AddOptions(playerTypeName);
-            playTypesSelect.onValueChanged.AddListener(OnPlayTypeSelect);
             
             //角色键位初始化
 
@@ -177,16 +192,9 @@ namespace GameSystem.GameScene.MainMenu.UI
             
             playerMoveSelect.ClearOptions();
             playerMoveSelect.AddOptions(moveModeName);
-            playerMoveSelect.onValueChanged.AddListener(OnPlayerControlSelect);
             playerMoveSelect.value = moveModeName.Count - 1;
             playerNamesInput.text = playerNames[playerIndex];
             
-            playerNamesInput.onValueChanged.AddListener(OnPlayerNameInput);
-            nextBtn.onClick.AddListener(OnNextBtnClick);
-            prevBtn.onClick.AddListener(OnPrevBtnBtnClick);
-            startBtn.onClick.AddListener(OnStartClick);
-            backButton.onClick.AddListener(OnBackClick);
-            ResetBtn.onClick.AddListener(OnResetClick);
             
             
             RefreshPlayerInfos();
@@ -316,6 +324,7 @@ namespace GameSystem.GameScene.MainMenu.UI
             
             GameModeSelect.Instance.StartGame();
             MainUIManager.Instance.HidePanel();
+            MainUIManager.Instance.HidePanel(PanelSymbols.BgPanel);
         }
 
         private void OnResetClick()

@@ -89,6 +89,10 @@ namespace GameSystem.GameScene.MainMenu.UI
         public override void Hide()
         {
             base.Hide();
+            startBtn.onClick.RemoveListener(OnStartClick);
+            leaveBtn.onClick.RemoveListener(OnLeaveClick);
+            nextBtn.onClick.RemoveListener(OnNextBtnClick);
+            prevBtn.onClick.RemoveListener(OnPrevBtnBtnClick);
             GetComponent<AutoRegister>().UnregisterAll();
         }
         

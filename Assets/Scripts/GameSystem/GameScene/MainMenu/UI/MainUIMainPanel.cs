@@ -10,10 +10,18 @@ namespace GameSystem.GameScene.MainMenu.UI
         public Button startButton;
         public Button quitButton;
 
-        private void Start()
+        public override void Show()
         {
+            base.Show();
             startButton.onClick.AddListener(OnStartClick);
             quitButton.onClick.AddListener(OnQuitClick);
+        }
+
+        public override void Hide()
+        {
+            base.Hide();
+            startButton.onClick.RemoveListener(OnStartClick);
+            quitButton.onClick.RemoveListener(OnQuitClick);
         }
 
         private void OnStartClick()
