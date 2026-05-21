@@ -93,7 +93,19 @@ namespace Core.Net
                 }
                 else
                 {
-                    int valueEndIndex = content.IndexOf(",", StringComparison.Ordinal);
+                    // 查找逗号分隔符，但忽略引号内的逗号（防止值内含逗号时截断）
+                    int valueEndIndex = -1;
+                    bool inQuotes = false;
+                    for (int i = 0; i < content.Length; i++)
+                    {
+                        if (content[i] == '"') inQuotes = !inQuotes;
+                        else if (content[i] == ',' && !inQuotes)
+                        {
+                            valueEndIndex = i;
+                            break;
+                        }
+                    }
+
                     String valueStr;
                     if (valueEndIndex == -1)
                     {

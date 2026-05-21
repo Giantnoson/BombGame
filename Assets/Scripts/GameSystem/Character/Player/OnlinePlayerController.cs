@@ -50,6 +50,7 @@ namespace GameSystem.Character.Player
                         {"y", playerPos.y * 100},
                         {"z", playerPos.z * 100},
                         {"angle", playerRotation.y}, // 只同步Y轴旋转角度
+                        {"sprinting", Input.GetKey(KeyCode.LeftShift) ? 1 : 0}, // 上报冲刺状态
                     }));
                     // 当达到同步间隔时，发送位置信息后清空
                     passTime = 0;

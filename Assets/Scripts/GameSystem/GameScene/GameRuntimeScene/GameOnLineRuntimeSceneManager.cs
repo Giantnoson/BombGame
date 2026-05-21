@@ -44,6 +44,9 @@ namespace GameSystem.GameScene.GameRuntimeScene
         private List<GameObject> Characters = new List<GameObject>();
         public static GameOnLineRuntimeSceneManagerManager Instance { get; private set; }
 
+        /// <summary>玩家ID → 控制器映射（用于集中式 PlayerSync 全量数据分发）</summary>
+        private readonly Dictionary<string, BaseOnlinePlayerController> _playerControllers = new Dictionary<string, BaseOnlinePlayerController>();
+
         /// <summary>是否已完成初始化（防止重复初始化）</summary>
         private bool _isGameInitialized;
 
@@ -95,6 +98,9 @@ namespace GameSystem.GameScene.GameRuntimeScene
 
             // 注册在线炸弹系统消息处理器
             RegisterBombHandlers();
+
+            // 注册集中式 PlayerSync 处理器（服务端每帧全量广播玩家状态）
+            RegisterPlayerSyncHandler();
         }
 
         private void OnDisable()
@@ -218,6 +224,9 @@ namespace GameSystem.GameScene.GameRuntimeScene
                 hudIndex++;
             }
             (playerController as BaseOnlinePlayerController).PlayerId = info.CharacterId;
+
+            // 注册到玩家控制器字典，供集中式 PlayerSync 全量数据分发使用
+            _playerControllers[info.CharacterId] = playerController as BaseOnlinePlayerController;
 
             playerController.PlayerControllerInit(info.CharacterName, info.CharacterId,
                 info.CharacterType, info.CharacterControlConfig);
@@ -648,17 +657,18 @@ namespace GameSystem.GameScene.GameRuntimeScene
             var gridZ = msg._body.GetInt("gridZ");
             var serverX = msg._body.GetInt("x");
             var serverZ = msg._body.GetInt("z");
-            var obstaclesStr = msg._body.GetString("obstacles");
-
             // ===== 1. 根据服务端障碍物列表直接清除可破坏方块 =====
-            if (!string.IsNullOrEmpty(obstaclesStr))
+            // obstacles 格式: 嵌套 JSON {"0":{"x":18,"y":18},"1":{"x":19,"y":19}}
+            var obstaclesBody = msg._body.GetDictionary("obstacles");
+            if (obstaclesBody != null && obstaclesBody.Count > 0 && MapInfo.Instance != null)
             {
-                var obstaclePairs = obstaclesStr.Split(';');
-                foreach (var pair in obstaclePairs)
+                Debug.Log($"[BombOnline] 收到服务端障碍物列表: 共{obstaclesBody.Count}个");
+                foreach (var kv in obstaclesBody)
                 {
-                    var parts = pair.Split(',');
-                    if (parts.Length == 2 && int.TryParse(parts[0], out var ogx) && int.TryParse(parts[1], out var ogz))
+                    if (kv.Value is NetDictionary coord)
                     {
+                        var ogx = coord.GetInt("x");
+                        var ogz = coord.GetInt("y");
                         // 将服务端网格坐标直接转换为客户端世界坐标
                         // 客户端 GetVirtualCoord: FloorToInt(worldX) + offsetDistance = gridX
                         // 逆推: worldX = gridX - offsetDistance + 0.5f
@@ -671,15 +681,23 @@ namespace GameSystem.GameScene.GameRuntimeScene
                         {
                             // 使用快照副本避免迭代时修改字典
                             var snapshot = new List<KeyValuePair<BaseObject, TagType>>(items);
-                            foreach (var kv in snapshot)
+                            foreach (var snap in snapshot)
                             {
-                                if (kv.Value == TagType.Destructible)
+                                if (snap.Value == TagType.Destructible)
                                 {
-                                    MapInfo.Instance?.RemoveItem(worldPos, kv.Key);
-                                    var dest = kv.Key as Destructible;
-                                    if (dest != null && DestructiblePool.Instance != null)
+                                    MapInfo.Instance?.RemoveItem(worldPos, snap.Key);
+                                    var dest = snap.Key as Destructible;
+                                    if (dest != null)
                                     {
-                                        DestructiblePool.Instance.ReturnDestructible(dest);
+                                        if (DestructiblePool.Instance != null)
+                                        {
+                                            DestructiblePool.Instance.ReturnDestructible(dest);
+                                        }
+                                        else
+                                        {
+                                            // 对象池未初始化时直接销毁，避免GameObject泄漏
+                                            Destroy(dest.gameObject);
+                                        }
                                     }
                                     Debug.Log($"[BombOnline] 服务端通知清除障碍物: grid=({ogx},{ogz}) world=({worldX},{worldZ})");
                                 }
@@ -763,6 +781,108 @@ namespace GameSystem.GameScene.GameRuntimeScene
                 }
             }
             return null;
+        }
+
+        #endregion
+
+        #region 在线玩家状态同步
+
+        /// <summary>
+        ///     注册集中式 PlayerSync 处理器（服务端每帧全量广播所有玩家状态）
+        /// </summary>
+        private void RegisterPlayerSyncHandler()
+        {
+            TcpGameClient.RegisterMessageHandler(this, new List<DefaultHandler>
+            {
+                new(CmdType.PlayerSync, OnPlayerSync)
+            });
+        }
+
+        /// <summary>
+        ///     处理服务端每帧全量广播的玩家状态同步消息
+        ///     消息格式: {"players":{"playerId1":{"id":"...","hp":...,"maxHp":...,"level":...,"exp":...,"maxStamina":...,"stamina":...,"currentSpeed":...,"isStaminaEmpty":...,"bombCount":...,"bombCooldown":...,"bombRecoveryTime":...,"maxBombCount":...,"x":...,"y":...,"z":...,"angle":...},...}}
+        /// </summary>
+        private void OnPlayerSync(NetMessage msg)
+        {
+            var allPlayers = msg._body.GetDictionary("players");
+            if (allPlayers == null || allPlayers.Count == 0) return;
+
+            foreach (var kv in allPlayers)
+            {
+                var playerId = kv.Key;
+                if (!(kv.Value is NetDictionary data)) continue;
+
+                if (!_playerControllers.TryGetValue(playerId, out var controller))
+                {
+                    // 玩家控制器尚未创建（可能在加载中），跳过
+                    continue;
+                }
+
+                // === 解析服务端权威数据 ===
+                // HP + 等级 + 经验
+                float syncedHp = data.GetFloat("hp");
+                float syncedMaxHp = data.GetFloat("maxHp");
+                int syncedLevel = data.GetInt("level");
+                int syncedExp = data.GetInt("exp");
+                float syncedMaxStamina = data.GetFloat("maxStamina");
+
+                // 位置
+                float sx = data.GetInt("x") / 100f;
+                float sy = data.GetInt("y") / 100f;
+                float sz = data.GetInt("z") / 100f;
+
+                // 体力与速度（服务端权威）
+                float syncedStamina = data.GetFloat("stamina");
+                float syncedCurrentSpeed = data.GetFloat("currentSpeed");
+                bool syncedIsStaminaEmpty = data.GetInt("isStaminaEmpty") == 1;
+
+                // 炸弹状态（服务端权威）
+                int syncedBombCount = data.GetInt("bombCount");
+                float syncedBombCooldown = data.GetFloat("bombCooldown");
+                float syncedBombRecoveryTime = data.GetFloat("bombRecoveryTime");
+                int syncedMaxBombCount = data.GetInt("maxBombCount");
+
+                // === 应用服务端权威数据到控制器 ===
+
+                // 仅远程玩家校正位置（本地玩家位置由本地输入+服务端Move回显控制）
+                if (playerId != TcpGameClient.PlayerId)
+                {
+                    controller.transform.position = new Vector3(sx, sy, sz);
+                }
+
+                // HP（服务端权威）
+                if (Mathf.Abs(controller.hp - syncedHp) > 0.01f)
+                {
+                    controller.hp = syncedHp;
+                }
+
+                // 属性（服务端权威）
+                if (syncedMaxHp > 0) controller.maxHp = syncedMaxHp;
+                if (syncedLevel > 0) controller.level = syncedLevel;
+                if (syncedExp >= 0) controller.exp = syncedExp;
+                if (syncedMaxStamina > 0) controller.maxStamina = syncedMaxStamina;
+
+                // 体力（服务端权威）
+                controller.stamina = syncedStamina;
+                controller.currentSpeed = syncedCurrentSpeed;
+                controller.isStaminaEmpty = syncedIsStaminaEmpty;
+
+                // 炸弹状态（服务端权威）
+                controller.bombCount = syncedBombCount;
+                controller.bombCooldown = syncedBombCooldown;
+                controller.bombRecoveryTime = syncedBombRecoveryTime;
+                if (syncedMaxBombCount > 0) controller.maxBombCount = syncedMaxBombCount;
+
+                // === 反射HUD更新 ===
+                // HP+属性变化
+                GameEventSystem.Broadcast(new HUDEvent.TakeDamageEvent(controller.id, controller.hp, controller.maxHp));
+                // 体力+速度
+                GameEventSystem.Broadcast(new HUDEvent.UpdateStaminaEvent(controller.id, controller.stamina, controller.maxStamina, controller.currentSpeed));
+                // 炸弹状态
+                GameEventSystem.Broadcast(new HUDEvent.UpdateBombEvent(controller.id, controller.bombCooldown, controller.bombCount, controller.maxBombCount, controller.bombRecoveryTime));
+                // 速度（CharacterMoveController）
+                GameEventSystem.Broadcast(new CharacterMoveEvent.UpdateSpeedEvent(controller.id, controller.currentSpeed));
+            }
         }
 
         #endregion

@@ -323,19 +323,41 @@ namespace GameSystem.Map
         /// </summary>
         /// <param name="v3Pos">真实坐标</param>
         /// <returns>返回是否可行走</returns>
+        /// <summary>
+        ///     判断是否可行走
+        /// </summary>
+        /// <param name="v3Pos">真实坐标</param>
+        /// <returns>返回是否可行走</returns>
         public bool IsWalkable(Vector3 v3Pos)
         {
-            return CompareTag(v3Pos, TagType.Nothing);
+            return IsWalkable(GetVirtualCoord(v3Pos));
         }
 
         /// <summary>
         ///     判断是否可行走
+        ///     可行走 = 不存在阻挡实体（Wall, Destructible, Bomb, Player, Enemy）
+        ///     道具（Props）不阻挡行走
         /// </summary>
         /// <param name="pos">虚拟坐标</param>
         /// <returns>返回是否可行走</returns>
         public bool IsWalkable(Vector2Int pos)
         {
-            return CompareTag(pos, TagType.Nothing);
+            if (!_mapData.ContainsKey(pos)) return false;
+
+            var node = _mapData[pos];
+            // 空节点一定可行走
+            if (node.CurrentTagOb.Count == 0) return true;
+
+            // 检查是否有阻挡行走的实体标签
+            foreach (var tag in node.CurrentTagOb.Values)
+            {
+                if (tag == TagType.Wall || tag == TagType.Destructible ||
+                    tag == TagType.Bomb || tag == TagType.Player || tag == TagType.Enemy)
+                    return false;
+            }
+
+            // 只有非阻挡标签（如Props）→ 可行走
+            return true;
         }
 
         /// <summary>

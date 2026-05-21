@@ -106,43 +106,6 @@ namespace GameSystem.Character.Player
                             GameEventSystem.Broadcast(new HUDEvent.TakeDamageEvent(id, hp, maxHp));
                         }
                     }
-                }),
-                // PlayerSync: 服务端每帧广播玩家状态（HP + 属性 + 位置）
-                new (CmdType.PlayerSync, msg =>
-                {
-                    string syncPlayerId = msg._body.GetString("id");
-                    if (syncPlayerId == PlayerId)
-                    {
-                        float syncedHp = msg._body.GetFloat("hp");
-                        float syncedMaxHp = msg._body.GetFloat("maxHp");
-                        int syncedLevel = msg._body.GetInt("level");
-                        int syncedExp = msg._body.GetInt("exp");
-                        float syncedMaxStamina = msg._body.GetFloat("maxStamina");
-                        float sx = msg._body.GetInt("x") / 100f;
-                        float sy = msg._body.GetInt("y") / 100f;
-                        float sz = msg._body.GetInt("z") / 100f;
-
-                        // 仅远程玩家校正位置（本地玩家位置由本地输入+服务端Move回显控制）
-                        if (PlayerId != TcpGameClient.PlayerId)
-                        {
-                            transform.position = new Vector3(sx, sy, sz);
-                        }
-
-                        // 同步HP（服务端权威）
-                        if (Mathf.Abs(hp - syncedHp) > 0.01f)
-                        {
-                            hp = syncedHp;
-                        }
-
-                        // 同步属性（服务端权威）
-                        if (syncedMaxHp > 0) maxHp = syncedMaxHp;
-                        if (syncedLevel > 0) level = syncedLevel;
-                        if (syncedExp >= 0) exp = syncedExp;
-                        if (syncedMaxStamina > 0) maxStamina = syncedMaxStamina;
-
-                        // 反射HUD更新（HP+属性变化时）
-                        GameEventSystem.Broadcast(new HUDEvent.TakeDamageEvent(id, hp, maxHp));
-                    }
                 })
             });
         }
@@ -150,9 +113,9 @@ namespace GameSystem.Character.Player
         protected override void Update()
         {
             // 远程玩家不执行本地输入逻辑（Stamina、移动、镜头、地图位置更新均由网络消息驱动）
+            // 体力/炸弹状态由服务端 PLAYER_SYNC 全量同步，不再本地计算
             if (isDie) return;
             
-            BombUpdate();
             V2IUpdate(); // 在线模式下也需要检测道具拾取
         }
 

@@ -125,9 +125,7 @@ namespace GameSystem.Character.Enemy.EnemyAI
             if (!isEnterSafeMode) return true;
             if (_path.GetNextPaths(checkStep, out var list))
                 foreach (var pos in list)
-                    if (!owner.MapInfo.IsWalkable(pos)
-                        && owner.bombPos.BombInfo.ContainsKey(
-                            owner.ToBombPutPos(owner.MapInfo.GetRealCoord(pos))))
+                    if (owner.bombPos.IsInExportArea(owner.MapInfo.GetRealCoord(pos)))
                     {
                         print("路径上存在爆炸威胁");
                         return false;

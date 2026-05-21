@@ -8,7 +8,7 @@ namespace GameSystem
         ///     物品ID，角色自命名，其余默认使用物品ID
         /// </summary>
         [SerializeField]
-        [Tooltip("角色ID，角色自命名，其余默认使用物品ID")] protected string id;
+        [Tooltip("角色ID，角色自命名，其余默认使用物品ID")] protected internal string id;
         [SerializeField]
         [Tooltip("虚拟坐标")]
         protected Vector2Int virtualPosition;
