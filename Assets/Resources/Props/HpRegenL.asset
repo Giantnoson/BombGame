@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 635dfd4887304a54a8c45226ea01b9e2, type: 3}
+  m_Name: HpRegenL
+  m_EditorClassIdentifier: 
+  propsId: HP001A
+  weight: 60
+  validTime: -1
+  propsType: 8
+  propsMaterial: {fileID: 2100000, guid: c6c137c47f9eb2b469deaf0c6e005251, type: 2}
+  propsSize: 0
+  propsObj: {fileID: 1009434267519560147, guid: c4b35bfb212e81f4ca4105dc78afb34a, type: 3}
+  propsDesc: 
+  propsName: "\u751F\u547D\u56DE\u590D\u5927"
+  propsIcon: {fileID: 0}
+  canPickUp: 1
+  maxHpAddition: 0
+  hpRegenAddition: 0
+  speedMultiply: 0
+  maxLevelAddition: 0
+  maxStaminaAddition: 0
+  staminaDrainRateAddition: 0
+  staminaRegenRateAddition: 0
+  speedMultiplierMultiply: 0
+  maxBombCountAddition: 0
+  bombDamageAddition: 0
+  bombRadiusAddition: 0
+  bombFuseTimeSubtract: 0
+  bombCooldownDivide: 0
+  bombRecoveryTimeDivide: 0
