@@ -89,6 +89,10 @@ namespace Core.Net
                 {
                     int mapId = msg._body.GetInt("mapId");
                     var playersInfo = msg._body.GetDictionary("playersInfo");
+                    // 解析是否为随机匹配模式
+                    bool isRandomMatch = msg._body.GetInt("isRandomMatch") == 1;
+                    GameModeSelect.IsRandomMatch = isRandomMatch;
+                    Debug.Log($"Received match success message: mapId={mapId}, isRandomMatch={isRandomMatch}");
                     int idx = 0;
                     Debug.Log("Received match success message: mapId=" + mapId + ", playersInfo=" +
                               NetMessage.DictionaryToJsonString(playersInfo));
@@ -152,7 +156,15 @@ namespace Core.Net
                         MainUIManager.Instance.HidePanel();
                         MainUIManager.Instance.HidePanel(PanelSymbols.BgPanel);
                     }
-                })
+                }),
+                new(CmdType.GameOver, msg =>
+                {
+                    string winnerId = msg._body.GetString("winnerId");
+                    bool isRandomMatch = msg._body.GetInt("isRandomMatch") == 1;
+                    Debug.Log($"Received GAME_OVER from server, winnerId={winnerId}, isRandomMatch={isRandomMatch}");
+                    // 存储随机匹配标记，供 GameResultBoard 使用
+                    GameModeSelect.IsRandomMatch = isRandomMatch;
+                }),
             });
         }
     }

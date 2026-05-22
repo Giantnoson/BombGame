@@ -37,6 +37,11 @@ namespace GameSystem.Manager
         
         [Tooltip("游戏类型")] public static GameModeType CurrentModeType { get; set; }
         
+        /// <summary>
+        /// 是否为随机匹配模式（由服务器在 ENTER_BASE_GAME / GAME_OVER 中设置）
+        /// </summary>
+        public static bool IsRandomMatch { get; set; }
+        
         [Tooltip("玩家数量")] public static int PlayerCount { get; set; }
 
         [Tooltip("NPC数量")] public static int EnemyCount { get; set; }
@@ -99,6 +104,7 @@ namespace GameSystem.Manager
             PlayerNames = null;
             PlayerIds = null;
             CurrentModeType = GameModeType.Offline;
+            IsRandomMatch = false;
             PlayerCount = 0;
             EnemyCount = 0;
             CharacterBaseInfos.Clear();

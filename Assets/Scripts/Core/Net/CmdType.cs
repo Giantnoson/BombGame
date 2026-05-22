@@ -102,6 +102,10 @@ namespace Core.Net
         /// 开始游戏命令
         /// </summary>
         public const int BaseGameStartGame = 0x0410;        // 开始游戏命令
+        /// <summary>
+        /// 游戏结束命令（服务器→客户端广播）
+        /// </summary>
+        public const int GameOver = 0x0411;                  // 游戏结束命令
 
 
         

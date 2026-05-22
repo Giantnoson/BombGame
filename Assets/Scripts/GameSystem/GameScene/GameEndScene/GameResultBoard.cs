@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Core.Net;
 using GameSystem.EventSystem;
 using GameSystem.EventSystem.Event;
 using GameSystem.GameScene.GameRuntimeScene;
@@ -71,8 +72,17 @@ namespace GameSystem.GameScene.GameEndScene
         [Tooltip("整个结算面板（可做动画）")]
         public GameObject resultPanel;
 
+        /// <summary>
+        /// 是否为随机匹配模式（在Start中从GameModeSelect读取，用于确认返回房间/退出房间的逻辑分支）
+        /// </summary>
+        private bool _isRandomMatch;
+
         private void Start()
         {
+            // 检测是否为随机匹配模式（由服务器在 ENTER_BASE_GAME / GAME_OVER 中设置）
+            // 此标记决定了后续"返回房间"和"返回大厅"按钮的行为分支
+            _isRandomMatch = GameModeSelect.IsRandomMatch;
+            
             // 优先从静态字段读取结算数据（跨场景传递，解决事件先于面板加载的问题）
             var pending = GameRuntimeSceneManager.PendingGameResult;
             if (pending != null)
@@ -222,15 +232,37 @@ namespace GameSystem.GameScene.GameEndScene
         {
             if (GameFlowManager.Instance != null)
                 GameFlowManager.Instance.ReturnToMainMenu(false);
-            MainUIManager.Instance.UnHidePanel();
-            MainUIManager.Instance.ShowPanel(PanelSymbols.BgPanel,true);
+            
+            // 在 GameResultBoard 中确认：根据 _isRandomMatch 决定"返回房间"的实际行为
+            if (_isRandomMatch)
+            {
+                // 随机匹配模式：无房间可返回，直接回到大厅
+                MainUIManager.Instance.ShowPanel(PanelSymbols.BgPanel, true);
+                MainUIManager.Instance.Back();
+
+            }
+            else
+            {
+                // 房间模式：服务器已在游戏结束时自动将玩家返回房间状态，
+                // 客户端只需恢复房间面板并请求刷新最新的房间信息
+                MainUIManager.Instance.ShowPanel(PanelSymbols.BgPanel, true);
+                MainUIManager.Instance.GetPanel<MainUIMultiplayerRoomPanel>(PanelSymbols.MultiPlayerRoomPanel).Show();
+                TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameReqRoomInfo));
+            }
         }
 
         private void OnReturnToLobbyClicked()
         {
+            // 在 GameResultBoard 中确认：房间模式下需主动退出房间，随机匹配无需退房
+            if (!_isRandomMatch)
+            {
+                TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameLeaveRoom));
+            }
+            
             if (GameFlowManager.Instance != null)
                 GameFlowManager.Instance.ReturnToMainMenu(false);
-            MainUIManager.Instance.Back();
+            MainUIManager.Instance.GetPanel<MainUIMultiplayerRoomPanel>(PanelSymbols.MultiPlayerRoomPanel).Show();
+
         }
         
         
