@@ -261,8 +261,8 @@ namespace GameSystem.GameScene.GameEndScene
             
             if (GameFlowManager.Instance != null)
                 GameFlowManager.Instance.ReturnToMainMenu(false);
-            MainUIManager.Instance.GetPanel<MainUIMultiplayerRoomPanel>(PanelSymbols.MultiPlayerRoomPanel).Show();
-
+            MainUIManager.Instance.ShowPanel(PanelSymbols.BgPanel, true);
+            MainUIManager.Instance.Back();
         }
         
         

@@ -40,7 +40,7 @@ namespace GameSystem.GameScene.MainMenu.UI
         [Tooltip("角色键位描述")]
         public TextMeshProUGUI playerMoveDescription;
         public List<bool> isMoveModeSelect = new List<bool>{false,false,false,false};
-        public PlayerControlConfig CompareTemp;
+        public PlayerControlConfig compareTemp;
         
         [Header("角色类型设置")]
         [Tooltip("角色类型名称")]
@@ -93,7 +93,8 @@ namespace GameSystem.GameScene.MainMenu.UI
             leaveBtn.onClick.RemoveListener(OnLeaveClick);
             nextBtn.onClick.RemoveListener(OnNextBtnClick);
             prevBtn.onClick.RemoveListener(OnPrevBtnBtnClick);
-            GetComponent<AutoRegister>().UnregisterAll();
+            GetComponent<AutoRegister>().UnregisterAll(); 
+
         }
         
         public override void Show()
@@ -127,6 +128,10 @@ namespace GameSystem.GameScene.MainMenu.UI
                         playerInfoList[i].gameObject.SetActive(true);
                         playerInfoList[i].SetLeader(_leaderId);
                         playerInfoList[i].SetRoomPlayerInfo(rawInfo);
+                        if (rawInfo.GetString("id") == TcpGameClient.PlayerId)
+                        {
+                            isReady = rawInfo.GetBool("isReady");
+                        }
                         if (rawInfo.GetBool("isReady"))
                         {
                             readyCount++;
@@ -228,13 +233,13 @@ namespace GameSystem.GameScene.MainMenu.UI
             }
             moveModeList.Clear();
             moveModeList = new List<PlayerControlConfig>(x.playerMoveModeConfigs);
-            CompareTemp = moveModeList[OnlineConfig.Instance.defaultControllerId];
+            compareTemp = moveModeList[OnlineConfig.Instance.defaultControllerId];
             for (int i = 0; i < playerCount; i++)
             {
                 playTypes.Add(OnlineConfig.Instance.defaultPlayerType);
                 playerNames.Add($"Player{i + 1}");
                 playerIds.Add($"P{i + 1}");
-                playerMoveMode.Add(CompareTemp);
+                playerMoveMode.Add(compareTemp);
                 playerHeadStr.Add($"玩家{i + 1}" );
             }
             for (int i = playerCount; i < playerCount; i++)
@@ -242,7 +247,7 @@ namespace GameSystem.GameScene.MainMenu.UI
                 playTypes.Add(CharacterType.Enemy);
                 playerNames.Add($"Enemy{(i - playerCount) + 1}");
                 playerIds.Add($"E{i - playerCount + 1}");
-                playerMoveMode.Add(CompareTemp);
+                playerMoveMode.Add(compareTemp);
             }
             
             //角色类型初始化
@@ -312,7 +317,7 @@ namespace GameSystem.GameScene.MainMenu.UI
             if (index == moveModeName.Count - 1)
             {
                 // 如果当前玩家之前有选择过配置，释放该配置
-                if (playerMoveMode[playerIndex] != CompareTemp && 
+                if (playerMoveMode[playerIndex] != compareTemp && 
                     moveModeList.Contains(playerMoveMode[playerIndex]))
                 {
                     int previousIndex = moveModeList.IndexOf(playerMoveMode[playerIndex]);
@@ -320,7 +325,7 @@ namespace GameSystem.GameScene.MainMenu.UI
                 }
         
                 playerMoveDescription.text = "请选择一个键位配置";
-                playerMoveMode[playerIndex] = CompareTemp;
+                playerMoveMode[playerIndex] = compareTemp;
                 return;
             }
     
@@ -335,7 +340,7 @@ namespace GameSystem.GameScene.MainMenu.UI
             if (!isMoveModeSelect[index])
             {
                 // 如果当前玩家之前有选择过配置，释放该配置
-                if (playerMoveMode[playerIndex] != CompareTemp && 
+                if (playerMoveMode[playerIndex] != compareTemp && 
                     moveModeList.Contains(playerMoveMode[playerIndex]))
                 {
                     int previousIndex = moveModeList.IndexOf(playerMoveMode[playerIndex]);
@@ -350,7 +355,7 @@ namespace GameSystem.GameScene.MainMenu.UI
             else
             {
                 // 如果配置已被其他玩家选择，回退到之前的选择
-                playerMoveSelect.value = playerMoveMode[playerIndex] == CompareTemp ? 
+                playerMoveSelect.value = playerMoveMode[playerIndex] == compareTemp ? 
                     moveModeName.Count - 1 : 
                     moveModeList.IndexOf(playerMoveMode[playerIndex]);
             }
@@ -389,8 +394,8 @@ namespace GameSystem.GameScene.MainMenu.UI
             }
             else
             {
-                isReady = !isReady;
-                startBtn.GetComponentInChildren<TextMeshProUGUI>().text = isReady ? "取消准备" : "准备";
+                /*isReady = !isReady;
+                startBtn.GetComponentInChildren<TextMeshProUGUI>().text = isReady ? "取消准备" : "准备";*/
                 TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameReady));
             }
         }

@@ -1385,7 +1385,7 @@ MonoBehaviour:
   playerMoveSelect: {fileID: 3639782385494366916}
   playerMoveDescription: {fileID: 2661228442456552571}
   isMoveModeSelect: 00000000
-  CompareTemp:
+  compareTemp:
     moveHorizontal: 
     moveVertical: 
     putBomb: 0
@@ -10217,6 +10217,22 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1162603887924955849, guid: acf4e98b8aa33a44ebd340d7878269ec, type: 3}
+      propertyPath: m_Color.a
+      value: 0.07450981
+      objectReference: {fileID: 0}
+    - target: {fileID: 1162603887924955849, guid: acf4e98b8aa33a44ebd340d7878269ec, type: 3}
+      propertyPath: m_Color.b
+      value: 0.75786155
+      objectReference: {fileID: 0}
+    - target: {fileID: 1162603887924955849, guid: acf4e98b8aa33a44ebd340d7878269ec, type: 3}
+      propertyPath: m_Color.g
+      value: 0.75786155
+      objectReference: {fileID: 0}
+    - target: {fileID: 1162603887924955849, guid: acf4e98b8aa33a44ebd340d7878269ec, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1738520040310559898, guid: acf4e98b8aa33a44ebd340d7878269ec, type: 3}
       propertyPath: m_AnchorMax.y
       value: 1
@@ -10439,7 +10455,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5646543046952313409, guid: acf4e98b8aa33a44ebd340d7878269ec, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 5646543046952313409, guid: acf4e98b8aa33a44ebd340d7878269ec, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

@@ -167,7 +167,7 @@ namespace GameSystem.GameScene.GameRuntimeScene
             {
                 if (playerCount == 1)
                 {
-                    LoadPlayer(0,0);
+                    LoadPlayer(0,1);
                     OrthographicCamera.gameObject.SetActive(false);
                     for (int i = 0; i < npcCount; i++)
                     {
@@ -180,9 +180,9 @@ namespace GameSystem.GameScene.GameRuntimeScene
                     OrthographicCamera.targetDisplay = 0;
                     LoadPlayer(0,1);
                     LoadPlayer(1,3);
-                    for (int i = 1; i <= npcCount; i++)
+                    for (int i = 0; i < npcCount; i++)
                     {
-                        LoadNPC(1 + i, i + 2);
+                        LoadNPC(2 + i, i * 2 + 2);
                     }
                 }
                 else if(playerCount == 3)
@@ -257,7 +257,7 @@ namespace GameSystem.GameScene.GameRuntimeScene
             
             //创建玩家控制器
             PlayerController playerController;
-            if (index == 0)
+            if (index == 0 && playerCount == 1)
             {
                 playerController = player.AddComponent<PlayerController>();
             }

@@ -29,7 +29,7 @@ namespace GameSystem.UI
             }
         }
 
-        public T GetPanel<T>(PanelSymbol symbol) where T : UIBasePanel
+        public virtual T GetPanel<T>(PanelSymbol symbol) where T : UIBasePanel
         {
             string panelName = symbol.name;
             if (_panels.TryGetValue(panelName, out UIBasePanel panel))
@@ -39,7 +39,7 @@ namespace GameSystem.UI
             return null;
         }
 
-        public void ShowPanel(PanelSymbol symbol, bool dontHide = false, Dictionary<string, string> parameters = null)
+        public virtual void ShowPanel(PanelSymbol symbol, bool dontHide = false, Dictionary<string, string> parameters = null)
         {
             string panelName = symbol.name;
             if (!_panels.ContainsKey(panelName))
@@ -77,7 +77,7 @@ namespace GameSystem.UI
             }
         }
 
-        public void Back()
+        public virtual void Back()
         {
             if (_panelStack.Count > 1)
             {
@@ -89,7 +89,7 @@ namespace GameSystem.UI
             }
         }
 
-        public void BackForDontHide()
+        public virtual void BackForDontHide()
         {
             if (_panelStack.Count > 1)
             {
@@ -98,7 +98,7 @@ namespace GameSystem.UI
             }
         }
 
-        public void CloseAll()
+        public virtual void CloseAll()
         {
             foreach (var panel in _panels.Values)
             {
@@ -108,7 +108,7 @@ namespace GameSystem.UI
         }
         
 
-        public void HidePanel()
+        public virtual void HidePanel()
         {
             if (_panelStack.Count > 0)
             {
@@ -124,7 +124,7 @@ namespace GameSystem.UI
             }
         }
 
-        public void UnHidePanel()
+        public virtual void UnHidePanel()
         {
             if (_panelStack.Count > 0)
             {
