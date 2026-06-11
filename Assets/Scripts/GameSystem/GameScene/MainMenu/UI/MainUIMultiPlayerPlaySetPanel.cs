@@ -327,7 +327,10 @@ namespace GameSystem.GameScene.MainMenu.UI
         {
             TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameCreateRoom, new NetDictionary()
             {
-                {"roomName", roomNameInput.text}
+                {"roomName", roomNameInput.text},
+                {"mapIndex", mapIndex},
+                {"career", playTypes[playerIndex].ToString()},
+                {"controlConfig", moveModeList.IndexOf(playerMoveMode[playerIndex])}
             }));
         }
 

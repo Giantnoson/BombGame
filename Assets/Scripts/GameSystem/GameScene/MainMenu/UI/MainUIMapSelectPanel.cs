@@ -75,9 +75,11 @@ namespace GameSystem.GameScene.MainMenu.UI
             if (index < 0)
             {
                 Debug.LogError("index小于0");
+                GlobalMessageManager.Instance.SendTopMessage(MessageType.System, MessageLevel.Error, "地图选择索引错误(index<0)");
             }else if (index >= mapSelectInfoList.Count)
             {
                 Debug.LogError("index大于等于mapSelectInfoList.Count");
+                GlobalMessageManager.Instance.SendTopMessage(MessageType.System, MessageLevel.Error, "地图选择索引越界");
             }
             mapIndex = index;
             mapSprite = mapSelectInfoList[index].mapSprite;

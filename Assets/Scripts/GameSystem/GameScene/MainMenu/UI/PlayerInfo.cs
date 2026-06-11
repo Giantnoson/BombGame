@@ -123,7 +123,7 @@ namespace GameSystem.GameScene.MainMenu.UI
         {
             TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameKickPlayer, new NetDictionary()
             {
-                {"targetId", roomPlayerInfo.PlayerId},
+                {"targetId", PlayerId},
             }));
         }
 
@@ -135,7 +135,7 @@ namespace GameSystem.GameScene.MainMenu.UI
         {
             TcpGameClient.SendMessage(new NetMessage(CmdType.BaseGameLeaderChange, new NetDictionary()
             {
-                {"targetId", roomPlayerInfo.PlayerId},
+                {"targetId", PlayerId},
             }));
         }
     }

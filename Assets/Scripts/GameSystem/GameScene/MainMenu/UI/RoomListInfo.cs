@@ -35,15 +35,21 @@ namespace GameSystem.GameScene.MainMenu.UI
             }));
         }
 
-        public void SetRoomInfo(RoomInfo roomInfo)
+        public void SetRoomInfo(RoomInfo roomInfo, MapSelectInfoList mapList = null)
         {
             this.roomInfo = roomInfo;
             // 在这里更新UI显示，例如：
             roomNameText.text = $"房间名称: {roomInfo.RoomName}";
             playerCountText.text = $"房间信息: {roomInfo.CurrentPlayers}/{roomInfo.MaxPlayers}人";
             hostPlayerText.text = $"房主名称: {roomInfo.HostPlayerName}";
-            mapNameText.text = $"地图: {Resources.Load<MapSelectInfoList>(MapSelectInfoList.OnLineConfig).mapSelectInfoList[roomInfo.MapIndex].mapName}";
-            roomImage.sprite = Resources.Load<MapSelectInfoList>(MapSelectInfoList.OnLineConfig).mapSelectInfoList[roomInfo.MapIndex].mapSprite;
+
+            // 优先使用传入的缓存，避免频繁 Resources.Load
+            if (mapList == null)
+                mapList = Resources.Load<MapSelectInfoList>(MapSelectInfoList.OnLineConfig);
+
+            var mapInfo = mapList.mapSelectInfoList[roomInfo.MapIndex];
+            mapNameText.text = $"地图: {mapInfo.mapName}";
+            roomImage.sprite = mapInfo.mapSprite;
         }
     }
 

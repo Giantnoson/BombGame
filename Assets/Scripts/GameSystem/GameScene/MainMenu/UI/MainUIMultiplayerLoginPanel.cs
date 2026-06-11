@@ -1,5 +1,6 @@
 using Config;
 using Core.Net;
+using GameSystem.Message;
 using GameSystem.UI;
 using TMPro;
 using UnityEngine;
@@ -39,6 +40,7 @@ namespace GameSystem.GameScene.MainMenu.UI
             if (string.IsNullOrEmpty(username))
             {
                 Debug.LogWarning("Username cannot be empty");
+                GlobalMessageManager.Instance.SendTopMessage(MessageType.System, MessageLevel.Warning, "用户名不能为空");
                 return;
             }
 

@@ -76,7 +76,7 @@ namespace GameSystem.Character.Player
                         transform.rotation = Quaternion.Euler(0, angle, 0);
                     }
                 }),
-                // HP_CHANGE: 服务端权威伤害/治疗广播
+                // HP_CHANGE: 服务端权威伤害/死亡广播
                 new (CmdType.HpChange, msg =>
                 {
                     string hpPlayerId = msg._body.GetString("id");
@@ -92,19 +92,44 @@ namespace GameSystem.Character.Player
                         {
                             hp = 0;
                             isDie = true;
-                            Debug.Log($"[HP_SYNC] 玩家[{PlayerId}] 服务端判定死亡");
+                            // 从服务端消息中提取攻击者ID
+                            string attackerId = msg._body.ContainsKey("attackerId") ? msg._body.GetString("attackerId") : "";
+                            Debug.Log($"[HP_SYNC] 玩家[{PlayerId}] 服务端判定死亡, 攻击者=[{attackerId}]");
                             GameEventSystem.Broadcast(new HUDEvent.TakeDamageEvent(id, hp, maxHp));
                             GameEventSystem.Broadcast(new CharacterDieEvent
                             {
-                                AttackerID = "",  // 服务端已处理击杀者逻辑
+                                AttackerID = attackerId,
                                 DieId = id,
-                                Exp = 0
+                                Exp = 50 * level  // 经验值由服务端权威计算，此处保留供离线兼容
                             });
                         }
                         else
                         {
                             GameEventSystem.Broadcast(new HUDEvent.TakeDamageEvent(id, hp, maxHp));
                         }
+                    }
+                }),
+                // EXP_GAIN: 服务端权威经验获取广播
+                // 仅更新本地 exp/level 并广播 ExpAddEvent（HUD经验条即时反馈）。
+                // LeaveUpEvent（升级事件）由 PlayerSync 统一处理，确保使用服务端权威的成长属性值。
+                new (CmdType.ExpGain, msg =>
+                {
+                    string expPlayerId = msg._body.GetString("playerId");
+                    if (expPlayerId == PlayerId)
+                    {
+                        int newExp = msg._body.GetInt("exp");
+                        int newLevel = msg._body.GetInt("level");
+                        int maxExp = msg._body.GetInt("maxExpToLevelUp");
+                        bool leveledUp = msg._body.GetInt("leveledUp") == 1;
+                        
+                        Debug.Log($"[EXP_GAIN] 玩家[{PlayerId}] 经验更新: exp={newExp}/{maxExp}, level={newLevel}, 升级={leveledUp}");
+                        
+                        // 更新本地状态
+                        exp = newExp;
+                        level = newLevel;
+                        
+                        // 广播经验增加事件（供HUD和计数板更新）
+                        GameEventSystem.Broadcast(new HUDEvent.ExpAddEvent(PlayerId, newExp, maxExp));
                     }
                 })
             });

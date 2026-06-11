@@ -72,7 +72,7 @@ namespace Core.Net
                     if (GameFlowManager.Instance != null)
                         GameFlowManager.Instance.ReturnToMainMenu();
                 }),
-                new(CmdType.Exception, msg =>
+                new(CmdType.Invalid, msg =>
                 {
                     GlobalMessageManager.Instance.SendTopMessage(MessageType.System,MessageLevel.Error,msg._body.GetString("msg"));
                     
@@ -144,6 +144,7 @@ namespace Core.Net
                     if (mapInfo == null)
                     {
                         Debug.LogError($"Map info not found for mapId={mapId}");
+                        GlobalMessageManager.Instance.SendTopMessage(MessageType.System, MessageLevel.Error, $"地图信息未找到: mapId={mapId}");
                         return;
                     }
 

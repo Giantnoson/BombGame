@@ -250,8 +250,10 @@ namespace GameSystem.GameScene.GameRuntimeScene
             var player = Instantiate(Character, spawns[oIndex].position,
                 spawns[oIndex].rotation);
             //获取HUD控制器
-            huds[oIndex].SetActive(true);
-            var playerStateHUD = huds[oIndex].GetComponent<PlayerStateHUD>();
+            // 单人模式：使用 huds[0]（PlayerHUDForSingle），多人模式：使用 huds[oIndex]（PlayerHUBForMultiplayer）
+            var hudIndex = (playerCount == 1) ? 0 : oIndex;
+            huds[hudIndex].SetActive(true);
+            var playerStateHUD = huds[hudIndex].GetComponent<PlayerStateHUD>();
             if (playerStateHUD == null) Debug.LogError("在GameRuntimeSceneManager初始化过程中playerStateHUD为空");
             playerStateHUD.LoadHUD(CharacterBaseInfos[index].CharacterId);
             
@@ -287,10 +289,10 @@ namespace GameSystem.GameScene.GameRuntimeScene
             var enemy = Instantiate(Instance.Character, spawns[oIndex].position,
                 spawns[oIndex].rotation);
             //创建HUD
+            huds[oIndex].SetActive(true);
             var playerStateHUD = huds[oIndex].GetComponent<PlayerStateHUD>();
             if (playerStateHUD == null) Debug.LogError("在GameRuntimeSceneManager初始化过程中playerStateHUD为空");
             playerStateHUD.LoadHUD(CharacterBaseInfos[index].CharacterId);
-            huds[index].SetActive(true);
             //初始化敌人移动控制器
             var moveController = enemy.AddComponent<EnemyMoveController>();
             var controller = enemy.AddComponent<CharacterMoveController>();

@@ -11,6 +11,7 @@ using GameSystem.GameScene.GameEndScene;
 using GameSystem.GameScene.MainMenu;
 using GameSystem.Manager;
 using GameSystem.Map;
+using GameSystem.Message;
 using GameSystem.Pool;
 using GameSystem.Timer;
 using Unity.VisualScripting;
@@ -68,6 +69,12 @@ namespace GameSystem.GameScene.GameRuntimeScene
         /// <summary>角色存活状态：角色ID → 是否存活</summary>
         private Dictionary<string, bool> _aliveStatus = new();
 
+        /// <summary>上次同步经验值：角色ID → 经验值（用于检测变化并触发HUD更新）</summary>
+        private Dictionary<string, int> _prevExps = new();
+
+        /// <summary>上次同步等级：角色ID → 等级（用于检测变化并触发HUD更新）</summary>
+        private Dictionary<string, int> _prevLevels = new();
+
 
         protected override void Awake()
         {
@@ -109,6 +116,9 @@ namespace GameSystem.GameScene.GameRuntimeScene
             GameEventSystem.RemoveListener<CharacterDieEvent>(OnGameCharacterDie);
             GameEventSystem.RemoveListener<HUDEvent.LeaveUpEvent>(OnPlayerLevelUp);
             GameEventSystem.RemoveListener<HUDEvent.ExpAddEvent>(OnPlayerExpChanged);
+
+            // 注销所有网络消息处理器（PlayerSync、BombExplode、Props等），防止场景卸载后残留
+            GetComponent<AutoRegister>()?.UnregisterAll();
         }
         
 
@@ -118,6 +128,7 @@ namespace GameSystem.GameScene.GameRuntimeScene
             if (GameModeSelect.Instance == null)
             {
                 Debug.LogError("在GameOnLineRuntimeSceneManagerManager初始化过程中GameModeSelect为空");
+                GlobalMessageManager.Instance.SendTopMessage(MessageType.System, MessageLevel.Error, "游戏模式选择器未初始化");
             }
             else
             {
@@ -125,6 +136,7 @@ namespace GameSystem.GameScene.GameRuntimeScene
                 if (playerCount > 4)
                 {
                     Debug.LogError("在GameOnLineRuntimeSceneManagerManager初始化过程中玩家数量超过4");
+                    GlobalMessageManager.Instance.SendTopMessage(MessageType.System, MessageLevel.Error, "玩家数量超过上限(4人)");
                 }
 
                 CharacterBaseInfos = GameModeSelect.CharacterBaseInfos;
@@ -209,7 +221,10 @@ namespace GameSystem.GameScene.GameRuntimeScene
                 //获取HUD控制器
                 hud.SetActive(true);
                 var playerStateHUD = hud.GetComponent<PlayerStateHUD>();
-                if (playerStateHUD == null) Debug.LogError("在GameOnLineRuntimeSceneManagerManager初始化过程中playerStateHUD为空");
+                if (playerStateHUD == null) {
+                    Debug.LogError("在GameOnLineRuntimeSceneManagerManager初始化过程中playerStateHUD为空");
+                    GlobalMessageManager.Instance.SendTopMessage(MessageType.System, MessageLevel.Error, "玩家状态HUD组件缺失");
+                }
                 playerStateHUD.LoadHUD(info.CharacterId);
             }
             else
@@ -219,7 +234,10 @@ namespace GameSystem.GameScene.GameRuntimeScene
                 //获取HUD控制器
                 huds[hudIndex].SetActive(true);
                 var playerStateHUD = huds[hudIndex].GetComponent<PlayerStateHUD>();
-                if (playerStateHUD == null) Debug.LogError("在GameOnLineRuntimeSceneManagerManager初始化过程中playerStateHUD为空");
+                if (playerStateHUD == null) {
+                    Debug.LogError("在GameOnLineRuntimeSceneManagerManager初始化过程中playerStateHUD为空");
+                    GlobalMessageManager.Instance.SendTopMessage(MessageType.System, MessageLevel.Error, "其他玩家状态HUD组件缺失");
+                }
                 playerStateHUD.LoadHUD(info.CharacterId);
                 hudIndex++;
             }
@@ -280,11 +298,24 @@ namespace GameSystem.GameScene.GameRuntimeScene
             // 广播死亡者计数板更新
             BroadcastScoreBoardUpdate(evt.DieId);
 
-            // 在线模式：当只剩1名玩家存活时，该玩家胜利
-            if (currentPlayerCount == 1)
+            // 在线模式：当只剩0或1名玩家存活时，游戏结束
+            // 判断胜负：本机玩家ID与最终存活者ID比对
+            if (currentPlayerCount <= 1)
             {
-                Debug.Log("[GameResult-Online] 只剩最后一名玩家，游戏结束");
-                BroadcastGameOver(true);
+                // 查找存活玩家作为胜利者（0人存活则为平局，winnerId=null）
+                string winnerId = null;
+                foreach (var kv in _aliveStatus)
+                {
+                    if (kv.Value)
+                    {
+                        winnerId = kv.Key;
+                        break;
+                    }
+                }
+
+                bool isVictory = (winnerId != null && winnerId == TcpGameClient.PlayerId);
+                Debug.Log($"[GameResult-Online] 游戏结束, currentPlayerCount={currentPlayerCount}, winnerId={winnerId ?? "null"}, localId={TcpGameClient.PlayerId}, isVictory={isVictory}");
+                BroadcastGameOver(isVictory);
             }
         }
 
@@ -800,8 +831,9 @@ namespace GameSystem.GameScene.GameRuntimeScene
         }
 
         /// <summary>
-        ///     处理服务端每帧全量广播的玩家状态同步消息
-        ///     消息格式: {"players":{"playerId1":{"id":"...","hp":...,"maxHp":...,"level":...,"exp":...,"maxStamina":...,"stamina":...,"currentSpeed":...,"isStaminaEmpty":...,"bombCount":...,"bombCooldown":...,"bombRecoveryTime":...,"maxBombCount":...,"x":...,"y":...,"z":...,"angle":...},...}}
+        ///     处理服务端广播的玩家状态增量同步消息（动态字段：仅包含变化的字段）
+        ///     消息格式: {"players":{"playerId1":{"id":"...","hp":...,...},...}}
+        ///     仅当字段存在时才解析并应用，未出现的字段保持客户端当前值不变
         /// </summary>
         private void OnPlayerSync(NetMessage msg)
         {
@@ -819,70 +851,153 @@ namespace GameSystem.GameScene.GameRuntimeScene
                     continue;
                 }
 
-                // === 解析服务端权威数据 ===
-                // HP + 等级 + 经验
-                float syncedHp = data.GetFloat("hp");
-                float syncedMaxHp = data.GetFloat("maxHp");
-                int syncedLevel = data.GetInt("level");
-                int syncedExp = data.GetInt("exp");
-                float syncedMaxStamina = data.GetFloat("maxStamina");
+                // === 追踪本帧哪些类别的状态发生了变化（仅对实际变化的类别广播HUD事件） ===
+                bool hpChanged = false;
+                bool staminaSpeedChanged = false;
+                bool bombChanged = false;
+                bool expLevelChanged = false;
 
-                // 位置
-                float sx = data.GetInt("x") / 100f;
-                float sy = data.GetInt("y") / 100f;
-                float sz = data.GetInt("z") / 100f;
+                // === 按需解析：仅当 key 存在于增量消息中时才读取并应用 ===
 
-                // 体力与速度（服务端权威）
-                float syncedStamina = data.GetFloat("stamina");
-                float syncedCurrentSpeed = data.GetFloat("currentSpeed");
-                bool syncedIsStaminaEmpty = data.GetInt("isStaminaEmpty") == 1;
-
-                // 炸弹状态（服务端权威）
-                int syncedBombCount = data.GetInt("bombCount");
-                float syncedBombCooldown = data.GetFloat("bombCooldown");
-                float syncedBombRecoveryTime = data.GetFloat("bombRecoveryTime");
-                int syncedMaxBombCount = data.GetInt("maxBombCount");
-
-                // === 应用服务端权威数据到控制器 ===
-
-                // 仅远程玩家校正位置（本地玩家位置由本地输入+服务端Move回显控制）
-                if (playerId != TcpGameClient.PlayerId)
+                // -- HP --
+                if (data.ContainsKey("hp"))
                 {
+                    float syncedHp = data.GetFloat("hp");
+                    if (Mathf.Abs(controller.hp - syncedHp) > 0.01f)
+                    {
+                        controller.hp = syncedHp;
+                        hpChanged = true;
+                    }
+                }
+                if (data.ContainsKey("maxHp"))
+                {
+                    float syncedMaxHp = data.GetFloat("maxHp");
+                    if (syncedMaxHp > 0 && Mathf.Abs(controller.maxHp - syncedMaxHp) > 0.01f)
+                    {
+                        controller.maxHp = syncedMaxHp;
+                        hpChanged = true;
+                    }
+                }
+
+                // -- 位置（仅远程玩家由服务端权威校正，本地玩家由 Move 回显控制）--
+                if (playerId != TcpGameClient.PlayerId && data.ContainsKey("x") && data.ContainsKey("z"))
+                {
+                    float sx = data.GetInt("x") / 100f;
+                    float sy = data.ContainsKey("y") ? data.GetInt("y") / 100f : controller.transform.position.y;
+                    float sz = data.GetInt("z") / 100f;
                     controller.transform.position = new Vector3(sx, sy, sz);
                 }
 
-                // HP（服务端权威）
-                if (Mathf.Abs(controller.hp - syncedHp) > 0.01f)
+                // -- 等级/经验（保存旧值用于升级检测）--
+                int oldLevel = controller.level;
+                if (data.ContainsKey("level"))
                 {
-                    controller.hp = syncedHp;
+                    int syncedLevel = data.GetInt("level");
+                    if (syncedLevel > 0 && syncedLevel != controller.level)
+                    {
+                        controller.level = syncedLevel;
+                        expLevelChanged = true;
+                    }
+                }
+                if (data.ContainsKey("exp"))
+                {
+                    controller.exp = data.GetInt("exp");
+                    expLevelChanged = true;
+                }
+                if (data.ContainsKey("maxExpToLevelUp"))
+                {
+                    int syncedMaxExp = data.GetInt("maxExpToLevelUp");
+                    if (syncedMaxExp > 0) controller.globalProper.maxExpToLevelUp = syncedMaxExp;
                 }
 
-                // 属性（服务端权威）
-                if (syncedMaxHp > 0) controller.maxHp = syncedMaxHp;
-                if (syncedLevel > 0) controller.level = syncedLevel;
-                if (syncedExp >= 0) controller.exp = syncedExp;
-                if (syncedMaxStamina > 0) controller.maxStamina = syncedMaxStamina;
+                // -- 体力与速度 --
+                if (data.ContainsKey("stamina"))
+                {
+                    controller.stamina = data.GetFloat("stamina");
+                    staminaSpeedChanged = true;
+                }
+                if (data.ContainsKey("maxStamina"))
+                {
+                    float syncedMaxStamina = data.GetFloat("maxStamina");
+                    if (syncedMaxStamina > 0) controller.maxStamina = syncedMaxStamina;
+                    staminaSpeedChanged = true;
+                }
+                if (data.ContainsKey("currentSpeed"))
+                {
+                    controller.currentSpeed = data.GetFloat("currentSpeed");
+                    staminaSpeedChanged = true;
+                }
+                if (data.ContainsKey("isStaminaEmpty"))
+                {
+                    controller.isStaminaEmpty = data.GetInt("isStaminaEmpty") == 1;
+                    staminaSpeedChanged = true;
+                }
 
-                // 体力（服务端权威）
-                controller.stamina = syncedStamina;
-                controller.currentSpeed = syncedCurrentSpeed;
-                controller.isStaminaEmpty = syncedIsStaminaEmpty;
+                // -- 炸弹状态 --
+                if (data.ContainsKey("bombCount"))
+                {
+                    controller.bombCount = data.GetInt("bombCount");
+                    bombChanged = true;
+                }
+                if (data.ContainsKey("bombCooldown"))
+                {
+                    controller.bombCooldown = data.GetFloat("bombCooldown");
+                    bombChanged = true;
+                }
+                if (data.ContainsKey("bombRecoveryTime"))
+                {
+                    controller.bombRecoveryTime = data.GetFloat("bombRecoveryTime");
+                    bombChanged = true;
+                }
+                if (data.ContainsKey("maxBombCount"))
+                {
+                    int syncedMaxBombCount = data.GetInt("maxBombCount");
+                    if (syncedMaxBombCount > 0) controller.maxBombCount = syncedMaxBombCount;
+                    bombChanged = true;
+                }
 
-                // 炸弹状态（服务端权威）
-                controller.bombCount = syncedBombCount;
-                controller.bombCooldown = syncedBombCooldown;
-                controller.bombRecoveryTime = syncedBombRecoveryTime;
-                if (syncedMaxBombCount > 0) controller.maxBombCount = syncedMaxBombCount;
+                // === 仅对实际发生变化的类别广播HUD事件（避免每帧冗余广播） ===
 
-                // === 反射HUD更新 ===
-                // HP+属性变化
-                GameEventSystem.Broadcast(new HUDEvent.TakeDamageEvent(controller.id, controller.hp, controller.maxHp));
-                // 体力+速度
-                GameEventSystem.Broadcast(new HUDEvent.UpdateStaminaEvent(controller.id, controller.stamina, controller.maxStamina, controller.currentSpeed));
-                // 炸弹状态
-                GameEventSystem.Broadcast(new HUDEvent.UpdateBombEvent(controller.id, controller.bombCooldown, controller.bombCount, controller.maxBombCount, controller.bombRecoveryTime));
-                // 速度（CharacterMoveController）
-                GameEventSystem.Broadcast(new CharacterMoveEvent.UpdateSpeedEvent(controller.id, controller.currentSpeed));
+                if (hpChanged)
+                {
+                    GameEventSystem.Broadcast(new HUDEvent.TakeDamageEvent(controller.id, controller.hp, controller.maxHp));
+                }
+
+                if (staminaSpeedChanged)
+                {
+                    GameEventSystem.Broadcast(new HUDEvent.UpdateStaminaEvent(controller.id, controller.stamina, controller.maxStamina, controller.currentSpeed));
+                    GameEventSystem.Broadcast(new CharacterMoveEvent.UpdateSpeedEvent(controller.id, controller.currentSpeed));
+                }
+
+                if (bombChanged)
+                {
+                    GameEventSystem.Broadcast(new HUDEvent.UpdateBombEvent(controller.id, controller.bombCooldown, controller.bombCount, controller.maxBombCount, controller.bombRecoveryTime));
+                }
+
+                if (expLevelChanged)
+                {
+                    int syncedExp = controller.exp;
+                    int syncedLevel = controller.level;
+                    int syncedMaxExp = controller.globalProper.maxExpToLevelUp;
+
+                    // 广播经验增加事件（HUD经验条更新）
+                    GameEventSystem.Broadcast(new HUDEvent.ExpAddEvent(controller.id, syncedExp, syncedMaxExp));
+
+                    // 检测等级提升并广播升级事件（使用变化前的 oldLevel 做对比）
+                    if (syncedLevel > oldLevel && oldLevel > 0)
+                    {
+                        Debug.Log($"[PlayerSync] 玩家[{playerId}] 升级: Lv.{oldLevel} → Lv.{syncedLevel}, exp={syncedExp}/{syncedMaxExp}");
+                        GameEventSystem.Broadcast(new HUDEvent.LeaveUpEvent(
+                            controller.id, controller.hp, controller.maxHp,
+                            controller.stamina, controller.maxStamina,
+                            syncedExp, syncedLevel, syncedMaxExp,
+                            controller.currentSpeed, controller.bombCount, controller.maxBombCount,
+                            controller.bombRecoveryTime, controller.bombDamage, controller.bombRadius, controller.bombFuseTime));
+                    }
+
+                    _prevExps[playerId] = syncedExp;
+                    _prevLevels[playerId] = syncedLevel;
+                }
             }
         }
 

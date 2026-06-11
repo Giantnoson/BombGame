@@ -93,7 +93,7 @@ namespace GameSystem.GameScene.MainMenu.UI
             leaveBtn.onClick.RemoveListener(OnLeaveClick);
             nextBtn.onClick.RemoveListener(OnNextBtnClick);
             prevBtn.onClick.RemoveListener(OnPrevBtnBtnClick);
-            GetComponent<AutoRegister>().UnregisterAll(); 
+            GetComponent<AutoRegister>()?.UnregisterAll(); 
 
         }
         
@@ -217,6 +217,7 @@ namespace GameSystem.GameScene.MainMenu.UI
             if (mapSelectInfoList == null || mapSelectInfoList.Count == 0)
             {
                 Debug.LogError("MapSelectInfoList为Null或者为空");
+                GlobalMessageManager.Instance.SendTopMessage(MessageType.System, MessageLevel.Error, "联机地图列表未找到或为空");
                 return;
             }
 
@@ -279,9 +280,11 @@ namespace GameSystem.GameScene.MainMenu.UI
             if (index < 0)
             {
                 Debug.LogError("index小于0");
+                GlobalMessageManager.Instance.SendTopMessage(MessageType.System, MessageLevel.Error, "地图选择索引错误(index<0)");
             }else if (index >= mapSelectInfoList.Count)
             {
                 Debug.LogError("index大于等于mapSelectInfoList.Count");
+                GlobalMessageManager.Instance.SendTopMessage(MessageType.System, MessageLevel.Error, "地图选择索引越界");
             }
             mapIndex = index;
             mapSprite = mapSelectInfoList[index].mapSprite;

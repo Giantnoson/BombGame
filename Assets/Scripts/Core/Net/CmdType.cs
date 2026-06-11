@@ -16,9 +16,9 @@ namespace Core.Net
         
         // 系统相关命令
         /// <summary>
-        /// 系统异常命令
+        /// 系统无效命令
         /// </summary>
-        public const int Exception = 0x01FF;      // 异常命令
+        public const int Invalid = 0x01FF;      // 无效命令
         /// <summary>
         /// 系统警告命令
         /// </summary>
@@ -130,19 +130,10 @@ namespace Core.Net
         /// 玩家状态同步命令（服务器每帧广播：位置+HP）
         /// </summary>
         public const int PlayerSync = 0x0602; // 玩家状态同步命令
-        
-
-        
-        // 障碍物相关命令
         /// <summary>
-        /// 创建障碍物命令
+        /// 经验获取命令（服务器→客户端广播）
         /// </summary>
-        public const int ObstacleCreate = 0x0701; // 创建障碍物命令
-        /// <summary>
-        /// 障碍物变更命令
-        /// </summary>
-        public const int ObstacleChange = 0x0702; // 障碍物变更命令
-
+        public const int ExpGain = 0x0603;   // 经验获取命令
         // 道具系统相关命令
         /// <summary>
         /// 道具生成命令（服务器→客户端）

@@ -61,6 +61,12 @@ namespace GameSystem.Character.Player
         protected override void Update()
         {
             base.Update();
+            if (isDie) return; // 死亡后不再执行任何本地逻辑
+            // 在线模式下，BaseOnlinePlayerController.Update() 重写了 PlayerController.Update()
+            // 但未调用 base.Update()，导致 BombUpdate/StaminaUpdate 未执行。
+            // 此处补充调用，确保炸弹冷却递减和体力系统正常工作。
+            StaminaUpdate();
+            BombUpdate();
             // 在线玩家的炸弹按键检测（基类 Update 被重写后链路断裂，需在此补充）
             if (Input.GetKeyDown(sputBomb)) PutBomb();
             CameraViewUpdate();

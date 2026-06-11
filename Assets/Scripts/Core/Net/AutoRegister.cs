@@ -60,6 +60,7 @@ namespace Core.Net
                     TcpGameClient.Instance.UnregisterMessageHandler(kvp.Key, handler);
                 }
             }
+            _handlers.Clear(); // 清空本地记录，防止 OnEnable 时重新注册已废弃的处理器
         }
         
         /// <summary>
